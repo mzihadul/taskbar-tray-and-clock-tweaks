@@ -263,7 +263,7 @@ This project is a **combined derivative work** integrating functionality from tw
 
 Original project by **m417z**:
 
-https://github.com/m417z/my-windhawk-mods
+https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-clock-customization.wh.cpp
 
 The clock, formatting, hardware metrics, media, web-content, weather, and related taskbar-clock functionality are derived from this project.
 
