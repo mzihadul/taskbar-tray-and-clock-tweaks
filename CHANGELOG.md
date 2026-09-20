@@ -1,10 +1,10 @@
 # Changelog
 
-All notable changes to **Taskbar Tray & Clock Tweaks** are documented here.
+
 
 ---
 
-## [1.0.0] - 2026-09-17
+## [v1.0.0] - 2026-09-17
 
 ### Initial Build
 
