@@ -2,7 +2,7 @@
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
 // @description     Customizable taskbar clock, system metrics, media info, granular system tray icon visibility controls, and taskbar height / icon size control (Windows 11 new taskbar).
-// @version         1.1.0
+// @version         1.2.0
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -124,7 +124,16 @@ Independent visual styling for both Date and Time lines:
 
 ---
 
-### 4. Taskbar Height & Icon Size (Windows 11 new taskbar)
+### 4. Taskbar Transparency & App Visibility (Windows 11)
+* **Transparency modes:** Default, Fully Transparent, Blurry Glass, Liquid Glass (Acrylic), and Mica.
+* **Transparency level:** 0% (opaque) to 100% (fully transparent) for the alpha-based modes.
+* **Hide Running/Pinned Apps:** Hides taskbar application buttons while keeping the Start/Search/system-tray areas intact.
+* **App exceptions:** Exceptions can be entered as an AUMID or visible application name. Matching is case-insensitive and supports partial matches.
+* The transparency implementation is applied to both the primary and secondary taskbar windows and is reset when the mod unloads.
+
+---
+
+### 5. Taskbar Height & Icon Size (Windows 11 new taskbar)
 Control the taskbar height and icon size. Make the taskbar icons large and
 crisp, or small and compact.
 
@@ -143,6 +152,11 @@ be used, as well as any other icon size.
 This feature only applies to the Windows 11 new (XAML) taskbar. It is
 automatically disabled when "Customize the old taskbar on Windows 11" is
 enabled, or when running on Windows 10.
+
+---
+
+### 6. Taskbar Transparency & Hide Task-View Apps
+Control taskbar transparency and hide apps in Task View.
 */
 // ==/WindhawkModReadme==
 
@@ -423,6 +437,23 @@ enabled, or when running on Windows 10.
   $name: Bottom line style (Windows 11 version 22H2 and newer)
 - oldTaskbarOnWin11: false
   $name: Customize the old taskbar on Windows 11
+- TransparencyMode: default
+  $name: Transparency Mode
+  $options:
+  - default: Default
+  - transparent: Fully Transparent
+  - blur: Blurry Glass
+  - acrylic: Liquid Glass (Acrylic)
+  - mica: Mica
+- TransparencyAlpha: 100
+  $name: Transparency Level (0-100%)
+  $description: >-
+    0% = opaque, 100% = fully transparent. Applies to transparent, blur and
+    acrylic modes. Mica uses the Windows material and ignores this value.
+- HideTaskbarApps: false
+  $name: Hide Running/Pinned Apps
+- AppExceptions: [""]
+  $name: App Exceptions (AUMID or App Name)
 - TaskbarHeight: 52
   $name: Taskbar height
   $description: >-
@@ -498,6 +529,7 @@ using namespace std::string_view_literals;
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Windows.UI.Xaml.Markup.h>
+#include <winrt/Windows.UI.Xaml.Shapes.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/base.h>
@@ -639,6 +671,12 @@ struct Settings {
     TextStyleSettings timeStyle;
     TextStyleSettings dateStyle;
     bool oldTaskbarOnWin11;
+
+    // Transparency and App Hiding
+    StringSetting transparencyMode;
+    int transparencyAlpha;
+    bool hideTaskbarApps;
+    std::vector<std::wstring> appExceptions;
 
     // Compatibility
     StringSetting webContentsUrl;
@@ -4054,6 +4092,18 @@ void LoadSettings() {
     g_clockElementStyleIndex++;
     g_settings.oldTaskbarOnWin11 = Wh_GetIntSetting(L"oldTaskbarOnWin11");
 
+    // Transparency and App Hiding Settings
+    g_settings.transparencyMode = StringSetting::make(L"TransparencyMode");
+    g_settings.transparencyAlpha = Wh_GetIntSetting(L"TransparencyAlpha");
+    g_settings.hideTaskbarApps = Wh_GetIntSetting(L"HideTaskbarApps");
+    
+    g_settings.appExceptions.clear();
+    for (int i = 0;; i++) {
+        StringSetting exception = StringSetting::make(L"AppExceptions[%d]", i);
+        if (*exception == L'\0') break;
+        g_settings.appExceptions.push_back(std::wstring(exception.get()));
+    }
+
     if (IsStrInDateTimePatternSettings(L"%web%") || IsStrInDateTimePatternSettings(L"%web_full%")) {
         g_settings.webContentsUrl = StringSetting::make(L"WebContentsUrl");
         g_settings.webContentsBlockStart = StringSetting::make(L"WebContentsBlockStart");
@@ -4116,6 +4166,14 @@ void ApplySettingsWin10Clock() {
     }, reinterpret_cast<LPARAM>(&enumWindowsProc));
 }
 
+// Forward declarations for the transparency/app-visibility helpers.
+// Their implementations are kept together below ApplySettings() for clarity.
+void ApplyTaskbarTransparency();
+void ApplyTaskbarWindowComposition(HWND hTaskbar);
+void ApplyTaskbarXamlBackgroundTransparency(XamlRoot xamlRoot);
+void ApplyTaskbarAppVisibility(XamlRoot xamlRoot);
+void ApplyTaskbarAppVisibilityToButton(FrameworkElement button);
+
 void ApplySettingsTray(HWND hTaskbarWnd) {
     if (!hTaskbarWnd || g_winVersion < WinVersion::Win11) return;
 
@@ -4142,15 +4200,455 @@ void ApplySettingsTray(HWND hTaskbarWnd) {
         g_batteryTextBlockStates.clear();
 
         auto xamlRoot = GetTaskbarXamlRoot(hWnd);
-        if (xamlRoot) ApplyTrayStylesVisualTree(xamlRoot);
+        if (xamlRoot) {
+            // Windows 11 paints the visible taskbar background in the XAML
+            // island. Make that layer transparent first; the HWND/DWM
+            // composition below can only be seen through a transparent XAML
+            // background.
+            ApplyTaskbarXamlBackgroundTransparency(xamlRoot);
+            ApplyTrayStylesVisualTree(xamlRoot);
+            ApplyTaskbarAppVisibility(xamlRoot);
+        }
+
+        // Composition is an HWND/DWM operation and must be performed on the
+        // taskbar window itself. Reapply here after Explorer recreates the
+        // XAML taskbar.
+        ApplyTaskbarWindowComposition(hWnd);
     }, &hTaskbarWnd);
 }
 
 void ApplySettings() {
     HWND hTaskbarWnd = FindCurrentProcessTaskbarWnd();
     ApplySettingsTray(hTaskbarWnd);
-    if (g_winVersion >= WinVersion::Win11) ApplySettingsWin11Clock();
-    else ApplySettingsWin10Clock();
+
+    if (g_winVersion >= WinVersion::Win11) {
+        // Apply independently of the XAML visual-tree operation so the
+        // material is restored/applied even when the tree is still loading.
+        ApplyTaskbarTransparency();
+        ApplySettingsWin11Clock();
+    } else {
+        ApplySettingsWin10Clock();
+    }
+}
+
+// ------------------------------------------
+// TASKBAR TRANSPARENCY & APP VISIBILITY
+// ------------------------------------------
+//
+// Windows 11's taskbar is a XAML island hosted by Shell_TrayWnd. The old
+// SetWindowCompositionAttribute API is still useful for alpha/blur/acrylic,
+// while DWM's system-backdrop API is used for Mica.
+//
+// Important: "TransparencyAlpha" is intentionally a TRANSPARENCY percentage:
+// 0 = opaque, 100 = fully transparent. The previous implementation treated
+// it as opacity, which made the setting behave backwards.
+
+enum ACCENT_STATE {
+    ACCENT_DISABLED = 0,
+    ACCENT_ENABLE_GRADIENT = 1,
+    ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
+    ACCENT_ENABLE_BLURBEHIND = 3,
+    ACCENT_ENABLE_ACRYLICBLURBEHIND = 4,
+};
+
+struct ACCENT_POLICY {
+    ACCENT_STATE AccentState;
+    DWORD AccentFlags;
+    DWORD GradientColor;
+    DWORD AnimationId;
+};
+
+struct WINDOWCOMPOSITIONATTRIBDATA {
+    DWORD Attrib;
+    PVOID pvData;
+    SIZE_T cbData;
+};
+
+using SetWindowCompositionAttribute_t =
+    BOOL(WINAPI*)(HWND, WINDOWCOMPOSITIONATTRIBDATA*);
+
+using DwmSetWindowAttribute_t =
+    HRESULT(WINAPI*)(HWND, DWORD, LPCVOID, DWORD);
+
+constexpr DWORD kWcaAccentPolicy = 19;
+constexpr DWORD kDwmwaSystemBackdropType = 38;
+constexpr DWORD kDwmwaMicaEffect = 1029;
+
+enum class TaskbarBackdropType : DWORD {
+    Auto = 0,
+    None = 1,
+    Mica = 2,
+    Acrylic = 3,
+    Tabbed = 4,
+};
+
+bool IsTransparencyMode(std::wstring_view mode, std::wstring_view expected) {
+    return _wcsicmp(std::wstring(mode).c_str(), std::wstring(expected).c_str()) == 0;
+}
+
+void ResetTaskbarWindowComposition(HWND hTaskbar) {
+    if (!hTaskbar) return;
+
+    if (HMODULE hUser = GetModuleHandle(L"user32.dll")) {
+        auto setWindowCompositionAttribute =
+            reinterpret_cast<SetWindowCompositionAttribute_t>(
+                GetProcAddress(hUser, "SetWindowCompositionAttribute"));
+
+        if (setWindowCompositionAttribute) {
+            ACCENT_POLICY policy{};
+            policy.AccentState = ACCENT_DISABLED;
+            WINDOWCOMPOSITIONATTRIBDATA data{
+                kWcaAccentPolicy, &policy, sizeof(policy)};
+            setWindowCompositionAttribute(hTaskbar, &data);
+        }
+    }
+
+    if (HMODULE hDwm = LoadLibraryEx(
+            L"dwmapi.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32)) {
+        auto dwmSetWindowAttribute =
+            reinterpret_cast<DwmSetWindowAttribute_t>(
+                GetProcAddress(hDwm, "DwmSetWindowAttribute"));
+
+        if (dwmSetWindowAttribute) {
+            TaskbarBackdropType backdrop = TaskbarBackdropType::Auto;
+            dwmSetWindowAttribute(hTaskbar, kDwmwaSystemBackdropType,
+                                  &backdrop, sizeof(backdrop));
+
+            BOOL mica = FALSE;
+            dwmSetWindowAttribute(hTaskbar, kDwmwaMicaEffect,
+                                  &mica, sizeof(mica));
+        }
+
+        FreeLibrary(hDwm);
+    }
+}
+
+void ApplyTaskbarXamlBackgroundTransparency(XamlRoot xamlRoot) {
+    if (!xamlRoot || !xamlRoot.Content()) return;
+
+    std::wstring mode = g_settings.transparencyMode
+                            ? std::wstring(g_settings.transparencyMode.get())
+                            : L"default";
+
+    int transparency = std::clamp(g_settings.transparencyAlpha, 0, 100);
+    bool isMica = IsTransparencyMode(mode, L"mica");
+    bool enable = !g_unloading && !mode.empty() &&
+                  !IsTransparencyMode(mode, L"default") &&
+                  (isMica || transparency > 0);
+
+    auto root = xamlRoot.Content().try_as<FrameworkElement>();
+    if (!root) return;
+
+    // Windows 11 taskbar background path used by current builds:
+    // Taskbar.TaskbarFrame
+    //   > Grid#RootGrid
+    //   > Taskbar.TaskbarBackground
+    //   > Grid
+    //   > Rectangle#BackgroundFill / #BackgroundStroke
+    //
+    // Some builds expose only part of this hierarchy, so every operation is
+    // optional. Clearing the properties when disabled lets Windows restore
+    // its original theme resources.
+    auto taskbarFrame = FindChildByClassName(root, L"Taskbar.TaskbarFrame");
+    if (!taskbarFrame) {
+        // A few builds expose TaskbarFrame directly as the XamlRoot content.
+        if (winrt::get_class_name(root) == L"Taskbar.TaskbarFrame") {
+            taskbarFrame = root;
+        }
+    }
+    if (!taskbarFrame) return;
+
+    auto rootGrid = FindChildByName(taskbarFrame, L"RootGrid");
+    if (!rootGrid) return;
+
+    auto rootGridPanel = rootGrid.try_as<Controls::Panel>();
+    auto backgroundControl = FindChildByClassName(rootGrid, L"Taskbar.TaskbarBackground");
+    auto backgroundPanel = backgroundControl.try_as<Controls::Panel>();
+
+    FrameworkElement backgroundFill = nullptr;
+    FrameworkElement backgroundStroke = nullptr;
+    if (backgroundControl) {
+        auto backgroundGrid = FindChildByClassName(
+            backgroundControl, L"Windows.UI.Xaml.Controls.Grid");
+        if (backgroundGrid) {
+            backgroundFill = FindChildByName(backgroundGrid, L"BackgroundFill");
+            backgroundStroke = FindChildByName(backgroundGrid, L"BackgroundStroke");
+        }
+    }
+
+    if (!enable) {
+        if (rootGridPanel) {
+            rootGridPanel.ClearValue(Controls::Panel::BackgroundProperty());
+        }
+        if (backgroundPanel) {
+            backgroundPanel.ClearValue(Controls::Panel::BackgroundProperty());
+        }
+        if (auto rect = backgroundFill.try_as<Shapes::Shape>()) {
+            rect.ClearValue(Shapes::Shape::FillProperty());
+        }
+        if (auto rect = backgroundStroke.try_as<Shapes::Shape>()) {
+            rect.ClearValue(Shapes::Shape::FillProperty());
+        }
+        return;
+    }
+
+    auto transparentBrush =
+        Media::SolidColorBrush(winrt::Windows::UI::Colors::Transparent());
+
+    if (rootGridPanel) {
+        rootGridPanel.Background(transparentBrush);
+    }
+    if (backgroundPanel) {
+        backgroundPanel.Background(transparentBrush);
+    }
+    if (auto rect = backgroundFill.try_as<Shapes::Shape>()) {
+        rect.Fill(transparentBrush);
+    }
+    if (auto rect = backgroundStroke.try_as<Shapes::Shape>()) {
+        rect.Fill(transparentBrush);
+    }
+}
+
+void ApplyTaskbarWindowComposition(HWND hTaskbar) {
+    if (!hTaskbar) return;
+
+    std::wstring mode = g_settings.transparencyMode
+                            ? std::wstring(g_settings.transparencyMode.get())
+                            : L"default";
+
+    if (g_unloading || mode.empty() || IsTransparencyMode(mode, L"default")) {
+        ResetTaskbarWindowComposition(hTaskbar);
+        return;
+    }
+
+    // Clamp the user setting so malformed settings can never overflow the
+    // DWORD alpha calculation.
+    int transparency = std::clamp(g_settings.transparencyAlpha, 0, 100);
+
+    // A 0% transparency value should leave the taskbar visually opaque.
+    // In that case the native XAML background is restored and no synthetic
+    // black accent layer is applied.
+    if (transparency == 0 && !IsTransparencyMode(mode, L"mica")) {
+        ResetTaskbarWindowComposition(hTaskbar);
+        return;
+    }
+
+    // Transparency percentage -> ARGB alpha. 0% transparency = FF opacity;
+    // 100% transparency = 00 opacity.
+    DWORD alpha = static_cast<DWORD>((100 - transparency) * 255 / 100);
+
+    if (IsTransparencyMode(mode, L"mica")) {
+        // Mica is a native DWM material. It intentionally doesn't use the
+        // alpha slider because DWM controls the material's opacity.
+        HMODULE hDwm =
+            LoadLibraryEx(L"dwmapi.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        if (hDwm) {
+            auto dwmSetWindowAttribute =
+                reinterpret_cast<DwmSetWindowAttribute_t>(
+                    GetProcAddress(hDwm, "DwmSetWindowAttribute"));
+
+            if (dwmSetWindowAttribute) {
+                TaskbarBackdropType backdrop = TaskbarBackdropType::Mica;
+                HRESULT hr = dwmSetWindowAttribute(
+                    hTaskbar, kDwmwaSystemBackdropType, &backdrop,
+                    sizeof(backdrop));
+
+                // Older 22H2-era builds used the private Mica toggle. Keep
+                // this as a compatibility fallback; failures are harmless.
+                if (FAILED(hr)) {
+                    BOOL mica = TRUE;
+                    dwmSetWindowAttribute(hTaskbar, kDwmwaMicaEffect,
+                                          &mica, sizeof(mica));
+                }
+            }
+
+            FreeLibrary(hDwm);
+        }
+        return;
+    }
+
+    HMODULE hUser = GetModuleHandle(L"user32.dll");
+    if (!hUser) return;
+
+    auto setWindowCompositionAttribute =
+        reinterpret_cast<SetWindowCompositionAttribute_t>(
+            GetProcAddress(hUser, "SetWindowCompositionAttribute"));
+    if (!setWindowCompositionAttribute) {
+        Wh_Log(L"SetWindowCompositionAttribute is unavailable");
+        return;
+    }
+
+    ACCENT_POLICY policy{};
+    policy.GradientColor = (alpha << 24) | 0x00000000;
+    policy.AccentFlags = 2;
+
+    if (IsTransparencyMode(mode, L"transparent")) {
+        policy.AccentState = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+    } else if (IsTransparencyMode(mode, L"blur")) {
+        policy.AccentState = ACCENT_ENABLE_BLURBEHIND;
+    } else if (IsTransparencyMode(mode, L"acrylic")) {
+        policy.AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND;
+    } else {
+        ResetTaskbarWindowComposition(hTaskbar);
+        return;
+    }
+
+    WINDOWCOMPOSITIONATTRIBDATA data{
+        kWcaAccentPolicy, &policy, sizeof(policy)};
+
+    if (!setWindowCompositionAttribute(hTaskbar, &data)) {
+        Wh_Log(L"SetWindowCompositionAttribute failed for taskbar");
+    }
+}
+
+void ApplyTaskbarTransparency() {
+    // Apply to the primary and secondary taskbars. Windows creates secondary
+    // taskbars dynamically, so enumerating here is more reliable than only
+    // modifying Shell_TrayWnd.
+    EnumWindows(
+        [](HWND hWnd, LPARAM) -> BOOL {
+            DWORD processId = 0;
+            WCHAR className[64]{};
+
+            if (!GetWindowThreadProcessId(hWnd, &processId) ||
+                processId != GetCurrentProcessId() ||
+                !GetClassName(hWnd, className, ARRAYSIZE(className))) {
+                return TRUE;
+            }
+
+            if (_wcsicmp(className, L"Shell_TrayWnd") == 0 ||
+                _wcsicmp(className, L"Shell_SecondaryTrayWnd") == 0) {
+                ApplyTaskbarWindowComposition(hWnd);
+            }
+
+            return TRUE;
+        },
+        0);
+}
+
+bool TextMatchesException(std::wstring_view value,
+                          const std::vector<std::wstring>& exceptions) {
+    if (value.empty()) return false;
+
+    for (const auto& exception : exceptions) {
+        if (exception.empty()) continue;
+
+        // Trim leading/trailing whitespace from settings entries.
+        size_t first = exception.find_first_not_of(L" \t\r\n");
+        size_t last = exception.find_last_not_of(L" \t\r\n");
+        if (first == std::wstring::npos) continue;
+
+        std::wstring needle = exception.substr(first, last - first + 1);
+        if (needle.empty()) continue;
+
+        // Case-insensitive substring matching makes both an AUMID fragment
+        // and a normal visible application name usable in the settings UI.
+        std::wstring lowerValue(value);
+        std::wstring lowerNeedle(needle);
+        std::transform(lowerValue.begin(), lowerValue.end(), lowerValue.begin(),
+                       towlower);
+        std::transform(lowerNeedle.begin(), lowerNeedle.end(), lowerNeedle.begin(),
+                       towlower);
+
+        if (lowerValue.find(lowerNeedle) != std::wstring::npos) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool TaskbarButtonIsException(FrameworkElement button) {
+    if (!button) return false;
+
+    std::wstring automationId =
+        Automation::AutomationProperties::GetAutomationId(button).c_str();
+    std::wstring automationName =
+        Automation::AutomationProperties::GetName(button).c_str();
+
+    // On different Windows 11 builds the task button's AutomationId and
+    // AutomationProperties.Name are populated differently. Check both.
+    if (TextMatchesException(automationId, g_settings.appExceptions) ||
+        TextMatchesException(automationName, g_settings.appExceptions)) {
+        return true;
+    }
+
+    // Some builds put the useful app identity on the first named child.
+    bool found = false;
+    EnumChildElements(button, [&](FrameworkElement child) {
+        std::wstring id =
+            Automation::AutomationProperties::GetAutomationId(child).c_str();
+        std::wstring name =
+            Automation::AutomationProperties::GetName(child).c_str();
+
+        if (TextMatchesException(id, g_settings.appExceptions) ||
+            TextMatchesException(name, g_settings.appExceptions)) {
+            found = true;
+            return true;
+        }
+        return false;
+    });
+
+    return found;
+}
+
+void ApplyTaskbarAppVisibilityToButton(FrameworkElement button) {
+    if (!button) return;
+
+    bool hide = g_settings.hideTaskbarApps && !g_unloading;
+    if (!hide) {
+        // Clear only the properties owned by this mod. This lets Windows'
+        // normal visual states control the button again instead of forcing
+        // every task button to Visible.
+        button.ClearValue(UIElement::VisibilityProperty());
+        button.ClearValue(FrameworkElement::MaxWidthProperty());
+        return;
+    }
+
+    bool exception = TaskbarButtonIsException(button);
+
+    // Do not use AutomationId alone: it is commonly empty or generic on
+    // current Windows 11 builds. The button itself is identified by its XAML
+    // class, while the exception is matched using AutomationId/Name.
+    if (exception) {
+        button.ClearValue(UIElement::VisibilityProperty());
+        button.ClearValue(FrameworkElement::MaxWidthProperty());
+    } else {
+        button.Visibility(Visibility::Collapsed);
+        button.MaxWidth(0);
+    }
+}
+
+template <typename F>
+void WalkVisualTree(FrameworkElement root, F callback) {
+    if (!root) return;
+
+    int childrenCount = Media::VisualTreeHelper::GetChildrenCount(root);
+    for (int i = 0; i < childrenCount; ++i) {
+        auto child =
+            Media::VisualTreeHelper::GetChild(root, i).try_as<FrameworkElement>();
+        if (!child) continue;
+
+        callback(child);
+        WalkVisualTree(child, callback);
+    }
+}
+
+void ApplyTaskbarAppVisibility(XamlRoot xamlRoot) {
+    if (!xamlRoot) return;
+
+    FrameworkElement root = xamlRoot.Content().try_as<FrameworkElement>();
+    if (!root) return;
+
+    WalkVisualTree(root, [](FrameworkElement element) {
+        std::wstring className = winrt::get_class_name(element).c_str();
+
+        // TaskListButton is stable across the current XAML taskbar
+        // implementations even though its surrounding panel names change.
+        if (className.find(L"TaskListButton") != std::wstring::npos) {
+            ApplyTaskbarAppVisibilityToButton(element);
+        }
+    });
 }
 
 // ------------------------------------------
@@ -5763,6 +6261,17 @@ void WINAPI TaskListButton_UpdateVisualStates_Hook(void* pThis) {
 
     TaskListButton_UpdateVisualStates_Original(pThis);
 
+    // APP HIDING LOGIC
+    FrameworkElement taskListButtonElement = nullptr;
+    ((IUnknown*)pThis)->QueryInterface(
+        winrt::guid_of<FrameworkElement>(),
+        winrt::put_abi(taskListButtonElement));
+
+    if (taskListButtonElement) {
+        ApplyTaskbarAppVisibilityToButton(taskListButtonElement);
+    }
+    // APP HIDING LOGIC ENDS HERE
+
     if (iconHeight) {
         g_taskListButtonPostureIconHeight = 0;
         *iconHeight = prevIconHeight;
@@ -5771,8 +6280,8 @@ void WINAPI TaskListButton_UpdateVisualStates_Hook(void* pThis) {
     if (g_applyingSettings && !g_hasDynamicIconScaling) {
         FrameworkElement taskListButtonElement = nullptr;
         ((IUnknown*)pThis + 3)
-            ->QueryInterface(winrt::guid_of<FrameworkElement>(),
-                             winrt::put_abi(taskListButtonElement));
+    ->QueryInterface(winrt::guid_of<FrameworkElement>(),
+                     winrt::put_abi(taskListButtonElement));
         if (taskListButtonElement) {
             if (auto iconPanelElement =
                     FindChildByName(taskListButtonElement, L"IconPanel")) {
@@ -7304,6 +7813,9 @@ void Wh_ModUninit() {
     }
 
     ApplySettings();
+    if (g_winVersion >= WinVersion::Win11) {
+        ApplyTaskbarTransparency();
+    }
 }
 
 BOOL Wh_ModSettingsChanged(BOOL* bReload) {
