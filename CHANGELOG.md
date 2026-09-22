@@ -2,6 +2,45 @@
 
 All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this file.
 
+## [v1.2.0] - 2026-09-22
+
+### Added
+
+- Added configurable Taskbar Transparency Mode for Windows 11.
+- Added the following transparency modes:
+  - Default
+  - Fully Transparent
+  - Blurry Glass
+  - Liquid Glass (Acrylic)
+  - Mica
+- Added Transparency Level control from 0% to 100%.
+- Added support for applying transparency to the primary taskbar.
+- Added handling for secondary taskbar windows.
+- Added XAML taskbar background handling for the Windows 11 taskbar.
+- Added DWM-based composition handling for supported transparency modes.
+- Added Mica material support through Windows DWM.
+- Added restoration of the original taskbar composition when the mod is unloaded.
+- Added reapplication of transparency when the taskbar/XAML interface is recreated.
+- Added Hide Running/Pinned Apps option.
+- Added the ability to hide taskbar application buttons while retaining the taskbar, Start/Search, and system-tray areas.
+- Added App Exceptions.
+- Added support for identifying exceptions using:
+  - AUMID
+  - Visible application name
+- Added case-insensitive application matching.
+- Added partial-name matching for application exceptions.
+- Added handling for application identity information exposed through taskbar button elements.
+
+### Changed
+
+- Expanded the mod description to include taskbar transparency and application visibility controls.
+- Expanded the Windhawk README documentation with the new v1.2.0 functionality.
+- Integrated transparency and application-visibility handling into the existing taskbar/XAML lifecycle.
+- Transparency is now reapplied when the Windows 11 taskbar visual tree is recreated.
+- Taskbar application visibility is reapplied as taskbar buttons are created.
+- Transparency and application-visibility settings are restored automatically when the mod is unloaded.
+- Updated taskbar processing so the transparency and application-visibility features operate alongside the existing tray, clock, and taskbar-size functionality.
+
 ## [v1.1.0] — 2026-09-20
 
 ### Added
