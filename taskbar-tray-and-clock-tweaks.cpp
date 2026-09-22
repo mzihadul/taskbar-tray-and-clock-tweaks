@@ -2,7 +2,7 @@
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
 // @description     Customizable taskbar clock, system metrics, media info, granular system tray icon visibility controls, and taskbar height / icon size control (Windows 11 new taskbar).
-// @version         1.2.0
+// @version         1.2.1
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -6263,7 +6263,7 @@ void WINAPI TaskListButton_UpdateVisualStates_Hook(void* pThis) {
 
     // APP HIDING LOGIC
     FrameworkElement taskListButtonElement = nullptr;
-    ((IUnknown*)pThis)->QueryInterface(
+    ((IUnknown*)pThis + 3)->QueryInterface(
         winrt::guid_of<FrameworkElement>(),
         winrt::put_abi(taskListButtonElement));
 
