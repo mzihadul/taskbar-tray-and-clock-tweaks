@@ -1,6 +1,8 @@
 # Taskbar Tray & Clock Tweaks
 
-A unified [Windhawk](https://windhawk.net/) mod for customizing the Windows taskbar clock, system tray icons, live hardware metrics, media information, web content, and on the Windows 11 new taskbar: taskbar height and icon size.
+A unified [Windhawk](https://windhawk.net/) mod for customizing the Windows taskbar clock, system tray icons, live hardware metrics, media information, web content, taskbar transparency, application visibility, and taskbar/icon sizing.
+
+The project combines functionality from several Windhawk mods and extends them with additional features and unified settings.
 
 ![Taskbar Tray & Clock Tweaks Screenshot](./screenshot.png)
 
@@ -11,6 +13,8 @@ A unified [Windhawk](https://windhawk.net/) mod for customizing the Windows task
 
 > System tray icon customization features are intended for Windows 11.
 
+**Taskbar transparency,** application visibility, and taskbar height/icon-size customization apply to the Windows 11 taskbar.
+
 The **Taskbar Height & Icon Size** feature applies only to the Windows 11 new/XAML taskbar. It is disabled when **Customize the old taskbar on Windows 11** is enabled and is not used on Windows 10.
 
 ## Features
@@ -19,23 +23,27 @@ The **Taskbar Height & Icon Size** feature applies only to the Windows 11 new/XA
 
 Customize the visibility and appearance of native Windows system-tray components.
 
-- Hide Volume icon
-- Hide Network / Wi-Fi icon
-- Hide Battery icon
-- Grayscale battery icon
-- Hide Microphone icon
-- Hide Location / GPS icon
-- Hide Studio Effects icon
-- Hide Windows Recall icon
-- Hide Language Bar
-- Hide supplementary IME / input indicators
+- Control Center Icons
+  - Hide Volume icon
+  - Hide Network / Wi-Fi icon
+  - Hide Battery icon
+  - Grayscale battery icon
+- Privacy & Device Indicators
+  - Hide Microphone icon
+  - Hide Location / GPS icon
+  - Hide Studio Effects icon
+  - Hide Windows Recall icon
+- Input Indicators
+  - Hide Language Bar
+  - Hide supplementary IME / input indicators
 - Configure Notification Center / Bell visibility:
   - Never
   - When there are no new notifications
   - When there are no new notifications and Do Not Disturb is off
   - Always
-- Hide the Show Desktop button
-- Customize the Show Desktop button width
+- Show Desktop
+  - Customize the Show Desktop button width
+  - Effectively hide the button by setting its width to '0'
 
 ## 2. Taskbar Clock Customization
 
@@ -159,7 +167,11 @@ Available variables include:
 | `%media_status%` | Playback status            |
 | `%media_info%`   | Combined media information |
 
-Media information supports configurable formatting, maximum length, bracket removal, and ignored players.
+Media information supports:
+- Custom formatting
+- Maximum-length limits
+- Bracket removal
+- Ignored media players.
 
 ## 7. Web Feeds & Weather
 
@@ -196,7 +208,8 @@ Date and Time elements can be styled independently.
 Available customization includes:
 
 - Text color
-- `#RRGGBB` / `#AARRGGBB` colors
+- `#RRGGBB` colors
+- `#AARRGGBB` colors
 - Font family
 - Font size
 - Font weight
@@ -209,7 +222,62 @@ Available customization includes:
 
 The clock can also use a dynamic warning color when the battery level reaches the configured low-battery threshold.
 
-## 9. Taskbar Height & Icon Size (Windows 11 New Taskbar Only)
+## 9. Taskbar Transparency (Windows 11)
+
+**Added in v1.2.0.**
+
+The taskbar can be configured using several visual modes:
+
+| Mode                     | Description                                |
+| Default                  | Uses the normal Windows taskbar appearance |
+| Fully Transparent        | Removes the taskbar's opaque background    |
+| Blurry Glass             | Applies a blurred taskbar appearance       |
+| Liquid Glass (Acrylic)   | Uses an acrylic-style taskbar effect       |
+| Mica                     | Uses the Windows Mica material             |
+
+**Transparency Level**
+
+- For the alpha-based modes, transparency can be adjusted from:
+  - 0% → Opaque
+  - 100% → Fully Transparent
+- The setting applies to:
+  - Fully Transparent
+  - Blurry Glass
+  - Liquid Glass (Acrylic)
+
+**Mica** uses the Windows material system and therefore does not use the transparency-level value.
+
+The implementation handles both the primary and secondary taskbar windows where applicable.
+
+When the mod is unloaded, the taskbar composition is restored to its original state.
+
+## 10. Hide Running / Pinned Taskbar Apps
+
+**Added in v1.2.0**
+
+Windows 11 taskbar application buttons can be hidden while retaining the rest of the taskbar.
+
+When enabled:
+
+- Running/pinned application buttons are hidden
+- Start/Search and system-tray areas remain available
+- The taskbar itself remains active
+
+This allows the taskbar to be used primarily for system information, clock, tray controls, and other taskbar elements without displaying application buttons.
+
+**App Exceptions**
+
+- Specific applications can be excluded from the hiding behavior.
+  - Exceptions can be entered using:
+    - AUMID
+    - Visible application name
+  - Matching is:
+    - Case-insensitive
+    - Partial-match capable
+
+For example, an exception can match an application by part of its visible name rather than requiring an exact full-name match.
+
+## 11. Taskbar Height & Icon Size (Windows 11 New Taskbar Only)
 
 **Added in v1.1.0.**
 
@@ -257,6 +325,19 @@ The exact appearance depends on the configured clock lines, fonts, spacing, and 
 5. Configure the tray, clock, metrics, media, web, styling, and taskbar-size options.
 6. Apply the settings.
 
+A restart of Explorer may be required after major Windows updates or when Windows changes internal taskbar components.
+
+## 🧩 Compatibility Notes
+
+This mod hooks internal Windows taskbar and Explorer components. Windows updates can change internal class names, symbols, layouts, and implementation details.
+
+As a result:
+- Some features may behave differently between Windows builds.
+- Features may require updates after major Windows releases.
+- The Windows 11 new/XAML taskbar is required for the taskbar sizing functionality.
+- The transparency implementation targets the current Windows 11 taskbar structure.
+- Unsupported Windows versions are not modified by the corresponding feature modules.
+
 ## 🔄 Version History
 
 See [`CHANGELOG.md`](CHANGELOG.md) for the release history.
@@ -298,7 +379,7 @@ Integrated as part of v1.1.0 to provide taskbar height, icon-size, and taskbar-b
 
 Additional modifications and integration includes:
 
-- Combining taskbar clock and system-tray functionality into one Windhawk mod
+- Unified taskbar clock and system-tray functionality
 - Unified settings and module lifecycle
 - Unified symbol hooking and module handling
 - `%volume%` taskbar variable
@@ -311,6 +392,11 @@ Additional modifications and integration includes:
 - Low-battery clock styling
 - Integration of taskbar height and icon-size functionality
 - Support for newer Windows 11 small taskbar icon sizing
+- Taskbar transparency modes
+- Adjustable transparency level
+- Primary and secondary taskbar transparency handling
+- Running/pinned application visibility control
+- Application exceptions using AUMID or application name
 - Ongoing maintenance of the combined codebase
 
 The project should therefore be considered a **derivative and integrated work**, rather than an entirely original implementation.
