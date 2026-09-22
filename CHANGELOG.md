@@ -2,6 +2,11 @@
 
 All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this file.
 
+## [v1.2.1] - 2026-09-22
+
+### Bug Fix
+- Fixed: "Hide Running/Pinned Apps" had no effect.
+
 ## [v1.2.0] - 2026-09-22
 
 ### Added
