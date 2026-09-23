@@ -115,7 +115,7 @@ A customized taskbar clock can combine multiple variables:
 🔼 %upload_speed% 🔽 %download_speed% ⚙ %cpu% 🗃️ %ram% %weather% 📅 %date% 🌿 %time% %mic% %volume% ♻️ %battery%
 ```
 
-The exact appearance depends on the configured clock lines, fonts, spacing, and Windows version. You can also copy and paste the (./settings.txt) for exact view.
+The exact appearance depends on the configured clock lines, fonts, spacing, and Windows version. You can also copy and paste the [Settings](./settings.txt) for exact view.
 
 ## 💻 Compatibility
 
