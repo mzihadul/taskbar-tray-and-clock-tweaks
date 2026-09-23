@@ -28,7 +28,6 @@ Selectively hide or style native system tray components:
 
 ## 2. Taskbar Clock Customization
 
-### 2. Taskbar Clock Customization & Dynamic Metrics
 Configure custom text lines for **Top Line**, **Bottom Line**, **Middle Line** (Windows 10 only), and **Tooltip Extra Line** using dynamic tags.
 
 #### 🕒 Date, Time & Locale
