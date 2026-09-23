@@ -1,310 +1,111 @@
 # Taskbar Tray & Clock Tweaks
 
-A unified [Windhawk](https://windhawk.net/) mod for customizing the Windows taskbar clock, system tray icons, live hardware metrics, media information, web content, taskbar transparency, application visibility, and taskbar/icon sizing.
+[![Windhawk Mod](https://img.shields.io/badge/Windhawk-Mod-blue.svg)](https://windhawk.net/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%20Windows%2011-0078D6.svg)](#compatibility)
+[![Architecture](https://img.shields.io/badge/Arch-x86--64-brightgreen.svg)](#)
 
-The project combines functionality from several Windhawk mods and extends them with additional features and unified settings.
+A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifies granular system tray icon controls, extensive taskbar clock formatting, live hardware performance monitors, media playback display, taskbar transparency, app button visibility, taskbar height/icon sizing, and a complete XAML control/icon styling engine.
 
-![Taskbar Tray & Clock Tweaks Screenshot](./screenshot.png)
+![Taskbar Tray & Clock Tweaks Preview](./screenshot.png)
 
-## Supported Windows Versions
-
-* **Windows 10 (64-bit)**
-* **Windows 11**
-
-> System tray icon customization features are intended for Windows 11.
-
-**Taskbar transparency,** application visibility, and taskbar height/icon-size customization apply to the Windows 11 taskbar.
-
-The **Taskbar Height & Icon Size** feature applies only to the Windows 11 new/XAML taskbar. It is disabled when **Customize the old taskbar on Windows 11** is enabled and is not used on Windows 10.
-
-## Features
+## ✨ Features
 
 ### 1. System Tray Icon Control (Windows 11)
-
-Customize the visibility and appearance of native Windows system-tray components.
-
-- Control Center Icons
-  - Hide Volume icon
-  - Hide Network / Wi-Fi icon
-  - Hide Battery icon
-  - Grayscale battery icon
-- Privacy & Device Indicators
-  - Hide Microphone icon
-  - Hide Location / GPS icon
-  - Hide Studio Effects icon
-  - Hide Windows Recall icon
-- Input Indicators
-  - Hide Language Bar
-  - Hide supplementary IME / input indicators
-- Configure Notification Center / Bell visibility:
-  - Never
-  - When there are no new notifications
-  - When there are no new notifications and Do Not Disturb is off
-  - Always
-- Show Desktop
-  - Customize the Show Desktop button width
-  - Effectively hide the button by setting its width to '0'
-
-## 2. Taskbar Clock Customization
-
-Customize the information displayed in the Windows taskbar clock.
-
-- Top line
-- Bottom line
-- Middle line (Windows 10 Only Feature)
-- Additional tooltip line
-- Time format
-- Date format
-- Weekday format
-- Multiple time zones
-- Clock width and height where supported
-- Maximum clock width on Windows 11
-- Line/text spacing
-
-### Date & Time Variables
-
-| Variable            | Description                        |
-| ------------------- | ---------------------------------- |
-| `%time%`            | Configured time format             |
-| `%time<n>%`         | Additional time format             |
-| `%time_tz<n>%`      | Time for a configured time zone    |
-| `%date%`            | Configured date format             |
-| `%date<n>%`         | Additional date format             |
-| `%date_tz<n>%`      | Date for a configured time zone    |
-| `%weekday%`         | Weekday name                       |
-| `%weekday_tz<n>%`   | Weekday for a configured time zone |
-| `%weekday_num%`     | Weekday number                     |
-| `%weeknum%`         | Regional week number               |
-| `%weeknum_iso%`     | ISO 8601 week number               |
-| `%dayofyear%`       | Day of the year                    |
-| `%timezone%`        | UTC offset                         |
-| `%newline%` / `%n%` | Insert a line break                |
-
-## 3. Hardware & Performance Metrics
-
-Display live system performance information directly in the taskbar clock.
-
-### Network
-Supports MB/s, KB/s, MBit/s, and KBit/s formats, including dynamic formats.
-- `%upload_speed%`
-- `%download_speed%`
-- `%total_speed%`
-
-### Disk
-
-- `%disk_read%`
-- `%disk_write%`
-- `%disk_total%`
-
-### CPU
-
-- `%cpu%` — CPU usage
-- `%cpu_temp%` — CPU temperature in °C
-- `%cpu_temp_f%` — CPU temperature in °F
-
-### RAM
-
-- `%ram%`
-- `%ram_used%`
-- `%ram_total%`
-- `%ram_committed%`
-- `%ram_committed_used%`
-- `%ram_committed_total%`
-
-### GPU & VRAM
-
-- `%gpu%`
-- `%vram%`
-- `%vram_used%`
-- `%vram_total%`
-- `%vram_shared%`
-- `%vram_shared_used%`
-- `%vram_shared_total%`
-
-### Power & Battery
-
-- `%battery%`
-- `%battery_time%`
-- `%power%`
-
-The battery indicator can additionally display:
-
-- `⚡` while charging
-- `❗` when the battery level is at or below 20%
-
-## 4. Volume Indicator
-
-The `%volume%` variable provides a compact master-volume indicator.
-
-- `🔊` when audio is active
-- `🔇` when muted
-- Shows the current volume percentage during volume changes
-- Returns to the icon automatically after approximately 3 seconds
-
-## 5. Microphone Activity Indicator
-
-The `%mic%` variable displays an indicator when the microphone is currently being used.
-
-```text
-🎙️
-```
-
-This can be combined with other clock variables to create a compact system-status display.
+Selectively hide or style native system tray components:
+* **Control Center Icons:** Selectively hide Volume, Network/Wi-Fi, and Battery icons.
+* **Battery Grayscale Mode:** Display the battery icon using standard text foreground colors instead of accent green/yellow.
+* **Privacy & Hardware Indicators:** Selectively hide Microphone, Location (GPS), Studio Effects, and Windows Recall.
+* **Input Switchers:** Hide the language bar and supplementary input method (IME) status icons.
+* **Notification Center (Bell):**
+  * `Never hide`
+  * `When inactive` (hides when there are no unread notifications)
+  * `When inactive and Do Not Disturb is off`
+  * `Always hide`
+* **Show Desktop Button:** Hide completely or configure custom pixel width.
 
 ---
 
-## 6. Media Player Integration
+## 2. Taskbar Clock Customization
 
-The mod uses Windows' **Global System Media Transport Controls (GSMTC)** to retrieve information from supported media applications.
+### 2. Taskbar Clock Customization & Dynamic Metrics
+Configure custom text lines for **Top Line**, **Bottom Line**, **Middle Line** (Windows 10 only), and **Tooltip Extra Line** using dynamic tags.
 
-Available variables include:
+#### 🕒 Date, Time & Locale
+* `%time%` — Configured primary time format.
+* `%time<n>%` — Secondary time formats (separated by `;` in format settings, e.g. `%time2%`).
+* `%time_tz<n>%` — Time mapped to a configured time zone index.
+* `%date%` — Configured primary date format.
+* `%date<n>%` — Secondary date formats (e.g. `%date2%`).
+* `%date_tz<n>%` — Date mapped to a configured time zone index.
+* `%weekday%` — Full, abbreviated, or custom comma-separated week day names.
+* `%weekday_tz<n>%` — Weekday mapped to a custom time zone index.
+* `%weekday_num%` — Day of week number (1–7) respecting user locale settings.
+* `%weeknum%` / `%weeknum_iso%` — Standard regional or ISO 8601 week number.
+* `%dayofyear%` — Day of the year (1–366).
+* `%timezone%` — UTC bias offset (e.g. `+06:00`).
+* `%newline%` or `%n%` — Insert a line break.
 
-| Variable         | Description                |
-| ---------------- | -------------------------- |
-| `%media_title%`  | Current media title        |
-| `%media_artist%` | Artist                     |
-| `%media_album%`  | Album                      |
-| `%media_status%` | Playback status            |
-| `%media_info%`   | Combined media information |
+#### ⚡ Hardware Performance & System Status
+* **Network Speeds:** `%upload_speed%`, `%download_speed%`, `%total_speed%` (Auto-formatted in KB/s, MB/s, or MBit/s).
+* **Disk I/O:** `%disk_read%`, `%disk_write%`, `%disk_total%`.
+* **Processor (CPU):** `%cpu%` (usage percentage), `%cpu_temp%` (°C), `%cpu_temp_f%` (°F).
+* **System Memory (RAM):** `%ram%` (%), `%ram_used%` (GB), `%ram_total%` (GB), `%ram_committed%` (%), `%ram_committed_used%` (GB), `%ram_committed_total%` (GB).
+* **Graphics (GPU & VRAM):** `%gpu%` (3D engine usage %), `%vram%` (dedicated %), `%vram_used%` (GB), `%vram_total%` (GB), `%vram_shared%` (%), `%vram_shared_used%` (GB), `%vram_shared_total%` (GB).
+* **Power & Battery:**
+  * `%battery%` — Battery percentage (appends `⚡` on AC power, appends `❗` when battery ≤ 20%).
+  * `%battery_time%` — Estimated remaining battery discharge or charge time (`h:mm`).
+  * `%power%` — Real-time discharge/charge rate in watts (`+W` or `-W`).
+* **Volume Level:** `%volume%` — Shows `🔊` or `🔇`, automatically expanding to `🔊 45%` for 3 seconds during volume adjustments.
+* **Microphone Activity:** `%mic%` — Active `🎙️` indicator when any application accesses a recording device.
 
-Media information supports:
-- Custom formatting
-- Maximum-length limits
-- Bracket removal
-- Ignored media players.
+#### 🎵 Media Player Integration (GSMTC)
+Extracts track details from Spotify, Chrome, Edge, VLC, Apple Music, and other media players:
+* `%media_title%` — Current track title (brackets optionally stripped).
+* `%media_artist%` — Current artist.
+* `%media_album%` — Album title.
+* `%media_status%` — Playback state emoji (`⏯`, `⏸`, `⏹`).
+* `%media_info%` — Combined formatted text with truncation support (e.g. `Artist - Title`).
 
-## 7. Web Feeds & Weather
+#### ⛅ Weather & Web Feeds
+* `%weather%` — Live weather status powered by [wttr.in](https://wttr.in) with custom location, metrics, and symbols.
+* `%web<n>%` / `%web<n>_full%` — Live text extracted from RSS feeds, XML, HTML, or plain web endpoints.
 
-Display information retrieved from web pages, RSS feeds, XML, HTML sources, and weather services.
+---
 
-### Weather
+### 3. Font & Text Styling (Windows 11 22H2+)
+* Independent visual styles for Date and Time lines.
+* Hex color overrides (`#RRGGBB` / `#AARRGGBB`) or named colors.
+* Dynamic automatic red color switch on low battery (≤ 20%).
+* Custom Font Family, Size, Weight, Stretch, and Style.
+* Alignment (Left, Center, Right, Justified), character spacing, line height, and line spacing.
 
-```text
-%weather%
-```
+---
 
-Weather information is retrieved through [wttr.in](https://wttr.in/) and can be configured using a custom location, unit system, and format. It supports:
+### 4. Taskbar Transparency & App Visibility (Windows 11) **[Added in v1.2.0]**
+* **Backdrop Modes:** Default, Fully Transparent, Blurry Glass, Liquid Glass (Acrylic), and Mica.
+* **Custom Opacity:** 0% (solid) to 100% (fully clear).
+* **Hide Running / Pinned Apps:** Hides taskbar application buttons while retaining Start, Search, and System Tray elements.
+* **App Exceptions Whitelist:** Preserve specific application icons using partial or full AUMID or window title matches.
 
-- Custom location
-- Automatic unit detection
-- USCS
-- Metric
-- Metric with wind speed in m/s
-- Custom output formatting
+---
 
-### Web Content
+### 5. Taskbar Height & Icon Size (Windows 11 New Taskbar) **[Added in v1.1.0]**
+* Fixes blurry 24×24 downscaled Windows 11 icons by allowing crisp, native 32×32 or 16×16 rendering.
+* Configurable taskbar height (default 48px, adjustable to 32px, 52px, 60px, etc.).
+* Configurable icon size and button width for regular and compact taskbar modes.
 
-```text
-%web<n>%
-%web<n>_full%
-```
+---
 
-Web-content items can extract text from configured RSS, XML, HTML, or plain-text sources, with optional search/replace rules and maximum-length limits.
+### 6. Taskbar Control & Icon Styling Engine (Windows 11 New Taskbar) **[Added in v1.3.0]**
+* Target any XAML control by class name, element ID, or application ID (`Taskbar.TaskListButton[AutomationProperties.AutomationId=Appid: ...]`).
+* Override element properties (e.g. custom icon `Source`, `Width`, `Height`, `CornerRadius`, `Background`, `Margin`).
+* Support for local files and remote image URLs with local disk caching and automatic offline retry.
+* Embedded `<WindhawkBlur ... />` brush and XAML markup syntax (`:=`).
+* Visual state matching (`Style@VisualState=Value`) and dynamic style variable propagation (`Property=>VarName`, `{{VarName}}`).
+* Theme-aware resource variable overrides (`Key@Dark=Value`, `Key@Light=Value`).
 
-## 8. Font & Text Styling (Windows 11 22H2+ Only)
-
-Date and Time elements can be styled independently.
-
-Available customization includes:
-
-- Text color
-- `#RRGGBB` colors
-- `#AARRGGBB` colors
-- Font family
-- Font size
-- Font weight
-- Font stretch
-- Font style
-- Text alignment
-- Character spacing
-- Line height
-- Line spacing
-
-The clock can also use a dynamic warning color when the battery level reaches the configured low-battery threshold.
-
-## 9. Taskbar Transparency (Windows 11)
-
-**Added in v1.2.0.**
-
-The taskbar can be configured using several visual modes:
-
-| Mode                     | Description                                |
-| Default                  | Uses the normal Windows taskbar appearance |
-| Fully Transparent        | Removes the taskbar's opaque background    |
-| Blurry Glass             | Applies a blurred taskbar appearance       |
-| Liquid Glass (Acrylic)   | Uses an acrylic-style taskbar effect       |
-| Mica                     | Uses the Windows Mica material             |
-
-**Transparency Level**
-
-- For the alpha-based modes, transparency can be adjusted from:
-  - 0% → Opaque
-  - 100% → Fully Transparent
-- The setting applies to:
-  - Fully Transparent
-  - Blurry Glass
-  - Liquid Glass (Acrylic)
-
-**Mica** uses the Windows material system and therefore does not use the transparency-level value.
-
-The implementation handles both the primary and secondary taskbar windows where applicable.
-
-When the mod is unloaded, the taskbar composition is restored to its original state.
-
-## 10. Hide Running / Pinned Taskbar Apps
-
-**Added in v1.2.0**
-
-Windows 11 taskbar application buttons can be hidden while retaining the rest of the taskbar.
-
-When enabled:
-
-- Running/pinned application buttons are hidden
-- Start/Search and system-tray areas remain available
-- The taskbar itself remains active
-
-This allows the taskbar to be used primarily for system information, clock, tray controls, and other taskbar elements without displaying application buttons.
-
-**App Exceptions**
-
-- Specific applications can be excluded from the hiding behavior.
-  - Exceptions can be entered using:
-    - AUMID
-    - Visible application name
-  - Matching is:
-    - Case-insensitive
-    - Partial-match capable
-
-For example, an exception can match an application by part of its visible name rather than requiring an exact full-name match.
-
-## 11. Taskbar Height & Icon Size (Windows 11 New Taskbar Only)
-
-**Added in v1.1.0.**
-
-The Windows 11 new taskbar normally uses 24×24 taskbar icons. This feature allows the taskbar and its icons to be resized instead of relying on the default sizing.
-
-Available settings:
-
-| Variable                     | Description                      |
-| ---------------------------- | --------------------------       |
-| `Taskbar height`             | Taskbar height in pixels         |
-| `Icon size`                  | Main taskbar icon size in pixels |
-| `Taskbar button width`       | Taskbar button width in pixels   |
-| `Small icon size`            | Icon size used by newer Windows 11 builds with small-icon support|
-| `Small taskbar button width` | Combined media information |
-
-The default values added by v1.1.0 are:
-
-```text
-Taskbar height:             52
-Icon size:                  32
-Taskbar button width:       44
-Small icon size:            16
-Small taskbar button width: 32
-```
-Windows 11's newer small-taskbar-icon support is handled separately from the regular icon-size setting.
-
-> **Compatibility:** This feature is for the Windows 11 new/XAML taskbar. It is automatically skipped when **Customize the old taskbar on Windows 11** is enabled.
+---
 
 ## ⚙️ Example Configurations
 
@@ -314,33 +115,38 @@ A customized taskbar clock can combine multiple variables:
 🔼 %upload_speed% 🔽 %download_speed% ⚙ %cpu% 🗃️ %ram% %weather% 📅 %date% 🌿 %time% %mic% %volume% ♻️ %battery%
 ```
 
-The exact appearance depends on the configured clock lines, fonts, spacing, and Windows version.
+The exact appearance depends on the configured clock lines, fonts, spacing, and Windows version. You can also copy and paste the (./settings.txt) for exact view.
+
+## 💻 Compatibility
+
+| Operating System | Tray Icons | Clock Customization | Performance Metrics | Transparency | Height & Icon Size | Control Styler |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Windows 11 (22H2 / 23H2 / 24H2)** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Windows 11 (21H2)** | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ Partial |
+| **Windows 10 (64-bit)** | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **ExplorerPatcher (Win10 Taskbar on Win11)** | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+
+> **Note:** Taskbar Height/Icon Size and Control Styling features only apply to the Windows 11 XAML-based taskbar. When *"Customize the old taskbar on Windows 11"* is enabled or when running on Windows 10, those subsystems remain inactive.
+
+---
 
 ## 📦 Installation
 
 1. Install [Windhawk](https://windhawk.net/).
-2. Open Windhawk.
-3. Install or create the **Taskbar Tray & Clock Tweaks** mod.
-4. Open the mod settings.
-5. Configure the tray, clock, metrics, media, web, styling, and taskbar-size options.
-6. Apply the settings.
+2. In Windhawk, go to **Mods** → **Add Custom Mod**.
+3. Paste the contents of [`taskbar-tray-and-clock-tweaks.wh.cpp`](https://github.com/mzihadul/taskbar-tray-and-clock-tweaks/blob/main/taskbar-tray-and-clock-tweaks.wh.cpp).
+4. Click **Compile and Save**.
 
-A restart of Explorer may be required after major Windows updates or when Windows changes internal taskbar components.
+---
 
-## 🧩 Compatibility Notes
+## ⚙️ Compilation Options
 
-This mod hooks internal Windows taskbar and Explorer components. Windows updates can change internal class names, symbols, layouts, and implementation details.
+When compiling via Windhawk, the following libraries are required:
+```text
+-lcomctl32 -lgdi32 -lole32 -loleaut32 -lruntimeobject -lshcore -lversion -lwininet -lshlwapi -ldxgi -lpdh -lpowrprof
+```
 
-As a result:
-- Some features may behave differently between Windows builds.
-- Features may require updates after major Windows releases.
-- The Windows 11 new/XAML taskbar is required for the taskbar sizing functionality.
-- The transparency implementation targets the current Windows 11 taskbar structure.
-- Unsupported Windows versions are not modified by the corresponding feature modules.
-
-## 🔄 Version History
-
-See [`CHANGELOG.md`](CHANGELOG.md) for the release history.
+---
 
 ## 🔀 Project Background
 
@@ -401,6 +207,19 @@ Additional modifications and integration includes:
 
 The project should therefore be considered a **derivative and integrated work**, rather than an entirely original implementation.
 
+---
+
+## 🙏 Credits
+
+Special thanks to **[m417z](https://github.com/m417z)** for the original Windhawk projects that provide the foundation for this combined mod.
+
+* [Taskbar Clock Customization](https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-clock-customization.wh.cpp)
+* [Taskbar Tray System Icon Tweaks](https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-tray-system-icon-tweaks.wh.cpp)
+* [Taskbar height and icon size](https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-icon-size.wh.cpp)
+* [Windows 11 Taskbar Styler](https://github.com/ramensoftware/windhawk-mods/blob/main/mods/windows-11-taskbar-styler.wh.cpp)
+
+---
+
 ## 📄 License
 
 This project is released under the **GNU General Public License v3.0 (GPL-3.0)**.
@@ -409,13 +228,7 @@ The project incorporates derivative code from the upstream projects identified a
 
 See the [`LICENSE`](./LICENSE) file for the complete license text.
 
-## 🙏 Credits
-
-Special thanks to **m417z** for the original Windhawk projects that provide the foundation for this combined mod.
-
-- Taskbar Clock Customization — m417z
-- Taskbar Tray System Icon Tweaks — m417z
-- Taskbar Icon Size — m417z
+---
 
 ## ⚠️ Disclaimer
 
