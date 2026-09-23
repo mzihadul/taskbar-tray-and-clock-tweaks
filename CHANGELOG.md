@@ -2,6 +2,24 @@
 
 All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this file.
 
+## [1.3.0] - 2026-09-23
+
+### Added
+- **Taskbar Control & Icon Styling Engine:**
+  - Integrated full styling engine from *Windows 11 Taskbar Styler*.
+  - Added support for targeting XAML controls by type, class, name, or automation ID (e.g. `Taskbar.TaskListButton[AutomationProperties.AutomationId=Appid: ...]`).
+  - Added property overrides for taskbar elements (`Source` for custom app icons, `Width`, `Height`, `CornerRadius`, `Background`, `Margin`, etc.).
+  - Added support for local image files and remote image URLs with offline disk caching and automatic retry upon network reconnection.
+  - Added embedded `<WindhawkBlur ... />` brush support and XAML markup syntax (`:=`).
+  - Added visual state styling support (`Style@VisualState=Value`).
+  - Added dynamic style variable extraction and propagation (`Property=>VarName`, `{{VarName}}`).
+  - Added theme resource variable overrides with dark/light mode detection (`Key@Dark=Value`, `Key@Light=Value`).
+  - Added `xamlDiagnosticsHandling` setting (`alert`, `block`, `allow`) to handle external XAML diagnostics consumers cleanly.
+
+### Changed
+- Refactored initialization routine to coordinate XAML visual tree hooks alongside system tray and clock hooks.
+- Updated compiler options to include `-ldxgi`, `-lpdh`, `-lpowrprof`, and related Windows Runtime libraries.
+
 ## [v1.2.1] - 2026-09-22
 
 ### Bug Fix
