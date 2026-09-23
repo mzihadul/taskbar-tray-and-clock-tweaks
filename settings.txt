@@ -1,0 +1,136 @@
+hideVolumeIcon: 1
+hideNetworkIcon: 0
+hideBatteryIcon: 1
+grayscaleBatteryIcon: 0
+hideMicrophoneIcon: 1
+hideGeolocationIcon: 0
+hideStudioEffectsIcon: 0
+hideRecallIcon: 0
+hideLanguageBar: 1
+hideLanguageSupplementaryIcons: 0
+hideBellIcon: always
+showDesktopButtonWidth: 12
+ShowSeconds: 1
+TimeFormat: hh':'mm' 'tt
+DateFormat: ddd',' MMM dd
+DateLocale: ''
+WeekdayFormat: dddd
+WeekdayFormatCustom: Sun, Mon, Tue, Wed, Thu, Fri, Sat
+TopLine: 🔼 %upload_speed% 🔽 %download_speed% ⚙ %cpu% 🗃️ %ram% %weather% 📅 %date% 🌿 %time% %mic% %volume% ♻️ %battery%
+BottomLine: ''
+MiddleLine: ''
+TooltipLine: ''
+TooltipLineMode: append
+Width: 0
+Height: 0
+MaxWidth: 0
+TextSpacing: 0
+DataCollection:
+  NetworkMetricsFormat: mbsDynamic
+  NetworkMetricsFixedDecimals: -1
+  DiskMetricsFormat: sameAsNetwork
+  DiskMetricsFixedDecimals: -1
+  PercentageFormat: spacePaddingAndSymbol
+  UpdateInterval: 1
+  NetworkAdapterName: ''
+  GpuAdapterName: ''
+MediaPlayer:
+  IgnoredPlayers:
+    - ''
+  MaxLength: 28
+  MediaInfoFormat: '%media_artist% - %media_title%'
+  NoMediaText: No media
+  RemoveBrackets: 0
+WebContentWeatherLocation: Dhaka, Bangladesh
+WebContentWeatherFormat: '%c%t'
+WebContentWeatherUnits: metric
+WebContentsItems:
+  - Url: ''
+    BlockStart: ''
+    Start: ''
+    End: ''
+    ContentMode: ''
+    SearchReplace:
+      - Search: ''
+        Replace: ''
+    MaxLength: 10
+WebContentsUpdateInterval: 30
+TimeZones:
+  - Eastern Standard Time
+TimeStyle:
+  Hidden: 0
+  TextColor: ''
+  TextAlignment: Center
+  FontSize: 12
+  FontFamily: ''
+  FontWeight: '500'
+  FontStyle: Normal
+  FontStretch: ''
+  CharacterSpacing: 0
+  LineHeight: 0
+DateStyle:
+  Hidden: 1
+  TextColor: ''
+  TextAlignment: ''
+  FontSize: 0
+  FontFamily: ''
+  FontWeight: ''
+  FontStyle: ''
+  FontStretch: ''
+  CharacterSpacing: 0
+  LineHeight: 0
+oldTaskbarOnWin11: 0
+TransparencyMode: transparent
+TransparencyAlpha: 100
+HideTaskbarApps: 1
+AppExceptions:
+  - ''
+TaskbarHeight: 23
+IconSize: 12
+TaskbarButtonWidth: 19
+IconSizeSmall: 16
+TaskbarButtonWidthSmall: 32
+styleConstants:
+  - ''
+controlStyles:
+  - target: SystemTray.TextIconContent > Grid#ContainerGrid > SystemTray.AdaptiveTextBlock#Base > TextBlock#InnerTextBlock
+    styles:
+      - FontSize=14
+  - target: Taskbar.ExperienceToggleButton
+    styles:
+      - Visibility=Collapsed
+  - target: Taskbar.TaskListButtonPanel
+    styles:
+      - Visibility=Collapsed
+  - target: Taskbar.TaskListLabeledButtonPanel
+    styles:
+      - Visibility=Collapsed
+  - target: SystemTray.SystemTrayFrame
+    styles:
+      - HorizontalAlignment=Center
+  - target: SystemTray.ChevronIconView > * > TextBlock#InnerTextBlock
+    styles:
+      - Text=🟠
+      - FontFamily=Segoe UI Emoji
+      - FontSize= 5
+  - target: SystemTray.OmniButton#ShowDesktopButton, SystemTray.ChevronIconView
+    styles:
+      - Width=24
+      - Padding=0
+      - Margin=0,0,-13,0
+  - target: SystemTray.Stack#IconList > ContentPresenter:empty
+    styles:
+      - Visibility=Collapsed
+      - Width=0
+      - Margin=0
+  - target: SystemTray.OmniButton
+    styles:
+      - Padding=0
+      - Margin=0,0,-10,0
+  - target: SystemTray.TimeView
+    styles:
+      - Padding=0
+      - Margin=-6,0,0,0
+themeResourceVariables:
+  - ''
+xamlDiagnosticsHandling: alert
