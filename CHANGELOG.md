@@ -2,6 +2,11 @@
 
 All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this file.
 
+## [1.3.1] - 2026-09-27
+
+### Fixed
+- Taskbar transparency (Transparent / Blurry Glass / Liquid Glass / Mica) would intermittently stop applying.
+
 ## [1.3.0] - 2026-09-23
 
 ### Added
