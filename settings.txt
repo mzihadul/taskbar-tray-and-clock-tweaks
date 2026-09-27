@@ -61,9 +61,9 @@ TimeStyle:
   Hidden: 0
   TextColor: ''
   TextAlignment: Center
-  FontSize: 12
+  FontSize: 11
   FontFamily: ''
-  FontWeight: '500'
+  FontWeight: '600'
   FontStyle: Normal
   FontStretch: ''
   CharacterSpacing: 0
@@ -93,44 +93,39 @@ TaskbarButtonWidthSmall: 32
 styleConstants:
   - ''
 controlStyles:
-  - target: SystemTray.TextIconContent > Grid#ContainerGrid > SystemTray.AdaptiveTextBlock#Base > TextBlock#InnerTextBlock
-    styles:
-      - FontSize=14
-  - target: Taskbar.ExperienceToggleButton
-    styles:
-      - Visibility=Collapsed
-  - target: Taskbar.TaskListButtonPanel
-    styles:
-      - Visibility=Collapsed
-  - target: Taskbar.TaskListLabeledButtonPanel
-    styles:
-      - Visibility=Collapsed
   - target: SystemTray.SystemTrayFrame
     styles:
       - HorizontalAlignment=Center
-  - target: SystemTray.ChevronIconView > * > TextBlock#InnerTextBlock
+  - target: SystemTray.TextIconContent > Grid#ContainerGrid > SystemTray.AdaptiveTextBlock#Base > TextBlock#InnerTextBlock
     styles:
-      - Text=🟠
-      - FontFamily=Segoe UI Emoji
-      - FontSize= 5
-  - target: SystemTray.OmniButton#ShowDesktopButton, SystemTray.ChevronIconView
-    styles:
-      - Width=24
-      - Padding=0
-      - Margin=0,0,-13,0
-  - target: SystemTray.Stack#IconList > ContentPresenter:empty
-    styles:
-      - Visibility=Collapsed
-      - Width=0
-      - Margin=0
+      - FontSize=13
   - target: SystemTray.OmniButton
     styles:
-      - Padding=0
-      - Margin=0,0,-10,0
-  - target: SystemTray.TimeView
+      - Padding=1
+      - Margin=-4,0,-5,0
+  - target: SystemTray.Stack#NotifyIconStack
     styles:
+      - Grid.Column=8
+  - target: SystemTray.ChevronIconView > * > TextBlock#InnerTextBlock
+    styles:
+      - Text=🦊
+      - FontFamily=Segoe UI Emoji
+      - FontSize= 11
+  - target: SystemTray.OmniButton#ShowDesktopButton, SystemTray.ChevronIconView
+    styles:
+      - Width=19
       - Padding=0
-      - Margin=-6,0,0,0
+      - Margin=-6,-4,0,0
+  - target: SystemTray.ImageIconContent > Grid#ContainerGrid > Image
+    styles:
+      - Height=12
+      - Width=12
+  - target: SystemTray.NotifyIconView
+    styles:
+      - Width=23
+      - MinWidth=0
+      - Padding=0
+      - Margin=1
 themeResourceVariables:
   - ''
 xamlDiagnosticsHandling: alert
