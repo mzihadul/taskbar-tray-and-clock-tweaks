@@ -2,7 +2,7 @@
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
 // @description     Customizable taskbar clock, system metrics, media info, granular system tray icon visibility controls, taskbar height / icon size control, and taskbar control / icon styling.
-// @version         1.3.0
+// @version         1.3.1
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -4616,6 +4616,60 @@ void ApplyTaskbarTransparency() {
             return TRUE;
         },
         0);
+}
+
+// ------------------------------------------
+// TRANSPARENCY WATCHDOG
+//
+// ApplyTaskbarWindowComposition()/ApplyTaskbarXamlBackgroundTransparency()
+// are otherwise only invoked from ApplySettings() at mod init/uninit/settings
+// change. Windows 11 can silently rebuild the taskbar's XAML tree or reset
+// its window composition attribute (monitor hotplug, sleep/resume, DPI
+// change, Explorer hiccups) without notifying the mod, which is why the
+// transparency effect can "randomly" stop applying. This watchdog keeps
+// re-asserting it periodically. The calls below are cheap/idempotent when
+// nothing actually changed, so this should not cause visible flicker.
+// ------------------------------------------
+
+std::atomic<bool> g_transparencyWatchdogRunning;
+HANDLE g_transparencyWatchdogThread;
+
+DWORD WINAPI TransparencyWatchdogThreadProc(LPVOID) {
+    while (g_transparencyWatchdogRunning) {
+        for (int i = 0; i < 15 && g_transparencyWatchdogRunning; i++) {
+            Sleep(100);
+        }
+        if (!g_transparencyWatchdogRunning) break;
+
+        std::wstring mode = g_settings.transparencyMode
+                                ? std::wstring(g_settings.transparencyMode.get())
+                                : L"default";
+        if (mode.empty() || IsTransparencyMode(mode, L"default")) {
+            continue;
+        }
+
+        HWND hTaskbarWnd = FindCurrentProcessTaskbarWnd();
+        if (hTaskbarWnd) {
+            ApplySettingsTray(hTaskbarWnd);
+        }
+        ApplyTaskbarTransparency();
+    }
+    return 0;
+}
+
+void StartTransparencyWatchdog() {
+    if (g_transparencyWatchdogRunning.exchange(true)) return;
+    g_transparencyWatchdogThread =
+        CreateThread(nullptr, 0, TransparencyWatchdogThreadProc, nullptr, 0, nullptr);
+}
+
+void StopTransparencyWatchdog() {
+    if (!g_transparencyWatchdogRunning.exchange(false)) return;
+    if (g_transparencyWatchdogThread) {
+        WaitForSingleObject(g_transparencyWatchdogThread, INFINITE);
+        CloseHandle(g_transparencyWatchdogThread);
+        g_transparencyWatchdogThread = nullptr;
+    }
 }
 
 bool TextMatchesException(std::wstring_view value,
@@ -12471,10 +12525,16 @@ void Wh_ModAfterInit() {
     }
 
     ApplySettings();
+
+    if (g_winVersion >= WinVersion::Win11) {
+        StartTransparencyWatchdog();
+    }
 }
 
 void Wh_ModBeforeUninit() {
     g_unloading = true;
+
+    StopTransparencyWatchdog();
 
     if (g_winVersion >= WinVersion::Win11 && !g_settings.oldTaskbarOnWin11) {
         HWND restartExplorerPromptWindow = g_restartExplorerPromptWindow;
@@ -12543,6 +12603,8 @@ void Wh_ModUninit() {
 }
 
 BOOL Wh_ModSettingsChanged(BOOL* bReload) {
+    StopTransparencyWatchdog();
+
     {
         std::lock_guard<std::mutex> guard(g_formatLineMutex);
         WebContentUpdateThreadUninit();
@@ -12592,6 +12654,10 @@ BOOL Wh_ModSettingsChanged(BOOL* bReload) {
     }
 
     ApplySettings();
+
+    if (g_winVersion >= WinVersion::Win11) {
+        StartTransparencyWatchdog();
+    }
     return TRUE;
 }
 
@@ -12602,4 +12668,3 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID lpReserved) {
     }
     return TRUE;
 }
-
