@@ -1,8 +1,8 @@
 // ==WindhawkMod==
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
-// @description     Customizable taskbar clock, system metrics, media info, granular system tray icon visibility controls, taskbar height / icon size control, and taskbar control / icon styling.
-// @version         1.3.1
+// @description     Taskbar clock with live metrics, media info and weather; system tray icon control; taskbar size and transparency; and XAML control styling.
+// @version         1.4.0
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -10,329 +10,188 @@
 // @compilerOptions -lcomctl32 -lgdi32 -lole32 -loleaut32 -lruntimeobject -lshcore -lversion -lwininet -lshlwapi -ldxgi -lpdh -lpowrprof
 // ==/WindhawkMod==
 
-// This project is a combined derivative work based on:
+// Combined derivative work based on these Windhawk mods by m417z
+// (https://github.com/ramensoftware/windhawk-mods/blob/main/mods/):
+//   - taskbar-clock-customization.wh.cpp
+//   - taskbar-tray-system-icon-tweaks.wh.cpp
+//   - taskbar-icon-size.wh.cpp
+//   - windows-11-taskbar-styler.wh.cpp (styling engine only; themes omitted)
 //
-// 1. Taskbar Clock Customization
-//    Original author: m417z
-//    https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-clock-customization.wh.cpp
+// Additions and integration by mzihadul: unified clock/tray hooks, settings and
+// lifecycle; %volume% and %mic% indicators; battery charging / low-battery
+// indicators and styling.
 //
-// 2. Taskbar Tray System Icon Tweaks
-//    Original author: m417z
-//    https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-tray-system-icon-tweaks.wh.cpp
-//
-// 3. Taskbar height and icon size - Fork
-//    Original author: m417z
-//    https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-icon-size.wh.cpp
-//
-// 4. Windows 11 Taskbar Styler (Styling Engine)
-//    Original author: m417z
-//    https://github.com/ramensoftware/windhawk-mods/blob/main/mods/windows-11-taskbar-styler.wh.cpp
-//
-// The projects have been integrated into a single Windhawk mod.
-// Additional modifications and integration by mzihadul include:
-//
-// - Unified taskbar clock and system tray functionality
-// - Added volume indicator (%volume%)
-// - Added microphone activity indicator (%mic%)
-// - Added battery charging indicator
-// - Added low-battery indicator
-// - Refined battery-related clock styling
-// - Unified settings, hooks, and module lifecycle
-// - Merged in taskbar height / icon size control (Windows 11 new taskbar only;
-//   inactive when "Customize the old taskbar on Windows 11" is enabled, or on
-//   Windows 10)
-// - Integrated taskbar control and icon styling engine (Windows 11 new taskbar only;
-//   themes skipped as taskbar transparency is natively implemented)
-//
-// This project is licensed under the GNU General Public License v3.0.
+// Licensed under the GNU General Public License v3.0.
 
 // ==WindhawkModReadme==
 /*
 # Taskbar Tray & Clock Tweaks
 
-A unified Windhawk mod combining granular control over Windows system tray icon visibility with comprehensive taskbar clock customization, live hardware metrics, media controls, web feed integration, taskbar height / icon size control, and taskbar control & icon styling.
+Taskbar clock customization with live hardware metrics, media info and weather, granular system tray icon control, taskbar size / transparency, and XAML control styling.
 
-Only **Windows 10 (64-bit)** and **Windows 11** are supported. System tray icon hiding, taskbar height / icon size control, and taskbar styling features require Windows 11. The taskbar height / icon size and styling features require the Windows 11 new (XAML-based) taskbar, and are inactive when "Customize the old taskbar on Windows 11" is enabled.
+Supports **Windows 10 (64-bit)** and **Windows 11**. Everything except the clock requires Windows 11, and the taskbar size and styling features also require the new (XAML) taskbar. They are inactive when "Customize the old taskbar on Windows 11" is enabled.
 
----
+![Screenshot](https://raw.githubusercontent.com/mzihadul/taskbar-tray-and-clock-tweaks/main/screenshot.png)
 
-## Preview
+## Settings categories
 
-![Screenshot](https://raw.githubusercontent.com/mzihadul/taskbar-tray-and-clock-tweaks/main/screenshot.png) 
+| Category | What it controls |
+| --- | --- |
+| System tray icons | Hide or restyle volume, network, battery, microphone, location, Studio Effects, Recall, language, bell and "Show desktop" |
+| Clock: date, time & time zones | Time / date / weekday formats, locale, seconds, time zones |
+| Clock: text lines & tooltip | What the top, middle (Windows 10) and bottom lines and the tooltip show |
+| Clock: size & spacing | Clock width / height (Windows 10), max width and line spacing (Windows 11) |
+| Clock: top / bottom line style | Color, font, alignment and spacing per line (Windows 11 22H2+) |
+| Live metrics | Update interval, number formats, network / GPU adapter |
+| Media player info | Format, length limit and ignored players for `%media_*%` |
+| Weather & web content | Weather (wttr.in) and web / RSS extraction for `%weather%`, `%web<n>%` |
+| Taskbar transparency & app visibility | Transparency mode and level, hide running / pinned apps |
+| Taskbar size & icons | Taskbar height, icon size, button width |
+| Advanced styling (XAML) | Style constants, control styles, theme resources |
 
----
+## Clock tags
 
-## Features
+Use these in the top, middle, bottom and tooltip lines.
 
-### 1. System Tray Icon Control (Windows 11)
-Selectively hide or style native system tray components:
-* **Control Center Icons:** Volume, Network/Wi-Fi, and Battery.
-* **Battery Tweaks:** Grayscale battery mode (uses standard text foreground instead of accent green/yellow).
-* **System Privacy & Device Icons:** Microphone, Location (GPS), Studio Effects, and Windows Recall.
-* **Input Indicators:** Language bar and supplementary input method (IME) status icons.
-* **Notification Center (Bell):** Hide always, or auto-hide dynamically when there are no unread notifications (with optional Do Not Disturb override).
-* **Show Desktop Button:** Hide or adjust custom pixel width.
+### Date & time
+* `%time%`, `%date%` - configured formats. `%time<n>%` / `%date<n>%` use additional formats (separated by `;`, starting at `<n>=2`).
+* `%time_tz<n>%`, `%date_tz<n>%`, `%weekday_tz<n>%` - value for the time zone at index `<n>`.
+* `%weekday%` - full, abbreviated or custom week day name.
+* `%weekday_num%` - week day number from the locale's first day of week (1-7).
+* `%weeknum%` / `%weeknum_iso%` - week number (regional settings / ISO 8601).
+* `%dayofyear%` - day of the year (1-366).
+* `%timezone%` - UTC offset, e.g. `+06:00`.
+* `%newline%` or `%n%` - line break.
 
----
+### Hardware & performance
+* **Network:** `%upload_speed%`, `%download_speed%`, `%total_speed%`
+* **Disk:** `%disk_read%`, `%disk_write%`, `%disk_total%`
+* **CPU:** `%cpu%` (%), `%cpu_temp%` (°C), `%cpu_temp_f%` (°F)
+* **RAM:** `%ram%` (%), `%ram_used%`, `%ram_total%` (GB), `%ram_committed%` (%), `%ram_committed_used%`, `%ram_committed_total%` (GB)
+* **GPU / VRAM:** `%gpu%` (3D engine %), `%vram%` (%), `%vram_used%`, `%vram_total%` (GB), `%vram_shared%` (%), `%vram_shared_used%`, `%vram_shared_total%` (GB)
+* **Battery:**
+  * `%battery%` - percentage; appends `⚡` while charging and `❗` at 20% or below.
+  * `%battery_time%` - remaining / charging time as `h:mm`.
+  * `%power%` - charge / discharge rate in watts (`+W` / `-W`).
+* **Volume:** `%volume%` - `🔊` / `🔇` icon that expands to the level % while adjusting, then collapses after 3 seconds.
+* **Microphone:** `%mic%` - `🎙️` while any app is recording.
 
-### 2. Taskbar Clock Customization & Live Metrics
-Configure custom text lines for **Top Line**, **Bottom Line**, **Middle Line** (Windows 10 only), and **Tooltip Extra Line** using dynamic tags.
+### Media (Spotify, Chrome, Edge, VLC, ...)
+`%media_title%`, `%media_artist%`, `%media_album%`, `%media_status%` (`⏯` / `⏸` / `⏹`), `%media_info%` (formatted and truncated).
 
-#### Date & Time Patterns
-* `%time%` — Configured time format.
-  * `%time<n>%` — Additional time format (separated by `;` in format settings, starting at `<n>=2`).
-  * `%time_tz<n>%` — Time mapped to configured time zone index `<n>`.
-* `%date%` — Configured date format.
-  * `%date<n>%` — Additional date format (starting at `<n>=2`).
-  * `%date_tz<n>%` — Date mapped to configured time zone index `<n>`.
-* `%weekday%` — Full, abbreviated, or custom comma-separated week day name.
-  * `%weekday_tz<n>%` — Weekday mapped to custom time zone index `<n>`.
-* `%weekday_num%` — Week day number based on locale's first day of week (1 to 7).
-* `%weeknum%` — Week number according to regional settings.
-* `%weeknum_iso%` — ISO 8601 week number.
-* `%dayofyear%` — Day number of the year (1–366).
-* `%timezone%` — UTC bias offset (e.g. `+06:00`).
-* `%newline%` or `%n%` — Inserts a line break.
+### Weather & web
+* `%weather%` - from [wttr.in](https://wttr.in), using your location, units and format.
+* `%web<n>%` / `%web<n>_full%` - text extracted from RSS, XML, HTML or plain web pages (item `<n>` in the web content list).
 
-#### System Hardware & Performance Metrics
-* **Network Speeds:** `%upload_speed%`, `%download_speed%`, `%total_speed%` (Dynamic KB/s or MB/s formatting).
-* **Disk Activity:** `%disk_read%`, `%disk_write%`, `%disk_total%`.
-* **Processor (CPU):** `%cpu%` (usage percentage), `%cpu_temp%` (°C), `%cpu_temp_f%` (°F).
-* **Memory (RAM):** `%ram%` (usage percentage), `%ram_used%` (GB), `%ram_total%` (GB), `%ram_committed%` (%), `%ram_committed_used%` (GB), `%ram_committed_total%` (GB).
-* **Graphics (GPU & VRAM):** `%gpu%` (3D engine usage %), `%vram%` (dedicated VRAM %), `%vram_used%` (GB), `%vram_total%` (GB), `%vram_shared%` (shared pool %), `%vram_shared_used%` (GB), `%vram_shared_total%` (GB).
-* **Power & Battery:** 
-  * `%battery%` — Battery percentage (appends `⚡` when charging on AC, adds `❗` when critical battery ≤ 20%).
-  * `%battery_time%` — Remaining runtime / charging time in `h:mm` format.
-  * `%power%` — Discharge / charge rate in watts (`+W` or `-W`).
-* **Volume Indicator:** `%volume%` — Master volume icon (`🔊` / `🔇`) that expands to show level `%` during volume adjustments and auto-hides back to icon after 3 seconds.
-* **Microphone State:** `%mic%` — Active in-use indicator (`🎙️`) when any application uses the recording device.
+## Taskbar features (Windows 11)
 
-#### Media Player Integration (GSMTC)
-Reads metadata from media apps (Spotify, Chrome, Edge, VLC, etc.):
-* `%media_title%` — Media title.
-* `%media_artist%` — Media artist.
-* `%media_album%` — Album title.
-* `%media_status%` — Playback state emoji (`⏯`, `⏸`, `⏹`).
-* `%media_info%` — Combined formatted text with truncation support (e.g., `Artist - Title`).
+### Transparency & app visibility
+* Modes: Default, Fully Transparent, Blurry Glass, Liquid Glass (Acrylic), Mica.
+* Level: 0% (opaque) to 100% (fully transparent) for the transparent, blur and acrylic modes; Mica ignores it.
+* Hide running / pinned apps while keeping Start, Search and the tray. Exceptions accept an AUMID or app name (case-insensitive, partial match).
+* Applied to the primary and secondary taskbars and reset when the mod unloads.
 
-#### Web Feeds & Weather
-* `%weather%` — Live weather status powered by [wttr.in](https://wttr.in) using custom location, units, and formatting strings.
-* `%web<n>%` / `%web<n>_full%` — Live text extracted from RSS feeds, XML, HTML, or raw web pages.
+### Size & icons
+Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon size to 32 (or any other size) for crisp icons, and adjust the taskbar height and button width to match. Small icon settings apply to newer builds with small taskbar icons.
 
----
-
-### 3. Font & Text Styling (Windows 11 22H2+)
-Independent visual styling for both Date and Time lines:
-* Hex color overrides (`#RRGGBB` / `#AARRGGBB`) or standard named colors.
-* Dynamic red warning color trigger when battery drops below 20%.
-* Font Family, Font Size, Font Weight, Font Stretch, and Font Style.
-* Text alignment (Left, Center, Right, Justified), character spacing, line height, and line spacing.
-
----
-
-### 4. Taskbar Transparency & App Visibility (Windows 11)
-* **Transparency modes:** Default, Fully Transparent, Blurry Glass, Liquid Glass (Acrylic), and Mica.
-* **Transparency level:** 0% (opaque) to 100% (fully transparent) for the alpha-based modes.
-* **Hide Running/Pinned Apps:** Hides taskbar application buttons while keeping the Start/Search/system-tray areas intact.
-* **App exceptions:** Exceptions can be entered as an AUMID or visible application name. Matching is case-insensitive and supports partial matches.
-* The transparency implementation is applied to both the primary and secondary taskbar windows and is reset when the mod unloads.
-
----
-
-### 5. Taskbar Height & Icon Size (Windows 11 new taskbar)
-Control the taskbar height and icon size. Make the taskbar icons large and
-crisp, or small and compact.
-
-By default, the Windows 11 taskbar shows taskbar icons with the 24x24 size.
-Since icons in Windows are either 16x16 or 32x32, the 24x24 icons are
-downscaled versions of the 32x32 variants, which makes them blurry. This
-feature allows changing the size of icons, so the original quality icons can
-be used, as well as any other icon size.
-
-* `Taskbar height` — The height, in pixels, of the taskbar.
-* `Icon size` — The size, in pixels, of icons on the taskbar.
-* `Taskbar button width` — The width, in pixels, of the taskbar buttons.
-* `Small icon size` / `Small taskbar button width` — Used in newer Windows 11
-  builds with support for small taskbar icons.
-
-This feature only applies to the Windows 11 new (XAML) taskbar. It is
-automatically disabled when "Customize the old taskbar on Windows 11" is
-enabled, or when running on Windows 10.
-
----
-
-### 6. Taskbar Control & Icon Styling (Windows 11)
-Customize taskbar controls and icons with granular styling rules:
-* Target specific taskbar elements by class name, element ID, or application ID (`Taskbar.TaskListButton[AutomationProperties.AutomationId=Appid: ...]`).
-* Override element properties (e.g. `Source` for custom app icons, `Width`, `Height`, `CornerRadius`, `Background`, `Margin`).
-* Support for local files and remote image URLs with offline caching and automatic retry on network reconnection.
-* Support for `:=` XAML markup syntax and the built-in `WindhawkBlur` brush.
-* Support for visual states (`Style@VisualState=Value`) and dynamic style variables (`Property=>VarName`, `{{VarName}}`).
-* Override theme resource variables with dark/light theme awareness.
+### Advanced styling
+* Target elements by class name, element ID or app ID (`Taskbar.TaskListButton[AutomationProperties.AutomationId=Appid: ...]`).
+* Override properties such as `Source` (custom app icons), `Width`, `Height`, `CornerRadius`, `Background` and `Margin`.
+* Local files and remote image URLs, with offline caching and retry on reconnect.
+* `:=` XAML markup syntax and the built-in `WindhawkBlur` brush.
+* Visual states (`Style@VisualState=Value`) and variables (`Property=>VarName`, `{{VarName}}`).
+* Theme resource overrides with dark / light awareness.
 */
 // ==/WindhawkModReadme==
 
 // ==WindhawkModSettings==
 /*
-- hideVolumeIcon: false
-  $name: Hide volume icon
-- hideNetworkIcon: false
-  $name: Hide network icon
-- hideBatteryIcon: false
-  $name: Hide battery icon
-- grayscaleBatteryIcon: false
-  $name: Grayscale battery icon
+- oldTaskbarOnWin11: false
+  $name: Customize the old taskbar on Windows 11
+- SystemTray:
+  - hideVolumeIcon: false
+    $name: Hide volume icon
+  - hideNetworkIcon: false
+    $name: Hide network icon
+  - hideBatteryIcon: false
+    $name: Hide battery icon
+  - grayscaleBatteryIcon: false
+    $name: Grayscale battery icon
+    $description: >-
+      Show the battery icon using the standard text color instead of its colored variant.
+  - hideMicrophoneIcon: false
+    $name: Hide microphone icon
+  - hideGeolocationIcon: false
+    $name: Hide location (e.g. GPS) icon
+  - hideStudioEffectsIcon: false
+    $name: Hide Studio Effects icon
+  - hideRecallIcon: false
+    $name: Hide Recall icon
+  - hideLanguageBar: false
+    $name: Hide language bar
+  - hideLanguageSupplementaryIcons: false
+    $name: Hide language supplementary icons
+  - hideBellIcon: never
+    $name: Hide bell icon
+    $options:
+    - never: Never
+    - whenInactive: When there are no new notifications
+    - whenInactiveAndNoDnd: When there are no new notifications and "Do not disturb" is off
+    - always: Always
+  - showDesktopButtonWidth: 12
+    $name: '"Show desktop" button width'
+  $name: System tray icons
   $description: >-
-    Show the battery icon using the standard text color instead of its colored variant.
-- hideMicrophoneIcon: false
-  $name: Hide microphone icon
-- hideGeolocationIcon: false
-  $name: Hide location (e.g. GPS) icon
-- hideStudioEffectsIcon: false
-  $name: Hide Studio Effects icon
-- hideRecallIcon: false
-  $name: Hide Recall icon
-- hideLanguageBar: false
-  $name: Hide language bar
-- hideLanguageSupplementaryIcons: false
-  $name: Hide language supplementary icons
-- hideBellIcon: never
-  $name: Hide bell icon
-  $options:
-  - never: Never
-  - whenInactive: When there are no new notifications
-  - whenInactiveAndNoDnd: When there are no new notifications and "Do not disturb" is off
-  - always: Always
-- showDesktopButtonWidth: 12
-  $name: '"Show desktop" button width'
-- ShowSeconds: true
-  $name: Show seconds
-- TimeFormat: >-
-    hh':'mm':'ss tt
-  $name: Time format
-- DateFormat: >-
-    ddd',' MMM dd yyyy
-  $name: Date format
-- DateLocale: ""
-  $name: Date locale
-- WeekdayFormat: dddd
-  $name: Week day format
-  $options:
-  - dddd: Full day of the week
-  - ddd: Abbreviated day of the week
-  - custom: Custom, specified below
-- WeekdayFormatCustom: Sun, Mon, Tue, Wed, Thu, Fri, Sat
-  $name: Custom week day format
-- TopLine: '%date% | %time%'
-  $name: Top line
-- BottomLine: '%web1%'
-  $name: Bottom line
-- MiddleLine: '%weekday%'
-  $name: Middle line (Windows 10 only)
-- TooltipLine: '%web1_full%'
-  $name: Tooltip extra line
-- TooltipLineMode: append
-  $name: Tooltip line mode
-  $options:
-  - append: Append to default tooltip
-  - replace: Replace default tooltip
-- Width: 180
-  $name: Clock width (Windows 10 only)
-- Height: 60
-  $name: Clock height (Windows 10 only)
-- MaxWidth: 0
-  $name: Clock max width (Windows 11 only)
-- TextSpacing: 0
-  $name: Line spacing
-- DataCollection:
-  - NetworkMetricsFormat: mbs
-    $name: Network metrics format
+    Windows 11 only.
+- ClockFormat:
+  - ShowSeconds: true
+    $name: Show seconds
+  - TimeFormat: >-
+      hh':'mm':'ss tt
+    $name: Time format
+  - DateFormat: >-
+      ddd',' MMM dd yyyy
+    $name: Date format
+  - DateLocale: ""
+    $name: Date locale
+  - WeekdayFormat: dddd
+    $name: Week day format
     $options:
-    - mbs: MB/s
-    - mbsNumberOnly: MB/s, number only
-    - mbsDynamic: MB/s or KB/s (dynamic)
-    - mbits: MBit/s
-    - mbitsNumberOnly: MBit/s, number only
-    - mbitsDynamic: MBit/s or KBit/s (dynamic)
-  - NetworkMetricsFixedDecimals: -1
-    $name: Network metrics fixed decimal places
-  - DiskMetricsFormat: sameAsNetwork
-    $name: Disk metrics format
+    - dddd: Full day of the week
+    - ddd: Abbreviated day of the week
+    - custom: Custom, specified below
+  - WeekdayFormatCustom: Sun, Mon, Tue, Wed, Thu, Fri, Sat
+    $name: Custom week day format
+  - TimeZones: ["Eastern Standard Time"]
+    $name: Time zones
+  $name: 'Clock: date, time & time zones'
+- ClockLines:
+  - TopLine: '%date% | %time%'
+    $name: Top line
+  - BottomLine: '%web1%'
+    $name: Bottom line
+  - MiddleLine: '%weekday%'
+    $name: Middle line (Windows 10 only)
+  - TooltipLine: '%web1_full%'
+    $name: Tooltip extra line
+  - TooltipLineMode: append
+    $name: Tooltip line mode
     $options:
-    - sameAsNetwork: Same as network metrics format
-    - mbs: MB/s
-    - mbsNumberOnly: MB/s, number only
-    - mbsDynamic: MB/s or KB/s (dynamic)
-    - mbits: MBit/s
-    - mbitsNumberOnly: MBit/s, number only
-    - mbitsDynamic: MBit/s or KBit/s (dynamic)
-  - DiskMetricsFixedDecimals: -1
-    $name: Disk metrics fixed decimal places
-  - PercentageFormat: spacePaddingAndSymbol
-    $name: Percentage format
-    $options:
-    - spacePaddingAndSymbol: Pad with spaces, add percentage symbol
-    - spacePadding: Pad with spaces, number only
-    - singleSpacePadding: Pad with a single space, number only (for monospaced fonts)
-    - zeroPadding: Pad with zeros, number only
-    - noPadding: No padding, number only
-  - UpdateInterval: 1
-    $name: Update interval
-  - NetworkAdapterName: ""
-    $name: Network adapter name
-  - GpuAdapterName: ""
-    $name: GPU adapter name
-  $name: System performance metrics
-- MediaPlayer:
-  - IgnoredPlayers: [""]
-    $name: Ignored media players
-  - MaxLength: 28
-    $name: Maximum info length
-  - MediaInfoFormat: "%media_artist% - %media_title%"
-    $name: Format when media is playing
-  - NoMediaText: No media
-    $name: Format when media is not playing
-  - RemoveBrackets: false
-    $name: Remove brackets from info
-  $name: Media player info
-- WebContentWeatherLocation: ""
-  $name: Weather location
-- WebContentWeatherFormat: "%c 🌡️%t 🌬️%w"
-  $name: Weather format
-- WebContentWeatherUnits: autoDetect
-  $name: Weather units
-  $options:
-  - autoDetect: Auto (default)
-  - uscs: USCS (used by default in US)
-  - metric: Metric (SI) (used by default everywhere except US)
-  - metricMsWind: Metric (SI), but show wind speed in m/s
-- WebContentsItems:
-  - - Url: https://rss.nytimes.com/services/xml/rss/nyt/World.xml
-      $name: Web content URL
-    - BlockStart: '<item>'
-      $name: Web content block start
-    - Start: '<title>'
-      $name: Web content start
-    - End: '</title>'
-      $name: Web content end
-    - ContentMode: xmlHtml
-      $name: Content mode
-      $options:
-      - "": Plain text
-      - html: HTML
-      - xml: XML
-      - xmlHtml: XML+HTML
-    - SearchReplace:
-      - - Search: ""
-        - Replace: ""
-      $name: Content search/replace
-    - MaxLength: 28
-      $name: Web content maximum length
-  $name: Web content items
-- WebContentsUpdateInterval: 10
-  $name: Web content update interval
-- TimeZones: ["Eastern Standard Time"]
-  $name: Time zones
+    - append: Append to default tooltip
+    - replace: Replace default tooltip
+  $name: 'Clock: text lines & tooltip'
+  $description: >-
+    Tags such as %date%, %time%, %cpu% are listed in the mod description.
+- ClockLayout:
+  - Width: 180
+    $name: Clock width (Windows 10 only)
+  - Height: 60
+    $name: Clock height (Windows 10 only)
+  - MaxWidth: 0
+    $name: Clock max width (Windows 11 only)
+  - TextSpacing: 0
+    $name: Line spacing
+  $name: 'Clock: size & spacing'
 - TimeStyle:
   - Hidden: false
   - TextColor: ""
@@ -389,7 +248,9 @@ Customize taskbar controls and icons with granular styling rules:
     $name: Character spacing
   - LineHeight: 0
     $name: Line height
-  $name: Top line style (Windows 11 version 22H2 and newer)
+  $name: 'Clock: top line style'
+  $description: >-
+    Windows 11 version 22H2 and newer.
 - DateStyle:
   - Hidden: false
   - TextColor: ""
@@ -446,86 +307,181 @@ Customize taskbar controls and icons with granular styling rules:
     $name: Character spacing
   - LineHeight: 0
     $name: Line height
-  $name: Bottom line style (Windows 11 version 22H2 and newer)
-- oldTaskbarOnWin11: false
-  $name: Customize the old taskbar on Windows 11
-- TransparencyMode: default
-  $name: Transparency Mode
-  $options:
-  - default: Default
-  - transparent: Fully Transparent
-  - blur: Blurry Glass
-  - acrylic: Liquid Glass (Acrylic)
-  - mica: Mica
-- TransparencyAlpha: 100
-  $name: Transparency Level (0-100%)
+  $name: 'Clock: bottom line style'
   $description: >-
-    0% = opaque, 100% = fully transparent. Applies to transparent, blur and
-    acrylic modes. Mica uses the Windows material and ignores this value.
-- HideTaskbarApps: false
-  $name: Hide Running/Pinned Apps
-- AppExceptions: [""]
-  $name: App Exceptions (AUMID or App Name)
-- TaskbarHeight: 52
-  $name: Taskbar height
+    Windows 11 version 22H2 and newer.
+- DataCollection:
+  - NetworkMetricsFormat: mbs
+    $name: Network metrics format
+    $options:
+    - mbs: MB/s
+    - mbsNumberOnly: MB/s, number only
+    - mbsDynamic: MB/s or KB/s (dynamic)
+    - mbits: MBit/s
+    - mbitsNumberOnly: MBit/s, number only
+    - mbitsDynamic: MBit/s or KBit/s (dynamic)
+  - NetworkMetricsFixedDecimals: -1
+    $name: Network metrics fixed decimal places
+  - DiskMetricsFormat: sameAsNetwork
+    $name: Disk metrics format
+    $options:
+    - sameAsNetwork: Same as network metrics format
+    - mbs: MB/s
+    - mbsNumberOnly: MB/s, number only
+    - mbsDynamic: MB/s or KB/s (dynamic)
+    - mbits: MBit/s
+    - mbitsNumberOnly: MBit/s, number only
+    - mbitsDynamic: MBit/s or KBit/s (dynamic)
+  - DiskMetricsFixedDecimals: -1
+    $name: Disk metrics fixed decimal places
+  - PercentageFormat: spacePaddingAndSymbol
+    $name: Percentage format
+    $options:
+    - spacePaddingAndSymbol: Pad with spaces, add percentage symbol
+    - spacePadding: Pad with spaces, number only
+    - singleSpacePadding: Pad with a single space, number only (for monospaced fonts)
+    - zeroPadding: Pad with zeros, number only
+    - noPadding: No padding, number only
+  - UpdateInterval: 1
+    $name: Update interval
+  - NetworkAdapterName: ""
+    $name: Network adapter name
+  - GpuAdapterName: ""
+    $name: GPU adapter name
+  $name: Live metrics (CPU, RAM, GPU, network, disk)
+- MediaPlayer:
+  - IgnoredPlayers: [""]
+    $name: Ignored media players
+  - MaxLength: 28
+    $name: Maximum info length
+  - MediaInfoFormat: "%media_artist% - %media_title%"
+    $name: Format when media is playing
+  - NoMediaText: No media
+    $name: Format when media is not playing
+  - RemoveBrackets: false
+    $name: Remove brackets from info
+  $name: Media player info
+- WebContent:
+  - WeatherLocation: ""
+    $name: Weather location
+  - WeatherFormat: "%c 🌡️%t 🌬️%w"
+    $name: Weather format
+  - WeatherUnits: autoDetect
+    $name: Weather units
+    $options:
+    - autoDetect: Auto (default)
+    - uscs: USCS (used by default in US)
+    - metric: Metric (SI) (used by default everywhere except US)
+    - metricMsWind: Metric (SI), but show wind speed in m/s
+  - Items:
+    - - Url: https://rss.nytimes.com/services/xml/rss/nyt/World.xml
+        $name: URL
+      - BlockStart: '<item>'
+        $name: Block start
+      - Start: '<title>'
+        $name: Start
+      - End: '</title>'
+        $name: End
+      - ContentMode: xmlHtml
+        $name: Content mode
+        $options:
+        - "": Plain text
+        - html: HTML
+        - xml: XML
+        - xmlHtml: XML+HTML
+      - SearchReplace:
+        - - Search: ""
+          - Replace: ""
+        $name: Content search/replace
+      - MaxLength: 28
+        $name: Maximum length
+    $name: Web content items (used as %web1%, %web2%, ...)
+  - UpdateInterval: 10
+    $name: Update interval (minutes)
+  $name: Weather & web content
+- TaskbarAppearance:
+  - TransparencyMode: default
+    $name: Transparency mode
+    $options:
+    - default: Default
+    - transparent: Fully Transparent
+    - blur: Blurry Glass
+    - acrylic: Liquid Glass (Acrylic)
+    - mica: Mica
+  - TransparencyAlpha: 100
+    $name: Transparency level (0-100%)
+    $description: >-
+      0% = opaque, 100% = fully transparent. Applies to transparent, blur and
+      acrylic modes. Mica uses the Windows material and ignores this value.
+  - HideTaskbarApps: false
+    $name: Hide running / pinned apps
+  - AppExceptions: [""]
+    $name: App exceptions (AUMID or app name)
+  $name: Taskbar transparency & app visibility
   $description: >-
-    The height, in pixels, of the taskbar (Windows 11 default: 48)
-- IconSize: 32
-  $name: Icon size
+    Windows 11 only.
+- TaskbarSize:
+  - TaskbarHeight: 52
+    $name: Taskbar height
+    $description: >-
+      Height in pixels (Windows 11 default: 48)
+  - IconSize: 32
+    $name: Icon size
+    $description: >-
+      Icon size in pixels (Windows 11 default: 24)
+  - TaskbarButtonWidth: 44
+    $name: Taskbar button width
+    $description: >-
+      Button width in pixels (Windows 11 default: 44)
+  - IconSizeSmall: 16
+    $name: Small icon size
+    $description: >-
+      Small icon size in pixels (Windows 11 default: 16). Only used by newer Windows 11 builds with small taskbar icons (around July 2025).
+  - TaskbarButtonWidthSmall: 32
+    $name: Small taskbar button width
+    $description: >-
+      Small button width in pixels (Windows 11 default: 32). Same builds as above.
+  $name: Taskbar size & icons
   $description: >-
-    The size, in pixels, of icons on the taskbar (Windows 11 default: 24)
-- TaskbarButtonWidth: 44
-  $name: Taskbar button width
-  $description: >-
-    The width, in pixels, of the taskbar buttons (Windows 11 default: 44)
-- IconSizeSmall: 16
-  $name: Small icon size
-  $description: >-
-    The size, in pixels, of small icons on the taskbar (Windows 11 default: 16)
+    Windows 11 new taskbar only. Ignored when customizing the old taskbar, and on Windows 10.
+- Styling:
+  - styleConstants: [""]
+    $name: Style constants
+    $description: >-
+      Style constants allow defining a value once and referencing it in multiple
+      styles with $name. For technical details, refer to the mod description.
+  - controlStyles:
+    - - target: ""
+        $name: Target
+      - styles: [""]
+        $name: Styles
+    $name: Control styles
+    $description: >-
+      Customize taskbar controls and icons. Specify target control elements
+      and styles to apply.
+  - themeResourceVariables: [""]
+    $name: Resource variables
+    $description: >-
+      Use "Key=Value" to override an existing resource with a new value.
 
-    Used in newer Windows 11 builds with support for small taskbar icons (around
-    July 2025)
-- TaskbarButtonWidthSmall: 32
-  $name: Small taskbar button width
-  $description: >-
-    The width, in pixels, of the small taskbar buttons (Windows 11 default: 32)
+      Use "Key@Dark=Value" or "Key@Light=Value" to define theme-aware resources
+      that can be referenced with {ThemeResource Key} in styles.
 
-    Used in newer Windows 11 builds with support for small taskbar icons (around
-    July 2025)
-- styleConstants: [""]
-  $name: Style constants
+      The ":=" syntax can be used to set a XAML value.
+  - xamlDiagnosticsHandling: alert
+    $name: XAML diagnostics consumer handling
+    $description: >-
+      How to handle other programs that try to use XAML diagnostics. There can
+      only be one consumer at a time. Block will prevent other programs from using
+      it, which might break them. Allow will let them use it, which might break
+      this mod.
+    $options:
+    - alert: Alert (prompt before blocking)
+    - block: Block other consumers
+    - allow: Allow other consumers
+  $name: Advanced styling (XAML)
   $description: >-
-    Style constants allow defining a value once and referencing it in multiple
-    styles with $name. For technical details, refer to the mod description.
-- controlStyles:
-  - - target: ""
-      $name: Target
-    - styles: [""]
-      $name: Styles
-  $name: Control styles
-  $description: >-
-    Customize taskbar controls and icons. Specify target control elements
-    and styles to apply.
-- themeResourceVariables: [""]
-  $name: Resource variables
-  $description: >-
-    Use "Key=Value" to override an existing resource with a new value.
-
-    Use "Key@Dark=Value" or "Key@Light=Value" to define theme-aware resources
-    that can be referenced with {ThemeResource Key} in styles.
-
-    The ":=" syntax can be used to set a XAML value.
-- xamlDiagnosticsHandling: alert
-  $name: XAML diagnostics consumer handling
-  $description: >-
-    How to handle other programs that try to use XAML diagnostics. There can
-    only be one consumer at a time. Block will prevent other programs from using
-    it, which might break them. Allow will let them use it, which might break
-    this mod.
-  $options:
-  - alert: Alert (prompt before blocking)
-  - block: Block other consumers
-  - allow: Allow other consumers
+    Windows 11 new taskbar only. See the mod description for syntax.
 */
 // ==/WindhawkModSettings==
 
@@ -625,9 +581,7 @@ namespace wux = winrt::Windows::UI::Xaml;
 #define URL_ESCAPE_ASCII_URI_COMPONENT 0x00080000
 #endif
 
-// ==========================================
-// COMMON ENUMS & SETTINGS STRUCTS
-// ==========================================
+// ----- COMMON ENUMS & SETTINGS STRUCTS -----
 
 enum class HideBellIcon {
     never,
@@ -762,13 +716,6 @@ struct Settings {
     int transparencyAlpha;
     bool hideTaskbarApps;
     std::vector<std::wstring> appExceptions;
-
-    // Compatibility
-    StringSetting webContentsUrl;
-    StringSetting webContentsBlockStart;
-    StringSetting webContentsStart;
-    StringSetting webContentsEnd;
-    int webContentsMaxLength;
 } g_settings;
 
 enum class XamlDiagnosticsHandling {
@@ -798,9 +745,7 @@ std::atomic<bool> g_unloading{false};
 std::atomic<bool> g_initialized{false};
 std::atomic<bool> g_explorerPatcherInitialized{false};
 
-// ==========================================
-// GENERAL SHARED HELPERS
-// ==========================================
+// ----- GENERAL SHARED HELPERS -----
 
 HWND FindCurrentProcessTaskbarWnd() {
     HWND hTaskbarWnd = nullptr;
@@ -1008,9 +953,7 @@ std::optional<bool> IsOsFeatureEnabled(UINT32 featureId) {
     return std::nullopt;
 }
 
-// ==========================================
-// TRAY TWEAKS LOGIC
-// ==========================================
+// ----- TRAY TWEAKS LOGIC -----
 
 using FrameworkElementLoadedEventRevoker = winrt::impl::event_revoker<
     IFrameworkElement,
@@ -1585,9 +1528,7 @@ bool HookTaskbarDllSymbols() {
     return HookSymbols(module, hooks, ARRAYSIZE(hooks));
 }
 
-// ==========================================
-// CLOCK & MONITORING LOGIC
-// ==========================================
+// ----- CLOCK & MONITORING LOGIC -----
 
 bool g_formattingInitialized;
 DWORD g_formatIndex;
@@ -1889,25 +1830,6 @@ void UpdateWebContent() {
     int failed = 0;
     std::wstring lastUrl;
     std::optional<std::wstring> urlContent;
-
-    if (g_settings.webContentsUrl && g_settings.webContentsBlockStart &&
-        g_settings.webContentsStart && g_settings.webContentsEnd) {
-        lastUrl = g_settings.webContentsUrl;
-        urlContent = GetUrlContent(g_settings.webContentsUrl, false);
-        if (urlContent) {
-            std::wstring extracted = ExtractWebContent(*urlContent, g_settings.webContentsBlockStart,
-                                                       g_settings.webContentsStart, g_settings.webContentsEnd);
-            std::lock_guard<std::mutex> guard(g_webContentMutex);
-            int maxLen = ARRAYSIZE(g_webContent) - 1;
-            if (g_settings.webContentsMaxLength > 0 && g_settings.webContentsMaxLength < maxLen) {
-                maxLen = g_settings.webContentsMaxLength;
-            }
-            StringCopyTruncatedWithEllipsis(g_webContent, maxLen + 1, extracted.c_str());
-            StringCopyTruncatedWithEllipsis(g_webContentFull, ARRAYSIZE(g_webContentFull), extracted.c_str());
-        } else {
-            failed++;
-        }
-    }
 
     for (size_t i = 0; i < g_settings.webContentsItems.size(); i++) {
         WCHAR p1[32], p2[32];
@@ -2293,9 +2215,7 @@ PCWSTR GetTimezoneFormatted() {
     return g_timezoneFormatted.buffer;
 }
 
-// ------------------------------------------
-// PERFORMANCE DATA COLLECTION
-// ------------------------------------------
+// ----- PERFORMANCE DATA COLLECTION -----
 
 constexpr double kGBInBytes = 1024.0 * 1024.0 * 1024.0;
 enum class MetricType {
@@ -2597,9 +2517,7 @@ std::vector<std::wstring> QueryDataCollectionSession::FilterGpuPathsByAdapterNam
 std::optional<QueryDataCollectionSession> g_dataCollectionSession;
 DWORD g_dataCollectionLastFormatIndex;
 
-// ------------------------------------------
-// MEDIA PLAYER INTEGRATION
-// ------------------------------------------
+// ----- MEDIA PLAYER INTEGRATION -----
 
 bool IsMediaPlayerIgnored(const winrt::hstring& appId) {
     std::wstring lower(appId);
@@ -3444,9 +3362,7 @@ int FormatLine(PWSTR buffer, size_t bufferSize, std::wstring_view format) {
     return FormatLineNoLock(buffer, bufferSize, format);
 }
 
-// ------------------------------------------
-// TASKBAR XAML & CLOCK HOOKS
-// ------------------------------------------
+// ----- TASKBAR XAML & CLOCK HOOKS -----
 
 DWORD g_refreshIconThreadId;
 bool g_refreshIconNeedToAdjustTimer;
@@ -3801,9 +3717,7 @@ LRESULT WINAPI SendMessageW_Hook(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
     return ret;
 }
 
-// ------------------------------------------
-// WIN10 & EXPLORER PATCHER HOOKS
-// ------------------------------------------
+// ----- WIN10 & EXPLORER PATCHER HOOKS -----
 
 DWORD g_updateTextStringThreadId;
 int g_getDateFormatExCounter;
@@ -3992,9 +3906,7 @@ bool HookWin10TaskbarSymbols() {
     return HookSymbols(GetModuleHandle(nullptr), hooks, ARRAYSIZE(hooks));
 }
 
-// ------------------------------------------
-// UNIFIED SYMBOL HOOKING
-// ------------------------------------------
+// ----- UNIFIED SYMBOL HOOKING -----
 
 bool HookUnifiedSystemTraySymbols(HMODULE module) {
     WindhawkUtils::SYMBOL_HOOK hooks[] = {
@@ -4043,9 +3955,7 @@ void HandleLoadedModuleIfSystemTray(HMODULE module, LPCWSTR lpLibFileName) {
     }
 }
 
-// ------------------------------------------
-// SETTINGS APPLICATION
-// ------------------------------------------
+// ----- SETTINGS APPLICATION -----
 
 NetworkMetricsFormat ParseNetworkMetricsFormat(PCWSTR value) {
     if (wcscmp(value, L"mbsNumberOnly") == 0) return NetworkMetricsFormat::mbsNumberOnly;
@@ -4058,55 +3968,55 @@ NetworkMetricsFormat ParseNetworkMetricsFormat(PCWSTR value) {
 
 void LoadSettings() {
     // Tray settings
-    g_settings.hideVolumeIcon = Wh_GetIntSetting(L"hideVolumeIcon");
-    g_settings.hideNetworkIcon = Wh_GetIntSetting(L"hideNetworkIcon");
-    g_settings.hideBatteryIcon = Wh_GetIntSetting(L"hideBatteryIcon");
-    g_settings.grayscaleBatteryIcon = Wh_GetIntSetting(L"grayscaleBatteryIcon");
-    g_settings.hideMicrophoneIcon = Wh_GetIntSetting(L"hideMicrophoneIcon");
-    g_settings.hideGeolocationIcon = Wh_GetIntSetting(L"hideGeolocationIcon");
-    g_settings.hideStudioEffectsIcon = Wh_GetIntSetting(L"hideStudioEffectsIcon");
-    g_settings.hideRecallIcon = Wh_GetIntSetting(L"hideRecallIcon");
-    g_settings.hideLanguageBar = Wh_GetIntSetting(L"hideLanguageBar");
-    g_settings.hideLanguageSupplementaryIcons = Wh_GetIntSetting(L"hideLanguageSupplementaryIcons");
+    g_settings.hideVolumeIcon = Wh_GetIntSetting(L"SystemTray.hideVolumeIcon");
+    g_settings.hideNetworkIcon = Wh_GetIntSetting(L"SystemTray.hideNetworkIcon");
+    g_settings.hideBatteryIcon = Wh_GetIntSetting(L"SystemTray.hideBatteryIcon");
+    g_settings.grayscaleBatteryIcon = Wh_GetIntSetting(L"SystemTray.grayscaleBatteryIcon");
+    g_settings.hideMicrophoneIcon = Wh_GetIntSetting(L"SystemTray.hideMicrophoneIcon");
+    g_settings.hideGeolocationIcon = Wh_GetIntSetting(L"SystemTray.hideGeolocationIcon");
+    g_settings.hideStudioEffectsIcon = Wh_GetIntSetting(L"SystemTray.hideStudioEffectsIcon");
+    g_settings.hideRecallIcon = Wh_GetIntSetting(L"SystemTray.hideRecallIcon");
+    g_settings.hideLanguageBar = Wh_GetIntSetting(L"SystemTray.hideLanguageBar");
+    g_settings.hideLanguageSupplementaryIcons = Wh_GetIntSetting(L"SystemTray.hideLanguageSupplementaryIcons");
 
-    PCWSTR hideBell = Wh_GetStringSetting(L"hideBellIcon");
+    PCWSTR hideBell = Wh_GetStringSetting(L"SystemTray.hideBellIcon");
     g_settings.hideBellIcon = HideBellIcon::never;
     if (wcscmp(hideBell, L"whenInactive") == 0) g_settings.hideBellIcon = HideBellIcon::whenInactive;
     else if (wcscmp(hideBell, L"whenInactiveAndNoDnd") == 0) g_settings.hideBellIcon = HideBellIcon::whenInactiveAndNoDnd;
     else if (wcscmp(hideBell, L"always") == 0) g_settings.hideBellIcon = HideBellIcon::always;
     Wh_FreeStringSetting(hideBell);
 
-    g_settings.showDesktopButtonWidth = Wh_GetIntSetting(L"showDesktopButtonWidth");
+    g_settings.showDesktopButtonWidth = Wh_GetIntSetting(L"SystemTray.showDesktopButtonWidth");
 
     // Clock settings
-    g_settings.showSeconds = Wh_GetIntSetting(L"ShowSeconds");
-    g_settings.timeFormat = StringSetting::make(L"TimeFormat");
-    g_settings.dateFormat = StringSetting::make(L"DateFormat");
-    g_settings.dateLocale = StringSetting::make(L"DateLocale");
-    g_settings.weekdayFormat = StringSetting::make(L"WeekdayFormat");
+    g_settings.showSeconds = Wh_GetIntSetting(L"ClockFormat.ShowSeconds");
+    g_settings.timeFormat = StringSetting::make(L"ClockFormat.TimeFormat");
+    g_settings.dateFormat = StringSetting::make(L"ClockFormat.DateFormat");
+    g_settings.dateLocale = StringSetting::make(L"ClockFormat.DateLocale");
+    g_settings.weekdayFormat = StringSetting::make(L"ClockFormat.WeekdayFormat");
 
     g_settings.weekdayFormatCustom.clear();
     if (wcscmp(g_settings.weekdayFormat, L"custom") == 0) {
-        StringSetting custom = StringSetting::make(L"WeekdayFormatCustom");
+        StringSetting custom = StringSetting::make(L"ClockFormat.WeekdayFormatCustom");
         for (const auto name : SplitStringView(custom.get(), L",")) {
             g_settings.weekdayFormatCustom.emplace_back(TrimStringView(name));
         }
         g_settings.weekdayFormatCustom.resize(7);
     }
 
-    g_settings.topLine = StringSetting::make(L"TopLine");
-    g_settings.bottomLine = StringSetting::make(L"BottomLine");
-    g_settings.middleLine = StringSetting::make(L"MiddleLine");
-    g_settings.tooltipLine = StringSetting::make(L"TooltipLine");
+    g_settings.topLine = StringSetting::make(L"ClockLines.TopLine");
+    g_settings.bottomLine = StringSetting::make(L"ClockLines.BottomLine");
+    g_settings.middleLine = StringSetting::make(L"ClockLines.MiddleLine");
+    g_settings.tooltipLine = StringSetting::make(L"ClockLines.TooltipLine");
 
     g_settings.tooltipLineMode = TooltipLineMode::append;
-    StringSetting tlm = StringSetting::make(L"TooltipLineMode");
+    StringSetting tlm = StringSetting::make(L"ClockLines.TooltipLineMode");
     if (wcscmp(tlm, L"replace") == 0) g_settings.tooltipLineMode = TooltipLineMode::replace;
 
-    g_settings.width = Wh_GetIntSetting(L"Width");
-    g_settings.height = Wh_GetIntSetting(L"Height");
-    g_settings.maxWidth = Wh_GetIntSetting(L"MaxWidth");
-    g_settings.textSpacing = Wh_GetIntSetting(L"TextSpacing");
+    g_settings.width = Wh_GetIntSetting(L"ClockLayout.Width");
+    g_settings.height = Wh_GetIntSetting(L"ClockLayout.Height");
+    g_settings.maxWidth = Wh_GetIntSetting(L"ClockLayout.MaxWidth");
+    g_settings.textSpacing = Wh_GetIntSetting(L"ClockLayout.TextSpacing");
 
     g_settings.dataCollection.networkMetricsFormat = ParseNetworkMetricsFormat(StringSetting::make(L"DataCollection.NetworkMetricsFormat"));
     g_settings.dataCollection.networkMetricsFixedDecimals = Wh_GetIntSetting(L"DataCollection.NetworkMetricsFixedDecimals");
@@ -4142,10 +4052,10 @@ void LoadSettings() {
         g_settings.mediaPlayer.ignoredPlayers.push_back(std::move(player));
     }
 
-    g_settings.webContentWeatherLocation = StringSetting::make(L"WebContentWeatherLocation");
-    g_settings.webContentWeatherFormat = StringSetting::make(L"WebContentWeatherFormat");
+    g_settings.webContentWeatherLocation = StringSetting::make(L"WebContent.WeatherLocation");
+    g_settings.webContentWeatherFormat = StringSetting::make(L"WebContent.WeatherFormat");
     g_settings.webContentWeatherUnits = WebContentWeatherUnits::autoDetect;
-    StringSetting wu = StringSetting::make(L"WebContentWeatherUnits");
+    StringSetting wu = StringSetting::make(L"WebContent.WeatherUnits");
     if (wcscmp(wu, L"uscs") == 0) g_settings.webContentWeatherUnits = WebContentWeatherUnits::uscs;
     else if (wcscmp(wu, L"metric") == 0) g_settings.webContentWeatherUnits = WebContentWeatherUnits::metric;
     else if (wcscmp(wu, L"metricMsWind") == 0) g_settings.webContentWeatherUnits = WebContentWeatherUnits::metricMsWind;
@@ -4153,27 +4063,27 @@ void LoadSettings() {
     g_settings.webContentsItems.clear();
     for (int i = 0;; i++) {
         WebContentsSettings itm;
-        itm.url = StringSetting::make(L"WebContentsItems[%d].Url", i);
+        itm.url = StringSetting::make(L"WebContent.Items[%d].Url", i);
         if (*itm.url == '\0') break;
-        itm.blockStart = StringSetting::make(L"WebContentsItems[%d].BlockStart", i);
-        itm.start = StringSetting::make(L"WebContentsItems[%d].Start", i);
-        itm.end = StringSetting::make(L"WebContentsItems[%d].End", i);
+        itm.blockStart = StringSetting::make(L"WebContent.Items[%d].BlockStart", i);
+        itm.start = StringSetting::make(L"WebContent.Items[%d].Start", i);
+        itm.end = StringSetting::make(L"WebContent.Items[%d].End", i);
         itm.contentMode = ContentMode::plainText;
-        StringSetting cm = StringSetting::make(L"WebContentsItems[%d].ContentMode", i);
+        StringSetting cm = StringSetting::make(L"WebContent.Items[%d].ContentMode", i);
         if (wcscmp(cm, L"xml") == 0) itm.contentMode = ContentMode::xml;
         else if (wcscmp(cm, L"html") == 0) itm.contentMode = ContentMode::html;
         else if (wcscmp(cm, L"xmlHtml") == 0) itm.contentMode = ContentMode::xmlHtml;
 
         for (int j = 0;; j++) {
-            StringSetting s = StringSetting::make(L"WebContentsItems[%d].SearchReplace[%d].Search", i, j);
+            StringSetting s = StringSetting::make(L"WebContent.Items[%d].SearchReplace[%d].Search", i, j);
             if (*s == '\0') break;
-            StringSetting r = StringSetting::make(L"WebContentsItems[%d].SearchReplace[%d].Replace", i, j);
+            StringSetting r = StringSetting::make(L"WebContent.Items[%d].SearchReplace[%d].Replace", i, j);
             try { itm.searchReplace.push_back({std::wregex(s), std::wstring(r)}); } catch (...) {}
         }
-        itm.maxLength = Wh_GetIntSetting(L"WebContentsItems[%d].MaxLength", i);
+        itm.maxLength = Wh_GetIntSetting(L"WebContent.Items[%d].MaxLength", i);
         g_settings.webContentsItems.push_back(std::move(itm));
     }
-    g_settings.webContentsUpdateInterval = Wh_GetIntSetting(L"WebContentsUpdateInterval");
+    g_settings.webContentsUpdateInterval = Wh_GetIntSetting(L"WebContent.UpdateInterval");
 
     g_timeZoneInformation.clear();
     g_timeFormattedTz.clear();
@@ -4181,7 +4091,7 @@ void LoadSettings() {
     g_weekdayFormattedTz.clear();
     g_settings.timeZones.clear();
     for (int i = 0;; i++) {
-        StringSetting tz = StringSetting::make(L"TimeZones[%d]", i);
+        StringSetting tz = StringSetting::make(L"ClockFormat.TimeZones[%d]", i);
         if (*tz == '\0') break;
         g_timeZoneInformation.emplace_back(GetTimeZoneInformation(tz));
         g_timeFormattedTz.emplace_back();
@@ -4228,23 +4138,15 @@ void LoadSettings() {
     g_settings.oldTaskbarOnWin11 = Wh_GetIntSetting(L"oldTaskbarOnWin11");
 
     // Transparency and App Hiding Settings
-    g_settings.transparencyMode = StringSetting::make(L"TransparencyMode");
-    g_settings.transparencyAlpha = Wh_GetIntSetting(L"TransparencyAlpha");
-    g_settings.hideTaskbarApps = Wh_GetIntSetting(L"HideTaskbarApps");
+    g_settings.transparencyMode = StringSetting::make(L"TaskbarAppearance.TransparencyMode");
+    g_settings.transparencyAlpha = Wh_GetIntSetting(L"TaskbarAppearance.TransparencyAlpha");
+    g_settings.hideTaskbarApps = Wh_GetIntSetting(L"TaskbarAppearance.HideTaskbarApps");
     
     g_settings.appExceptions.clear();
     for (int i = 0;; i++) {
-        StringSetting exception = StringSetting::make(L"AppExceptions[%d]", i);
+        StringSetting exception = StringSetting::make(L"TaskbarAppearance.AppExceptions[%d]", i);
         if (*exception == L'\0') break;
         g_settings.appExceptions.push_back(std::wstring(exception.get()));
-    }
-
-    if (IsStrInDateTimePatternSettings(L"%web%") || IsStrInDateTimePatternSettings(L"%web_full%")) {
-        g_settings.webContentsUrl = StringSetting::make(L"WebContentsUrl");
-        g_settings.webContentsBlockStart = StringSetting::make(L"WebContentsBlockStart");
-        g_settings.webContentsStart = StringSetting::make(L"WebContentsStart");
-        g_settings.webContentsEnd = StringSetting::make(L"WebContentsEnd");
-        g_settings.webContentsMaxLength = Wh_GetIntSetting(L"WebContentsMaxLength");
     }
 }
 
@@ -4356,9 +4258,7 @@ void ApplySettings() {
     }
 }
 
-// ------------------------------------------
-// TASKBAR TRANSPARENCY & APP VISIBILITY
-// ------------------------------------------
+// ----- TASKBAR TRANSPARENCY & APP VISIBILITY -----
 
 enum ACCENT_STATE {
     ACCENT_DISABLED = 0,
@@ -4783,9 +4683,7 @@ void ApplyTaskbarAppVisibility(XamlRoot xamlRoot) {
     });
 }
 
-// ------------------------------------------
-// TASKBAR ICON SIZE HELPERS
-// ------------------------------------------
+// ----- TASKBAR ICON SIZE HELPERS -----
 
 struct {
     int taskbarHeight;
@@ -6532,12 +6430,12 @@ LRESULT WINAPI SendMessageTimeoutW_Hook(HWND hWnd,
 }
 
 void LoadIconSizeSettings() {
-    g_iconSizeSettings.taskbarHeight = Wh_GetIntSetting(L"TaskbarHeight");
-    g_iconSizeSettings.iconSize = Wh_GetIntSetting(L"IconSize");
-    g_iconSizeSettings.taskbarButtonWidth = Wh_GetIntSetting(L"TaskbarButtonWidth");
-    g_iconSizeSettings.iconSizeSmall = Wh_GetIntSetting(L"IconSizeSmall");
+    g_iconSizeSettings.taskbarHeight = Wh_GetIntSetting(L"TaskbarSize.TaskbarHeight");
+    g_iconSizeSettings.iconSize = Wh_GetIntSetting(L"TaskbarSize.IconSize");
+    g_iconSizeSettings.taskbarButtonWidth = Wh_GetIntSetting(L"TaskbarSize.TaskbarButtonWidth");
+    g_iconSizeSettings.iconSizeSmall = Wh_GetIntSetting(L"TaskbarSize.IconSizeSmall");
     g_iconSizeSettings.taskbarButtonWidthSmall =
-        Wh_GetIntSetting(L"TaskbarButtonWidthSmall");
+        Wh_GetIntSetting(L"TaskbarSize.TaskbarButtonWidthSmall");
 }
 
 bool ProtectAndMemcpy(DWORD protect, void* dst, const void* src, size_t size) {
@@ -7252,13 +7150,11 @@ void IconSize_ModSettingsChanged() {
     ApplySettingsIconSize(g_iconSizeSettings.taskbarHeight);
 }
 
-// ==========================================
-// TASKBAR CONTROL & ICON STYLING ENGINE
-// ==========================================
+// ----- TASKBAR CONTROL & ICON STYLING ENGINE -----
 
 void LoadStylerSettings() {
     PCWSTR xamlDiagnosticsHandling =
-        Wh_GetStringSetting(L"xamlDiagnosticsHandling");
+        Wh_GetStringSetting(L"Styling.xamlDiagnosticsHandling");
     g_stylerSettings.xamlDiagnosticsHandling = XamlDiagnosticsHandling::kAlert;
     if (wcscmp(xamlDiagnosticsHandling, L"block") == 0) {
         g_stylerSettings.xamlDiagnosticsHandling = XamlDiagnosticsHandling::kBlock;
@@ -8512,9 +8408,7 @@ void XamlBlurBrush::RefreshBrush() {
     }
 }
 
-// ------------------------------------------
-// REMOTE IMAGE CACHING & DOWNLOAD ENGINE
-// ------------------------------------------
+// ----- REMOTE IMAGE CACHING & DOWNLOAD ENGINE -----
 
 struct TrackedImage {
     winrt::weak_ref<DependencyObject> target;
@@ -9256,9 +9150,7 @@ void TrackIfRemoteImageSource(DependencyObject const& target,
     SetupImageTracking(target, sourceProperty, bitmapImage, uri);
 }
 
-// ------------------------------------------
-// ELEMENT MATCHING, STYLE PARSING & RULES
-// ------------------------------------------
+// ----- ELEMENT MATCHING, STYLE PARSING & RULES -----
 
 struct ElementIdEntry {
     ElementId id = ElementId::None;
@@ -11430,7 +11322,7 @@ StyleConstants LoadStyleConstants() {
     };
 
     for (int i = 0;; i++) {
-        PCWSTR constantSetting = Wh_GetStringSetting(L"styleConstants[%d]", i);
+        PCWSTR constantSetting = Wh_GetStringSetting(L"Styling.styleConstants[%d]", i);
         if (!*constantSetting) {
             Wh_FreeStringSetting(constantSetting);
             break;
@@ -11591,7 +11483,7 @@ std::vector<ResourceVariableEntry> ProcessResourceVariablesFromSettings(const St
     std::vector<ResourceVariableEntry> resourceVariables;
 
     for (int i = 0;; i++) {
-        PCWSTR setting = Wh_GetStringSetting(L"themeResourceVariables[%d]", i);
+        PCWSTR setting = Wh_GetStringSetting(L"Styling.themeResourceVariables[%d]", i);
         if (!*setting) {
             Wh_FreeStringSetting(setting);
             break;
@@ -12078,7 +11970,7 @@ void AddElementCustomizationRules(std::wstring_view target, const std::vector<st
 }
 
 bool ProcessSingleTargetStylesFromSettings(int index, const StyleConstants& styleConstants) {
-    PCWSTR targetStringSetting = Wh_GetStringSetting(L"controlStyles[%d].target", index);
+    PCWSTR targetStringSetting = Wh_GetStringSetting(L"Styling.controlStyles[%d].target", index);
     if (!*targetStringSetting) {
         Wh_FreeStringSetting(targetStringSetting);
         return false;
@@ -12091,7 +11983,7 @@ bool ProcessSingleTargetStylesFromSettings(int index, const StyleConstants& styl
 
     std::vector<std::wstring> styles;
     for (int styleIndex = 0;; styleIndex++) {
-        PCWSTR styleSetting = Wh_GetStringSetting(L"controlStyles[%d].styles[%d]", index, styleIndex);
+        PCWSTR styleSetting = Wh_GetStringSetting(L"Styling.controlStyles[%d].styles[%d]", index, styleIndex);
         if (!*styleSetting) {
             Wh_FreeStringSetting(styleSetting);
             break;
@@ -12358,9 +12250,7 @@ HWND GetTaskbarUiWnd() {
     return FindWindowEx(hTaskbarWnd, nullptr, L"Windows.UI.Composition.DesktopWindowContentBridge", nullptr);
 }
 
-// ------------------------------------------
-// MODULE LIFECYCLE
-// ------------------------------------------
+// ----- MODULE LIFECYCLE -----
 
 using LoadLibraryExW_t = decltype(&LoadLibraryExW);
 LoadLibraryExW_t LoadLibraryExW_Original;
