@@ -2,6 +2,23 @@
 
 All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this file.
 
+## [1.4.0] - 2026-10-07
+
+### Changed
+- Settings are now grouped by category. Each category collapses in the Windhawk settings window, so it's clear which part of the taskbar you're changing.
+- Version and platform notes (Windows 11 only, new taskbar only, 22H2+) are now shown once per category instead of on individual settings.
+- Shorter setting labels and descriptions, for example "Web content URL" is now "URL" inside the web content group.
+- Condensed the mod header and readme. The readme now includes a table of the settings categories, and all clock tags are still documented.
+- Section banners in the source are now single-line comments.
+
+### Removed
+- Unused legacy single-URL web content code (WebContentsUrl, WebContentsBlockStart, WebContentsStart, WebContentsEnd, WebContentsMaxLength). These keys were no longer in the settings schema, so they never had a value. Use the web content list (%web1%, %web2%, …) instead.
+
+### Upgrade note:
+- Some settings reset to defaults.
+- Settings moved into categories get new key paths, and Windhawk stores values by key path.
+- After updating, re-enter the settings below.
+
 ## [1.3.1] - 2026-09-27
 
 ### Fixed
