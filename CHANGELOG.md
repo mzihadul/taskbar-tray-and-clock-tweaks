@@ -2,6 +2,81 @@
 
 All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this file.
 
+## [1.5.0] - 2026-10-10
+
+### ⚠️ Upgrade note: some settings reset to defaults
+Settings moved into categories get new key paths, and Windhawk stores values by key path. After updating, re-enter the settings below. A previously exported `settings.txt` no longer matches the new layout.
+
+| Category | Old key | New key |
+| :--- | :--- | :--- |
+| System tray icons | `hide*Icon`, `hideLanguage*`, `hideBellIcon`, `grayscaleBatteryIcon`, `showDesktopButtonWidth` | `SystemTray.*` |
+| Clock: date, time & time zones | `ShowSeconds`, `TimeFormat`, `DateFormat`, `DateLocale`, `WeekdayFormat`, `WeekdayFormatCustom`, `TimeZones` | `ClockFormat.*` |
+| Clock: text lines & tooltip | `TopLine`, `BottomLine`, `MiddleLine`, `TooltipLine`, `TooltipLineMode` | `ClockLines.*` |
+| Clock: size & spacing | `Width`, `Height`, `MaxWidth`, `TextSpacing` | `ClockLayout.*` |
+| Weather & web content | `WebContentWeather*`, `WebContentsItems`, `WebContentsUpdateInterval` | `WebContent.*` |
+| Taskbar transparency & app visibility | `TransparencyMode`, `TransparencyAlpha`, `HideTaskbarApps`, `AppExceptions` | `TaskbarAppearance.*` |
+| Taskbar size & icons | `TaskbarHeight`, `IconSize`, `TaskbarButtonWidth`, `IconSizeSmall`, `TaskbarButtonWidthSmall` | `TaskbarSize.*` |
+| Advanced styling (XAML) | `styleConstants`, `controlStyles`, `themeResourceVariables`, `xamlDiagnosticsHandling` | `Styling.*` |
+
+**Keep their values:** *Customize the old taskbar on Windows 11*, Live metrics, Media player info, and the top and bottom line styles.
+
+All new options default to off or to the previous behavior.
+
+### Added
+
+**Settings**
+- Settings are grouped by category, with Windows version notes shown once per group.
+
+**Clock tags**
+- Text graphs: `%cpu_graph%`, `%ram_graph%`, `%gpu_graph%`, `%download_graph%`, `%upload_graph%`, `%disk_graph%` (length configurable).
+- Drive space: `%drive_free_C%`, `%drive_used_C%`, `%drive_total_C%`, `%drive_free_pct_C%`, `%drive_used_pct_C%`.
+- System info: `%uptime%`, `%process_count%`, `%top_process%`, `%top_process_cpu%`.
+- Keyboard state: `%lang%`, `%lang_full%`, `%capslock%`, `%numlock%`.
+- Countdowns: `%countdown<n>%`, `%countdown<n>_days%`.
+- Network: `%ping%`, `%wifi_ssid%`, `%wifi_signal%`, `%vpn%`, `%local_ip%`.
+- Alternate calendars: `%date_hijri%` (Umm al-Qura or civil, ±2 day adjustment), `%date_persian%`, `%date_japanese%`, `%date_bengali%` and `%date_bengali_en%` (Bangladesh revised calendar).
+- Calendar events from an ICS feed: `%next_event%`, `%next_event_time%`, `%next_event_in%`.
+- Media progress: `%media_position%`, `%media_duration%`, `%media_remaining%`, `%media_progress%`, `%media_bar%`.
+- Tabler Icons: `%ti:name%` and `%ti:U+XXXX%` (needs the Tabler icon font installed; 146 common icons built in, all icons with the optional `tabler-icons.css`).
+- Unknown tags are shown as `[?name]` (can be turned off).
+
+**Clock behavior**
+- Clock layout presets: Minimal, System monitor, Battery, Media player, Weather.
+- Automatic profiles that switch the layout on battery, when plugged in, below a battery level, with one or several monitors, or at certain hours.
+- Threshold color rules for CPU, RAM, GPU, CPU temperature and battery level.
+- Mouse wheel over the clock (volume or track) and middle click (play/pause, mute, next/previous, Task Manager, or a custom command).
+- Marquee scrolling for long `%media_info%` text.
+- Weather presets, including sunrise and sunset.
+- Slower metrics update interval while on battery.
+
+**Taskbar**
+- Dynamic transparency: the default taskbar on a monitor while a window is maximized there.
+- Quick switches to hide the Start, Search, Task View and Widgets buttons.
+- Running-app indicator styling: hide it, or set color, width, height and corner radius (with a separate color and width for the focused app).
+- Hide individual notification-area icons by exact name.
+
+**Diagnostics**
+- Optional logging of clock threads and taskbar windows to the Windhawk log, to help investigate per-monitor clock settings.
+
+### Changed
+- Shorter setting labels and descriptions, a condensed mod header and readme, and single-line section banners in the source.
+
+### Fixed
+- **Hide running / pinned apps** no longer hides the Start, Search, Task View and Widgets buttons. It now matches app buttons only.
+- A configured **text color** is now parsed (hex or named color). Previously any value turned the text white.
+
+### Removed
+- Unused legacy single-URL web content code (`WebContentsUrl`, `WebContentsBlockStart`, `WebContentsStart`, `WebContentsEnd`, `WebContentsMaxLength`). These keys were not in the settings schema and never had a value. Use the web content list (`%web1%`, `%web2%`, ...) instead.
+
+### Known limitations
+- Wi-Fi signal is reported by Windows in 0-5 bars (shown in 20% steps), and VPN detection is best effort.
+- `%ping%` takes an IPv4 address only.
+- ICS: events with a named time zone are read as local time, and "second Tuesday"-style monthly rules show only the first occurrence.
+- Media position stays empty for players that report no timeline, which is common with browsers.
+- Tabler icons work in the top and bottom lines (Windows 11), not in the tooltip, and only one Tabler font style can be installed at a time.
+- Profiles switch the clock layout only, not other settings.
+- Hiding tray icons needs the exact icon name, and tooltips that change will not match.
+
 ## [1.4.0] - 2026-10-07
 
 ### Changed
