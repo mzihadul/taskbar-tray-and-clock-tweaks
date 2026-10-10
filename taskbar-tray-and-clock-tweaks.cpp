@@ -2,7 +2,7 @@
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
 // @description     Taskbar clock with live metrics, media info and weather; system tray icon control; taskbar size and transparency; and XAML control styling.
-// @version         1.4.0
+// @version         1.5.0
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -39,14 +39,24 @@ Supports **Windows 10 (64-bit)** and **Windows 11**. Everything except the clock
 | --- | --- |
 | System tray icons | Hide or restyle volume, network, battery, microphone, location, Studio Effects, Recall, language, bell and "Show desktop" |
 | Clock: date, time & time zones | Time / date / weekday formats, locale, seconds, time zones |
-| Clock: text lines & tooltip | What the top, middle (Windows 10) and bottom lines and the tooltip show |
+| Clock: text lines & tooltip | What the top, middle (Windows 10) and bottom lines and the tooltip show, ready-made layout presets, unknown-tag hints |
 | Clock: size & spacing | Clock width / height (Windows 10), max width and line spacing (Windows 11) |
 | Clock: top / bottom line style | Color, font, alignment and spacing per line (Windows 11 22H2+) |
-| Live metrics | Update interval, number formats, network / GPU adapter |
-| Media player info | Format, length limit and ignored players for `%media_*%` |
-| Weather & web content | Weather (wttr.in) and web / RSS extraction for `%weather%`, `%web<n>%` |
-| Taskbar transparency & app visibility | Transparency mode and level, hide running / pinned apps |
+| Clock: click & scroll actions | Mouse wheel and middle click on the clock: volume, media keys, Task Manager or a command (Windows 11) |
+| Clock: automatic profiles | Switch the clock to a ready-made layout on battery, with several monitors, or at certain hours |
+| Icons (Tabler Icons) | Show Tabler icons in the clock lines with `%ti:name%` |
+| Clock: color rules | Change the clock text color when CPU, RAM, GPU, temperature or battery cross a threshold (Windows 11 22H2+) |
+| Network info | Ping, Wi-Fi name and signal, VPN status, local IP |
+| Alternate calendars | Hijri, Persian, Japanese and Bengali (Bangladesh) dates |
+| Calendar events (ICS) | Next event from a calendar feed |
+| Live metrics | Update interval (and a slower one on battery), number formats, network / GPU adapter, graph length |
+| Media player info | Format, length limit, scrolling marquee and ignored players for `%media_*%` |
+| Weather & web content | Weather (wttr.in) with presets, and web / RSS extraction for `%weather%`, `%web<n>%` |
+| Taskbar transparency & app visibility | Transparency mode and level, dynamic transparency, hide running / pinned apps |
 | Taskbar size & icons | Taskbar height, icon size, button width |
+| Tray icons | Hide individual notification-area icons by name |
+| Taskbar buttons | Hide the Start, Search, Task View and Widgets buttons |
+| Running-app indicator | Hide it, or set its color, size and corner radius (with a separate look for the focused app) |
 | Advanced styling (XAML) | Style constants, control styles, theme resources |
 
 ## Clock tags
@@ -62,8 +72,12 @@ Use these in the top, middle, bottom and tooltip lines.
 * `%dayofyear%` - day of the year (1-366).
 * `%timezone%` - UTC offset, e.g. `+06:00`.
 * `%newline%` or `%n%` - line break.
+* `%date_hijri%`, `%date_persian%`, `%date_japanese%` - the date in the Hijri (Umm al-Qura or civil, adjustable by days), Persian or Japanese-era calendar.
+* `%date_bengali%` / `%date_bengali_en%` - the Bengali date of the Bangladesh revised calendar, in Bangla script and digits or in Latin letters (e.g. `25 Ashwin 1433`).
+* `%countdown<n>%` - time left until target `<n>` (e.g. `12d 4h 3m`, or `Done`); `%countdown<n>_days%` - whole days left. Targets are set in the date and time settings.
 
 ### Hardware & performance
+* **Graphs:** `%cpu_graph%`, `%ram_graph%`, `%gpu_graph%`, `%download_graph%`, `%upload_graph%`, `%disk_graph%` - recent history drawn with block characters (▁▂▃▅▇). Percent graphs use a fixed 0-100% scale; speed graphs scale to the recent peak.
 * **Network:** `%upload_speed%`, `%download_speed%`, `%total_speed%`
 * **Disk:** `%disk_read%`, `%disk_write%`, `%disk_total%`
 * **CPU:** `%cpu%` (%), `%cpu_temp%` (°C), `%cpu_temp_f%` (°F)
@@ -76,8 +90,37 @@ Use these in the top, middle, bottom and tooltip lines.
 * **Volume:** `%volume%` - `🔊` / `🔇` icon that expands to the level % while adjusting, then collapses after 3 seconds.
 * **Microphone:** `%mic%` - `🎙️` while any app is recording.
 
+### System info & input
+* `%uptime%` - time since boot (e.g. `2d 5h 12m`).
+* `%process_count%` - number of running processes.
+* `%top_process%` / `%top_process_cpu%` - busiest process by CPU and its usage. Sampled every few seconds.
+* `%drive_free_C%`, `%drive_used_C%`, `%drive_total_C%` - space on a local drive (use any drive letter); `%drive_free_pct_C%` / `%drive_used_pct_C%` give percentages.
+* `%lang%` / `%lang_full%` - current input language (e.g. `EN` / `English`).
+* `%capslock%` / `%numlock%` - `CAPS` / `NUM` while the key is on, otherwise empty.
+
+A tag that does not exist is shown as `[?name]` so typos are easy to spot (can be turned off).
+
+### Icons (Tabler Icons)
+`%ti:name%` shows an icon from [Tabler Icons](https://tabler.io/icons) (MIT licensed, by Paweł Kuna), for example `%ti:battery-charging% %battery%` or `%ti:wifi% %wifi_ssid%`. `%ti:U+EA35%` uses a raw codepoint. An unknown name is shown as `[?ti:name]`.
+
+Setup:
+1. Get the Tabler webfont package (npm: `@tabler/icons-webfont`) and install `dist/fonts/tabler-icons.ttf`. Install only one Tabler font style (outline, filled, 200 or 300 weight): they all share the family name `tabler-icons`, so Windows cannot hold two at once.
+2. Optional: set the path to the matching `tabler-icons.css` in the Icons settings, so every icon name works. Without it, a built-in list of 146 common outline icons is used (battery, wifi, volume, cpu, weather, media and more).
+3. The mod puts the icon font first in the clock text's font list. It has no letters or digits, so normal text keeps its font.
+
+Icons need Windows 11 and work in the top and bottom lines, not in the tooltip. The mod does not include the font or any icon artwork.
+
+### Network & calendar events
+* `%ping%` - round-trip time to the configured IPv4 host (e.g. `23 ms`, `--` when unreachable).
+* `%wifi_ssid%`, `%wifi_signal%` - connected Wi-Fi name and signal (Windows reports 0-5 bars, shown in 20% steps).
+* `%vpn%` - `VPN` while a VPN-like connection is up (best effort), otherwise empty.
+* `%local_ip%` - IPv4 address of the adapter used for internet.
+* `%next_event%`, `%next_event_time%`, `%next_event_in%` - the next event of an ICS calendar feed, its start (`14:30`, `Fri 09:00`, `Oct 20 09:00`) and the time left (`in 25m`).
+
 ### Media (Spotify, Chrome, Edge, VLC, ...)
-`%media_title%`, `%media_artist%`, `%media_album%`, `%media_status%` (`⏯` / `⏸` / `⏹`), `%media_info%` (formatted and truncated).
+`%media_title%`, `%media_artist%`, `%media_album%`, `%media_status%` (`⏯` / `⏸` / `⏹`), `%media_info%` (formatted and truncated, or scrolling).
+
+Playback progress: `%media_position%`, `%media_duration%`, `%media_remaining%`, `%media_progress%` (percent) and `%media_bar%` (▰▰▰▱▱▱▱▱). They stay empty when the player does not report a timeline.
 
 ### Weather & web
 * `%weather%` - from [wttr.in](https://wttr.in), using your location, units and format.
@@ -88,11 +131,20 @@ Use these in the top, middle, bottom and tooltip lines.
 ### Transparency & app visibility
 * Modes: Default, Fully Transparent, Blurry Glass, Liquid Glass (Acrylic), Mica.
 * Level: 0% (opaque) to 100% (fully transparent) for the transparent, blur and acrylic modes; Mica ignores it.
-* Hide running / pinned apps while keeping Start, Search and the tray. Exceptions accept an AUMID or app name (case-insensitive, partial match).
+* Hide running / pinned apps while keeping Start, Search, Task View, Widgets and the tray (those have their own switches under Taskbar buttons). Exceptions accept an AUMID or app name (case-insensitive, partial match). The Copilot button counts as an app button; add `Copilot` to the exceptions to keep it.
 * Applied to the primary and secondary taskbars and reset when the mod unloads.
 
 ### Size & icons
 Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon size to 32 (or any other size) for crisp icons, and adjust the taskbar height and button width to match. Small icon settings apply to newer builds with small taskbar icons.
+
+### Dynamic transparency
+With a transparency mode set, the taskbar can switch to the default opaque look on a monitor while a window is maximized there, and go back to your mode when it is restored.
+
+### Tray icons by name
+Add the exact name of a classic notification-area icon (its tooltip text, readable with the UWPSpy tool) to hide just that icon.
+
+### Buttons & running indicator
+Simple switches that generate the matching control styles for you, so common tweaks need no XAML. They are applied before your own control styles, which can still override them.
 
 ### Advanced styling
 * Target elements by class name, element ID or app ID (`Taskbar.TaskListButton[AutomationProperties.AutomationId=Appid: ...]`).
@@ -164,8 +216,26 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
     $name: Custom week day format
   - TimeZones: ["Eastern Standard Time"]
     $name: Time zones
+  - Countdowns: [""]
+    $name: Countdown targets (used as %countdown1%, %countdown2%, ...)
+    $description: >-
+      Local date and optional time, for example 2027-01-01 or 2027-01-01 18:30.
+      %countdown<n>% shows the time left, %countdown<n>_days% the whole days left.
   $name: 'Clock: date, time & time zones'
 - ClockLines:
+  - Preset: custom
+    $name: Preset
+    $description: >-
+      Pick a ready-made layout, or Custom to use the lines below. A preset
+      replaces the top line, bottom line and tooltip line (the Windows 10
+      middle line is not affected).
+    $options:
+    - custom: Custom (use the lines below)
+    - minimal: Minimal (time and date)
+    - monitor: System monitor
+    - battery: Battery
+    - media: Media player
+    - weather: Weather
   - TopLine: '%date% | %time%'
     $name: Top line
   - BottomLine: '%web1%'
@@ -179,6 +249,11 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
     $options:
     - append: Append to default tooltip
     - replace: Replace default tooltip
+  - ShowTagHints: true
+    $name: Show hints for unknown tags
+    $description: >-
+      Display [?name] where a line contains a tag that does not exist, for
+      example a misspelled %cpuu%.
   $name: 'Clock: text lines & tooltip'
   $description: >-
     Tags such as %date%, %time%, %cpu% are listed in the mod description.
@@ -310,6 +385,102 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
   $name: 'Clock: bottom line style'
   $description: >-
     Windows 11 version 22H2 and newer.
+- ClockColors:
+  - Rules:
+    - - Metric: ""
+        $name: Metric
+        $options:
+        - "": None
+        - cpu: CPU usage (%)
+        - ram: RAM usage (%)
+        - gpu: GPU usage (%)
+        - cpu_temp: CPU temperature (°C)
+        - battery: Battery level (%)
+      - Condition: above
+        $name: Condition
+        $options:
+        - above: Value is above the threshold
+        - below: Value is below the threshold
+      - Threshold: 90
+        $name: Threshold
+      - Color: "#FF5555"
+        $name: Color
+        $description: >-
+          Hex (#RRGGBB or #AARRGGBB) or a named color such as Red.
+      - Line: both
+        $name: Apply to
+        $options:
+        - both: Top and bottom line
+        - top: Top line only
+        - bottom: Bottom line only
+    $name: Rules
+    $description: >-
+      Rules are checked in order and the first match for each line wins.
+      Metrics are read live, so the color changes as the value crosses the
+      threshold.
+  $name: 'Clock: color rules'
+  $description: >-
+    Windows 11 version 22H2 and newer.
+- ClockActions:
+  - Scroll: none
+    $name: Mouse wheel over the clock
+    $options:
+    - none: Do nothing
+    - volume: Change the volume
+    - track: Previous / next track
+  - MiddleClick: none
+    $name: Middle click on the clock
+    $options:
+    - none: Do nothing
+    - playpause: Play / pause
+    - mute: Mute / unmute
+    - next: Next track
+    - previous: Previous track
+    - taskmgr: Open Task Manager
+    - command: Run the command below
+  - Command: ""
+    $name: Command to run
+    $description: >-
+      Full command line, for example C:\Windows\System32\notepad.exe. Used by
+      the "Run the command below" middle-click action.
+  $name: 'Clock: click & scroll actions'
+  $description: >-
+    Windows 11 only. Nothing is attached to the clock unless an action is set.
+- Profiles:
+  - Rules:
+    - - Condition: ""
+        $name: When
+        $options:
+        - "": None
+        - onBattery: The PC is running on battery
+        - pluggedIn: The PC is plugged in
+        - batteryBelow: Battery is below the threshold
+        - multiMonitor: More than one monitor is connected
+        - singleMonitor: Only one monitor is connected
+        - hours: The time is within the hours below
+      - Threshold: 20
+        $name: Battery threshold (%)
+      - StartHour: 9
+        $name: Start hour (0-23)
+      - EndHour: 18
+        $name: End hour (0-23)
+      - Preset: minimal
+        $name: Use this clock layout
+        $options:
+        - minimal: Minimal (time and date)
+        - monitor: System monitor
+        - battery: Battery
+        - media: Media player
+        - weather: Weather
+    $name: Rules
+    $description: >-
+      Rules are checked in order and the first match wins. The threshold applies
+      to the battery condition, the start and end hours to the hours condition
+      (a range such as 22 to 6 wraps past midnight).
+  $name: 'Clock: automatic profiles'
+  $description: >-
+    Switches the clock to a ready-made layout when a condition is met. When no
+    rule matches, your normal clock lines or preset apply.
 - DataCollection:
   - NetworkMetricsFormat: mbs
     $name: Network metrics format
@@ -348,6 +519,16 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
     $name: Network adapter name
   - GpuAdapterName: ""
     $name: GPU adapter name
+  - GraphLength: 8
+    $name: Graph length (characters)
+    $description: >-
+      Number of samples drawn by %cpu_graph%, %ram_graph%, %gpu_graph%,
+      %download_graph%, %upload_graph% and %disk_graph% (4 to 32).
+  - BatteryUpdateInterval: 0
+    $name: Update interval on battery (seconds)
+    $description: >-
+      Samples metrics less often while unplugged to save power. 0, or a value
+      not larger than the normal interval, keeps the normal interval.
   $name: Live metrics (CPU, RAM, GPU, network, disk)
 - MediaPlayer:
   - IgnoredPlayers: [""]
@@ -360,8 +541,25 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
     $name: Format when media is not playing
   - RemoveBrackets: false
     $name: Remove brackets from info
+  - Marquee: false
+    $name: Scroll long text (marquee)
+    $description: >-
+      Scrolls %media_info% instead of cutting it off when it is longer than
+      the maximum length. Needs a maximum length above 0, and scrolls only
+      while playing.
+  - MarqueeSpeed: 2
+    $name: Marquee speed (characters per second)
   $name: Media player info
 - WebContent:
+  - WeatherPreset: custom
+    $name: Weather preset
+    $description: >-
+      Ready-made weather formats. Custom uses the weather format below.
+    $options:
+    - custom: Custom (use the format below)
+    - conditions: Conditions and temperature
+    - sun: Sunrise and sunset
+    - full: Conditions, humidity, wind, sunrise and sunset
   - WeatherLocation: ""
     $name: Weather location
   - WeatherFormat: "%c 🌡️%t 🌬️%w"
@@ -399,6 +597,72 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
   - UpdateInterval: 10
     $name: Update interval (minutes)
   $name: Weather & web content
+- NetworkInfo:
+  - PingHost: "1.1.1.1"
+    $name: Ping host
+    $description: >-
+      IPv4 address measured by %ping%. Host names are not supported.
+  - PingInterval: 5
+    $name: Ping interval (seconds)
+    $description: >-
+      How often %ping% measures (2 to 300).
+  $name: Network info
+  $description: >-
+    Tags: %ping%, %wifi_ssid%, %wifi_signal%, %vpn%, %local_ip%.
+- AlternateCalendars:
+  - HijriType: umalqura
+    $name: Hijri calendar type
+    $options:
+    - umalqura: Umm al-Qura (Saudi Arabia)
+    - civil: Civil (tabular)
+  - HijriOffset: 0
+    $name: Hijri date adjustment (days)
+    $description: >-
+      Shifts %date_hijri% by -2 to +2 days, for example to match local moon
+      sighting.
+  $name: Alternate calendars
+  $description: >-
+    Tags: %date_hijri%, %date_persian%, %date_japanese%, %date_bengali%
+    (Bangla script) and %date_bengali_en% (Latin letters, Bangladesh revised
+    calendar).
+- CalendarEvents:
+  - IcsUrl: ""
+    $name: Calendar feed URL (ICS)
+    $description: >-
+      A secret iCalendar link, for example from Google Calendar (webcal://
+      links work too). Refreshed with the web content update interval.
+  - MaxLength: 30
+    $name: Event title maximum length
+    $description: >-
+      0 for no limit.
+  - IncludeAllDay: false
+    $name: Include all-day events
+  - NoEventText: No upcoming events
+    $name: Text when there is no upcoming event
+  $name: Calendar events (ICS)
+  $description: >-
+    Tags: %next_event%, %next_event_time%, %next_event_in%. Daily, weekly
+    (with weekdays), monthly and yearly repeats are supported. Times given in
+    another time zone are read as local time.
+- Icons:
+  - CssFile: ""
+    $name: Icon name list (tabler-icons.css)
+    $description: >-
+      Path to the tabler-icons.css that matches your icon font, for example
+      C:\Fonts\tabler\tabler-icons.css. It lets %ti:name% use every icon.
+      Without it, a built-in list of 146 common outline icons is used.
+  - FontFile: ""
+    $name: Icon font file (optional)
+    $description: >-
+      Path to tabler-icons.ttf. If the font is not installed, the mod adds it
+      for the current Windows session. This is experimental; installing the
+      font normally is more reliable.
+  $name: Icons (Tabler Icons)
+  $description: >-
+    Windows 11 only. Use %ti:name% in the top or bottom clock line, for example
+    %ti:battery-charging% %battery%. Names are listed at tabler.io/icons.
+    Install the tabler-icons font first, and only one Tabler font style at a
+    time. Icons are not shown in the tooltip.
 - TaskbarAppearance:
   - TransparencyMode: default
     $name: Transparency mode
@@ -413,8 +677,20 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
     $description: >-
       0% = opaque, 100% = fully transparent. Applies to transparent, blur and
       acrylic modes. Mica uses the Windows material and ignores this value.
+  - DynamicTransparency: off
+    $name: Dynamic transparency
+    $options:
+    - off: Off
+    - opaque: Default taskbar while a window is maximized
+    $description: >-
+      Uses the default (opaque) taskbar on a monitor while a window is
+      maximized there, and your transparency mode otherwise. Needs a mode
+      other than Default.
   - HideTaskbarApps: false
     $name: Hide running / pinned apps
+    $description: >-
+      Hides app buttons only. Start, Search, Task View, Widgets and the system
+      tray are not affected; use the Taskbar buttons settings to hide those.
   - AppExceptions: [""]
     $name: App exceptions (AUMID or app name)
   $name: Taskbar transparency & app visibility
@@ -444,6 +720,56 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
   $name: Taskbar size & icons
   $description: >-
     Windows 11 new taskbar only. Ignored when customizing the old taskbar, and on Windows 10.
+- TaskbarButtons:
+  - HideStart: false
+    $name: Hide Start button
+  - HideSearch: false
+    $name: Hide Search button
+  - HideTaskView: false
+    $name: Hide Task View button
+  - HideWidgets: false
+    $name: Hide Widgets button
+  $name: Taskbar buttons
+  $description: >-
+    Windows 11 new taskbar only. Independent of hiding running / pinned apps.
+- RunningIndicator:
+  - Mode: default
+    $name: Style
+    $options:
+    - default: Default
+    - hidden: Hidden
+    - custom: Custom (use the options below)
+  - Color: ""
+    $name: Color
+    $description: >-
+      Hex (#RRGGBB) or a named color such as Red. Empty keeps the default.
+  - ActiveColor: ""
+    $name: Color for the focused app
+  - Width: 0
+    $name: Width
+    $description: >-
+      In pixels. 0 keeps the default.
+  - ActiveWidth: 0
+    $name: Width for the focused app
+  - Height: 0
+    $name: Height
+  - CornerRadius: 0
+    $name: Corner radius
+  $name: Running-app indicator
+  $description: >-
+    Windows 11 new taskbar only. The options below apply when the style is Custom.
+- TrayIcons:
+  - HiddenNames: [""]
+    $name: Icon names to hide
+    $description: >-
+      The exact name of a classic notification-area icon, as shown in its
+      tooltip. Use the UWPSpy tool to read it from the AutomationProperties.Name
+      property. Names containing ] are not supported.
+  $name: Tray icons
+  $description: >-
+    Windows 11 new taskbar only. Hides individual notification-area icons by
+    name. Windows system icons such as volume and network have their own
+    switches under System tray icons.
 - Styling:
   - styleConstants: [""]
     $name: Style constants
@@ -482,6 +808,14 @@ Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon siz
   $name: Advanced styling (XAML)
   $description: >-
     Windows 11 new taskbar only. See the mod description for syntax.
+- Diagnostics:
+  - LogClockThreads: false
+    $name: Log clock threads and taskbar windows
+    $description: >-
+      Writes which thread each clock runs on, and which monitor each taskbar
+      belongs to, into the Windhawk log. Only needed to investigate
+      per-monitor clock settings.
+  $name: Diagnostics
 */
 // ==/WindhawkModSettings==
 
@@ -532,6 +866,7 @@ using namespace std::string_view_literals;
 #include <psapi.h>
 #include <roapi.h>
 #include <shlwapi.h>
+#include <tlhelp32.h>
 #include <Unknwn.h>
 #include <weakreference.h>
 #include <windows.graphics.effects.h>
@@ -544,19 +879,23 @@ using namespace std::string_view_literals;
 #include <winrt/Windows.Data.Xml.Dom.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Globalization.h>
 #include <winrt/Windows.Graphics.Effects.h>
 #include <winrt/Windows.Media.Control.h>
 #include <winrt/Windows.Networking.Connectivity.h>
+#include <winrt/Windows.Networking.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.System.Power.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Composition.h>
 #include <winrt/Windows.UI.Core.h>
+#include <winrt/Windows.UI.Input.h>
 #include <winrt/Windows.UI.Text.h>
 #include <winrt/Windows.UI.ViewManagement.h>
 #include <winrt/Windows.UI.Xaml.Automation.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
+#include <winrt/Windows.UI.Xaml.Input.h>
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Windows.UI.Xaml.Markup.h>
 #include <winrt/Windows.UI.Xaml.Media.Imaging.h>
@@ -621,6 +960,8 @@ struct DataCollectionSettings {
     int updateInterval;
     StringSetting networkAdapterName;
     StringSetting gpuAdapterName;
+    int graphLength;
+    int batteryUpdateInterval;
 };
 
 struct MediaPlayerSettings {
@@ -629,6 +970,8 @@ struct MediaPlayerSettings {
     StringSetting mediaInfoFormat;
     StringSetting noMediaText;
     bool removeBrackets;
+    bool marquee;
+    int marqueeSpeed;
 };
 
 enum class WebContentWeatherUnits {
@@ -666,6 +1009,24 @@ struct TextStyleSettings {
     StringSetting fontStretch;
     int characterSpacing;
     int lineHeight;
+};
+
+struct ColorRule {
+    int metric;
+    bool above;
+    double threshold;
+    StringSetting color;
+    int lines;  // bit 0: top line, bit 1: bottom line
+};
+
+struct LinePreset;
+
+struct ProfileRule {
+    int condition;
+    int threshold;  // battery percent
+    int startHour;
+    int endHour;
+    const LinePreset* preset;
 };
 
 struct Settings {
@@ -711,12 +1072,81 @@ struct Settings {
     TextStyleSettings dateStyle;
     bool oldTaskbarOnWin11;
 
+    // Clock extras
+    bool showTagHints;
+    int weatherPreset;
+    std::vector<ULONGLONG> countdownTargets;
+    std::vector<ColorRule> colorRules;
+
+    // Network, calendars and events
+    std::wstring pingHost;
+    int pingInterval;
+    bool hijriCivil;
+    int hijriOffset;
+    std::wstring icsUrl;
+    int icsMaxLength;
+    bool icsIncludeAllDay;
+    std::wstring icsNoEventText;
+
+    // Click / scroll actions, dynamic transparency, profiles, diagnostics
+    int clockScrollAction;  // 0 none, 1 volume, 2 track
+    int clockMiddleAction;  // 0 none, 1 play/pause, 2 mute, 3 next, 4 previous, 5 Task Manager, 6 command
+    std::wstring clockCommand;
+    int dynamicTransparency;  // 0 off, 1 default taskbar while a window is maximized
+    std::vector<ProfileRule> profileRules;
+    bool logClockThreads;
+
     // Transparency and App Hiding
     StringSetting transparencyMode;
     int transparencyAlpha;
     bool hideTaskbarApps;
     std::vector<std::wstring> appExceptions;
 } g_settings;
+
+struct LinePreset {
+    PCWSTR id;
+    PCWSTR top;
+    PCWSTR bottom;
+    PCWSTR tooltip;
+};
+
+const LinePreset kLinePresets[] = {
+    {L"minimal", L"%time%", L"%date%", L""},
+    {L"monitor", L"CPU %cpu% | RAM %ram%", L"\u2193 %download_speed%  \u2191 %upload_speed%",
+     L"%date% %time%%n%GPU %gpu% | Disk %disk_total%"},
+    {L"battery", L"%time%", L"%battery% %power%", L"%battery_time%"},
+    {L"media", L"%time%", L"%media_info%", L"%media_title%%n%%media_artist%%n%%media_album%"},
+    {L"weather", L"%time%", L"%weather%", L"%date%"},
+};
+
+// When a clock line preset is selected, these point at the preset's strings
+// and take priority over the custom top / bottom / tooltip lines.
+PCWSTR g_presetTopLine;
+PCWSTR g_presetBottomLine;
+PCWSTR g_presetTooltipLine;
+
+// Chosen at runtime by the automatic profile rules; takes priority over everything else.
+const LinePreset* g_profilePreset = nullptr;
+
+PCWSTR EffTopLine() {
+    if (g_profilePreset) return g_profilePreset->top;
+    return g_presetTopLine ? g_presetTopLine : g_settings.topLine.get();
+}
+PCWSTR EffBottomLine() {
+    if (g_profilePreset) return g_profilePreset->bottom;
+    return g_presetBottomLine ? g_presetBottomLine : g_settings.bottomLine.get();
+}
+PCWSTR EffTooltipLine() {
+    if (g_profilePreset) return g_profilePreset->tooltip;
+    return g_presetTooltipLine ? g_presetTooltipLine : g_settings.tooltipLine.get();
+}
+
+const LinePreset* FindLinePreset(PCWSTR id) {
+    for (const auto& p : kLinePresets) {
+        if (wcscmp(id, p.id) == 0) return &p;
+    }
+    return nullptr;
+}
 
 enum class XamlDiagnosticsHandling {
     kAlert,
@@ -1531,6 +1961,7 @@ bool HookTaskbarDllSymbols() {
 // ----- CLOCK & MONITORING LOGIC -----
 
 bool g_formattingInitialized;
+bool g_liveTagsUsed;
 DWORD g_formatIndex;
 SYSTEMTIME g_formatTime;
 std::mutex g_formatLineMutex;
@@ -1593,6 +2024,15 @@ FormattedString<FORMATTED_BUFFER_SIZE> g_mediaInfoFormatted;
 winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSessionManager g_mediaSessionManager{nullptr};
 winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSession g_mediaCurrentSession{nullptr};
 std::mutex g_mediaMutex;
+bool g_mediaPlaying = false;
+struct MediaTimeline {
+    double position = 0;  // seconds, at queryTick
+    double duration = 0;  // seconds, 0 if unknown
+    double rate = 1;
+    ULONGLONG queryTick = 0;
+    bool valid = false;
+} g_mediaTimeline;
+ULONGLONG g_mediaTimelineLastQuery = 0;
 std::atomic<bool> g_mediaDataDirty{true};
 winrt::event_token g_mediaSessionsChangedToken;
 winrt::event_token g_mediaPropertiesChangedToken;
@@ -1617,11 +2057,19 @@ struct ClockElementStyleData {
     DWORD styleIndex;
     std::optional<int64_t> dateVisibilityPropertyChangedToken;
     std::optional<int64_t> timeVisibilityPropertyChangedToken;
+    winrt::weak_ref<UIElement> actionTarget;
+    std::optional<winrt::Windows::UI::Xaml::Input::PointerEventHandler> wheelHandler;
+    std::optional<winrt::Windows::UI::Xaml::Input::PointerEventHandler> pressedHandler;
 };
 
 std::atomic<bool> g_clockElementStyleEnabled{false};
 std::atomic<DWORD> g_clockElementStyleIndex{0};
 std::vector<ClockElementStyleData> g_clockElementStyleData;
+
+// Threshold color rules: the color currently chosen for [top, bottom] line.
+std::mutex g_clockRuleMutex;
+std::wstring g_clockRuleColor[2];
+std::atomic<int> g_colorRuleCount{0};
 
 using GetDpiForWindow_t = UINT(WINAPI*)(HWND hwnd);
 GetDpiForWindow_t pGetDpiForWindow;
@@ -1770,12 +2218,27 @@ std::wstring ExtractTextFromXml(std::wstring xml) {
 }
 
 bool IsStrInDateTimePatternSettings(PCWSTR str) {
-    if (wcsstr(g_settings.topLine, str) || wcsstr(g_settings.bottomLine, str) ||
-        wcsstr(g_settings.middleLine, str) || wcsstr(g_settings.tooltipLine, str)) {
+    // Profiles can switch to any of their presets at runtime, so every one of
+    // them has to count as used (metrics, threads and sessions start for them).
+    for (const auto& r : g_settings.profileRules) {
+        if (!r.preset) continue;
+        if (wcsstr(r.preset->top, str) || wcsstr(r.preset->bottom, str) || wcsstr(r.preset->tooltip, str)) {
+            return true;
+        }
+        if (wcsstr(r.preset->top, L"%media_info%") || wcsstr(r.preset->bottom, L"%media_info%") ||
+            wcsstr(r.preset->tooltip, L"%media_info%")) {
+            if (wcsstr(g_settings.mediaPlayer.mediaInfoFormat.get(), str) ||
+                wcsstr(g_settings.mediaPlayer.noMediaText.get(), str)) {
+                return true;
+            }
+        }
+    }
+    if (wcsstr(EffTopLine(), str) || wcsstr(EffBottomLine(), str) ||
+        wcsstr(g_settings.middleLine, str) || wcsstr(EffTooltipLine(), str)) {
         return true;
     }
-    if (wcsstr(g_settings.topLine, L"%media_info%") || wcsstr(g_settings.bottomLine, L"%media_info%") ||
-        wcsstr(g_settings.middleLine, L"%media_info%") || wcsstr(g_settings.tooltipLine, L"%media_info%")) {
+    if (wcsstr(EffTopLine(), L"%media_info%") || wcsstr(EffBottomLine(), L"%media_info%") ||
+        wcsstr(g_settings.middleLine, L"%media_info%") || wcsstr(EffTooltipLine(), L"%media_info%")) {
         if (wcsstr(g_settings.mediaPlayer.mediaInfoFormat.get(), str) ||
             wcsstr(g_settings.mediaPlayer.noMediaText.get(), str)) {
             return true;
@@ -1795,7 +2258,13 @@ std::wstring EscapeUrlComponent(PCWSTR input, DWORD flags = URL_ESCAPE_ASCII_URI
 }
 
 bool UpdateWeatherWebContent() {
-    std::wstring format = g_settings.webContentWeatherFormat.get();
+    std::wstring format;
+    switch (g_settings.weatherPreset) {
+        case 1: format = L"%c %t"; break;
+        case 2: format = L"\U0001F305 %S  \U0001F307 %s"; break;
+        case 3: format = L"%c %t  \U0001F4A7%h  \U0001F32C\uFE0F%w  \U0001F305%S \U0001F307%s"; break;
+        default: format = g_settings.webContentWeatherFormat.get(); break;
+    }
     if (format.empty()) format = L"%c \U0001F321\uFE0F%t \U0001F32C\uFE0F%w";
     format = ReplaceAll(format, L"%c", L"%c\uE000");
 
@@ -1823,6 +2292,511 @@ bool UpdateWeatherWebContent() {
 
     std::lock_guard<std::mutex> guard(g_webContentMutex);
     g_webContentWeather = weatherContent;
+    return true;
+}
+
+// ----- CALENDAR EVENTS (ICS) -----
+
+struct IcsRule {
+    int freq = 0;  // 0 none, 1 daily, 2 weekly, 3 monthly, 4 yearly
+    int interval = 1;
+    int count = 0;  // 0 = unlimited
+    int64_t until = INT64_MAX;
+    unsigned byDayMask = 0;  // bit 0 = Monday ... bit 6 = Sunday (weekly only)
+    int byMonthDay = 0;      // monthly only
+    bool unsupported = false;
+};
+
+struct IcsEvent {
+    std::wstring uid;
+    std::wstring summary;
+    int64_t start = 0;  // local wall-clock seconds since 1970-01-01
+    bool allDay = false;
+    IcsRule rule;
+    std::vector<int64_t> exdates;
+};
+
+// Converts a UTC timestamp (seconds) to local wall-clock seconds.
+int64_t (*g_icsUtcToLocal)(int64_t) = [](int64_t utc) { return utc; };
+
+int64_t IcsDaysFromCivil(int y, unsigned m, unsigned d) {
+    y -= m <= 2;
+    const int64_t era = (y >= 0 ? y : y - 399) / 400;
+    const unsigned yoe = static_cast<unsigned>(y - era * 400);
+    const unsigned doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;
+    const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    return era * 146097 + static_cast<int64_t>(doe) - 719468;
+}
+
+void IcsCivilFromDays(int64_t z, int* y, unsigned* m, unsigned* d) {
+    z += 719468;
+    const int64_t era = (z >= 0 ? z : z - 146096) / 146097;
+    const unsigned doe = static_cast<unsigned>(z - era * 146097);
+    const unsigned yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    const int64_t yy = static_cast<int64_t>(yoe) + era * 400;
+    const unsigned doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    const unsigned mp = (5 * doy + 2) / 153;
+    *d = doy - (153 * mp + 2) / 5 + 1;
+    *m = mp < 10 ? mp + 3 : mp - 9;
+    *y = static_cast<int>(yy + (*m <= 2));
+}
+
+int64_t IcsFloorDiv(int64_t a, int64_t b) {
+    int64_t q = a / b;
+    return (a % b != 0 && ((a < 0) != (b < 0))) ? q - 1 : q;
+}
+
+int IcsDaysInMonth(int y, int m) {
+    static const int kDays[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (m == 2 && ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0)) return 29;
+    return kDays[m - 1];
+}
+
+// 0 = Monday ... 6 = Sunday
+int IcsWeekday(int64_t days) {
+    return static_cast<int>(((days + 3) % 7 + 7) % 7);
+}
+
+bool IcsParseDateTime(std::wstring_view v, bool* isDate, int64_t* outLocal) {
+    auto num = [&](size_t pos, size_t len, int* out) {
+        int r = 0;
+        for (size_t i = 0; i < len; i++) {
+            if (pos + i >= v.size() || v[pos + i] < L'0' || v[pos + i] > L'9') return false;
+            r = r * 10 + (v[pos + i] - L'0');
+        }
+        *out = r;
+        return true;
+    };
+    int y, mo, d, h = 0, mi = 0, s = 0;
+    if (!num(0, 4, &y) || !num(4, 2, &mo) || !num(6, 2, &d)) return false;
+    if (mo < 1 || mo > 12 || d < 1 || d > IcsDaysInMonth(y, mo)) return false;
+    *isDate = true;
+    bool utc = false;
+    if (v.size() >= 15 && v[8] == L'T') {
+        if (!num(9, 2, &h) || !num(11, 2, &mi) || !num(13, 2, &s)) return false;
+        *isDate = false;
+        utc = v.size() >= 16 && v[15] == L'Z';
+    }
+    int64_t secs = IcsDaysFromCivil(y, mo, d) * 86400 + h * 3600 + mi * 60 + s;
+    *outLocal = utc ? g_icsUtcToLocal(secs) : secs;
+    return true;
+}
+
+std::wstring IcsUnescape(std::wstring_view v) {
+    std::wstring r;
+    for (size_t i = 0; i < v.size(); i++) {
+        if (v[i] == L'\\' && i + 1 < v.size()) {
+            wchar_t c = v[++i];
+            r += (c == L'n' || c == L'N') ? L' ' : c;
+        } else {
+            r += v[i];
+        }
+    }
+    return r;
+}
+
+void IcsParseRule(std::wstring_view v, const IcsEvent& e, IcsRule* r) {
+    size_t pos = 0;
+    bool hasByDay = false, hasOther = false;
+    while (pos <= v.size()) {
+        size_t end = v.find(L';', pos);
+        if (end == std::wstring_view::npos) end = v.size();
+        std::wstring_view part = v.substr(pos, end - pos);
+        pos = end + 1;
+        size_t eq = part.find(L'=');
+        if (eq == std::wstring_view::npos) continue;
+        std::wstring key(part.substr(0, eq));
+        std::wstring val(part.substr(eq + 1));
+        for (auto& c : key) c = static_cast<wchar_t>(towupper(c));
+        for (auto& c : val) c = static_cast<wchar_t>(towupper(c));
+
+        if (key == L"FREQ") {
+            r->freq = val == L"DAILY" ? 1 : val == L"WEEKLY" ? 2 : val == L"MONTHLY" ? 3 : val == L"YEARLY" ? 4 : -1;
+        } else if (key == L"INTERVAL") {
+            r->interval = std::max(1, _wtoi(val.c_str()));
+        } else if (key == L"COUNT") {
+            r->count = std::max(0, _wtoi(val.c_str()));
+        } else if (key == L"UNTIL") {
+            bool isDate;
+            int64_t t;
+            if (IcsParseDateTime(val, &isDate, &t)) r->until = isDate ? t + 86399 : t;
+        } else if (key == L"BYDAY") {
+            hasByDay = true;
+            static const wchar_t* kDays[] = {L"MO", L"TU", L"WE", L"TH", L"FR", L"SA", L"SU"};
+            size_t p = 0;
+            while (p < val.size()) {
+                size_t c = val.find(L',', p);
+                if (c == std::wstring::npos) c = val.size();
+                std::wstring d = val.substr(p, c - p);
+                p = c + 1;
+                bool matched = false;
+                for (int i = 0; i < 7; i++) {
+                    if (d == kDays[i]) {
+                        r->byDayMask |= 1u << i;
+                        matched = true;
+                    }
+                }
+                if (!matched) r->unsupported = true;  // e.g. 2TU (ordinal)
+            }
+        } else if (key == L"BYMONTHDAY") {
+            int d = _wtoi(val.c_str());
+            if (val.find(L',') != std::wstring::npos || d < 1 || d > 31) r->unsupported = true;
+            else r->byMonthDay = d;
+        } else if (key == L"WKST") {
+            // week start is assumed Monday
+        } else if (key == L"BYMONTH" || key == L"BYSETPOS" || key == L"BYYEARDAY" || key == L"BYWEEKNO" ||
+                   key == L"BYHOUR" || key == L"BYMINUTE" || key == L"BYSECOND") {
+            hasOther = true;
+        }
+    }
+    if (r->freq < 0 || hasOther) r->unsupported = true;
+    if (hasByDay && r->freq != 2) r->unsupported = true;
+    if (r->byMonthDay && r->freq != 3) r->unsupported = true;
+    (void)e;
+}
+
+std::vector<IcsEvent> IcsParse(const std::wstring& text, bool includeAllDay) {
+    // Unfold lines
+    std::vector<std::wstring> lines;
+    size_t pos = 0;
+    while (pos < text.size()) {
+        size_t nl = text.find(L'\n', pos);
+        if (nl == std::wstring::npos) nl = text.size();
+        std::wstring line = text.substr(pos, nl - pos);
+        pos = nl + 1;
+        if (!line.empty() && line.back() == L'\r') line.pop_back();
+        if (!line.empty() && (line[0] == L' ' || line[0] == L'\t') && !lines.empty()) {
+            lines.back() += line.substr(1);
+        } else {
+            lines.push_back(std::move(line));
+        }
+    }
+
+    std::vector<IcsEvent> events;
+    std::vector<std::pair<std::wstring, int64_t>> overrides;  // uid, original start
+    bool inEvent = false;
+    IcsEvent cur;
+    bool cancelled = false, haveStart = false, hasRecurrenceId = false;
+    int64_t recurrenceId = 0;
+    std::wstring rruleValue;
+
+    for (const auto& line : lines) {
+        if (line == L"BEGIN:VEVENT") {
+            inEvent = true;
+            cur = IcsEvent();
+            cancelled = haveStart = hasRecurrenceId = false;
+            rruleValue.clear();
+            continue;
+        }
+        if (line == L"END:VEVENT") {
+            if (inEvent && haveStart && !cancelled && (includeAllDay || !cur.allDay)) {
+                if (!rruleValue.empty()) IcsParseRule(rruleValue, cur, &cur.rule);
+                if (hasRecurrenceId) overrides.emplace_back(cur.uid, recurrenceId);
+                events.push_back(cur);
+            }
+            inEvent = false;
+            continue;
+        }
+        if (!inEvent) continue;
+
+        size_t colon = std::wstring::npos;
+        bool quoted = false;
+        for (size_t i = 0; i < line.size(); i++) {
+            if (line[i] == L'"') quoted = !quoted;
+            else if (line[i] == L':' && !quoted) {
+                colon = i;
+                break;
+            }
+        }
+        if (colon == std::wstring::npos) continue;
+        std::wstring nameAndParams = line.substr(0, colon);
+        std::wstring value = line.substr(colon + 1);
+        size_t semi = nameAndParams.find(L';');
+        std::wstring name = nameAndParams.substr(0, semi);
+        for (auto& c : name) c = static_cast<wchar_t>(towupper(c));
+
+        if (name == L"DTSTART") {
+            bool isDate;
+            if (IcsParseDateTime(value, &isDate, &cur.start)) {
+                haveStart = true;
+                cur.allDay = isDate;
+            }
+        } else if (name == L"SUMMARY") {
+            cur.summary = IcsUnescape(value);
+        } else if (name == L"UID") {
+            cur.uid = value;
+        } else if (name == L"STATUS") {
+            std::wstring v = value;
+            for (auto& c : v) c = static_cast<wchar_t>(towupper(c));
+            if (v == L"CANCELLED") cancelled = true;
+        } else if (name == L"RRULE") {
+            rruleValue = value;
+        } else if (name == L"RECURRENCE-ID") {
+            bool isDate;
+            if (IcsParseDateTime(value, &isDate, &recurrenceId)) hasRecurrenceId = true;
+        } else if (name == L"EXDATE") {
+            size_t p = 0;
+            while (p <= value.size()) {
+                size_t c = value.find(L',', p);
+                if (c == std::wstring::npos) c = value.size();
+                bool isDate;
+                int64_t t;
+                if (IcsParseDateTime(std::wstring_view(value).substr(p, c - p), &isDate, &t)) cur.exdates.push_back(t);
+                p = c + 1;
+            }
+        }
+    }
+
+    // A modified instance replaces the matching occurrence of its series.
+    for (const auto& [uid, orig] : overrides) {
+        for (auto& e : events) {
+            if (e.uid == uid && e.rule.freq != 0) e.exdates.push_back(orig);
+        }
+    }
+    return events;
+}
+
+bool IcsNextOccurrence(const IcsEvent& e, int64_t now, int64_t* out) {
+    auto excluded = [&](int64_t t) {
+        return std::find(e.exdates.begin(), e.exdates.end(), t) != e.exdates.end();
+    };
+    const IcsRule& r = e.rule;
+    if (r.freq == 0 || r.unsupported) {
+        if (e.start >= now && !excluded(e.start)) {
+            *out = e.start;
+            return true;
+        }
+        return false;
+    }
+
+    const int64_t startDay = IcsFloorDiv(e.start, 86400);
+    const int64_t tod = e.start - startDay * 86400;
+    const int64_t nowDay = IcsFloorDiv(now, 86400);
+    int emitted = 0;
+
+    // 1 = found, -1 = series ended, 0 = keep going
+    auto consider = [&](int64_t t) {
+        if (t < e.start) return 0;
+        if (t > r.until) return -1;
+        emitted++;
+        if (r.count && emitted > r.count) return -1;
+        if (t >= now && !excluded(t)) {
+            *out = t;
+            return 1;
+        }
+        return 0;
+    };
+    const bool canSkip = r.count == 0;
+    constexpr int kMaxIterations = 20000;
+
+    if (r.freq == 1) {
+        int64_t k0 = canSkip ? std::max<int64_t>(0, (nowDay - startDay) / r.interval - 1) : 0;
+        for (int64_t k = k0, n = 0; n < kMaxIterations; k++, n++) {
+            int res = consider((startDay + k * r.interval) * 86400 + tod);
+            if (res) return res > 0;
+        }
+    } else if (r.freq == 2) {
+        const int64_t weekStart = startDay - IcsWeekday(startDay);
+        unsigned mask = r.byDayMask ? r.byDayMask : (1u << IcsWeekday(startDay));
+        int64_t w0 = canSkip ? std::max<int64_t>(0, (nowDay - weekStart) / (7 * r.interval) - 1) : 0;
+        for (int64_t w = w0, n = 0; n < kMaxIterations; w++, n++) {
+            int64_t base = weekStart + w * 7 * r.interval;
+            for (int wd = 0; wd < 7; wd++) {
+                if (!(mask & (1u << wd))) continue;
+                int res = consider((base + wd) * 86400 + tod);
+                if (res) return res > 0;
+            }
+        }
+    } else if (r.freq == 3 || r.freq == 4) {
+        int sy;
+        unsigned sm, sd;
+        IcsCivilFromDays(startDay, &sy, &sm, &sd);
+        int ny;
+        unsigned nm, nd;
+        IcsCivilFromDays(nowDay, &ny, &nm, &nd);
+        const int day = (r.freq == 3 && r.byMonthDay) ? r.byMonthDay : static_cast<int>(sd);
+        const int64_t startIdx = static_cast<int64_t>(sy) * 12 + (sm - 1);
+        const int64_t nowIdx = static_cast<int64_t>(ny) * 12 + (nm - 1);
+        const int64_t unit = r.freq == 3 ? 1 : 12;  // months per period unit
+        int64_t p0 = canSkip ? std::max<int64_t>(0, (nowIdx - startIdx) / (unit * r.interval) - 1) : 0;
+        for (int64_t p = p0, n = 0; n < kMaxIterations; p++, n++) {
+            int64_t idx = startIdx + p * unit * r.interval;
+            int yy = static_cast<int>(IcsFloorDiv(idx, 12));
+            int mm = static_cast<int>(idx - static_cast<int64_t>(yy) * 12) + 1;
+            if (day > IcsDaysInMonth(yy, mm)) continue;
+            int res = consider(IcsDaysFromCivil(yy, mm, day) * 86400 + tod);
+            if (res) return res > 0;
+        }
+    }
+    return false;
+}
+
+struct IcsNext {
+    bool found = false;
+    std::wstring summary;
+    int64_t start = 0;
+};
+
+IcsNext IcsFindNext(const std::vector<IcsEvent>& events, int64_t nowLocal) {
+    IcsNext best;
+    for (const auto& e : events) {
+        int64_t t;
+        if (IcsNextOccurrence(e, nowLocal, &t) && (!best.found || t < best.start)) {
+            best.found = true;
+            best.start = t;
+            best.summary = e.summary;
+        }
+    }
+    return best;
+}
+
+std::wstring IcsFormatIn(int64_t diffSeconds) {
+    if (diffSeconds < 60) return L"now";
+    unsigned total = static_cast<unsigned>(std::min<int64_t>(diffSeconds, 4000000000LL));
+    unsigned d = total / 86400, h = (total % 86400) / 3600, m = (total % 3600) / 60;
+    WCHAR buf[48];
+    if (d) swprintf_s(buf, L"in %ud %uh", d, h);
+    else if (h) { if (m) swprintf_s(buf, L"in %uh %um", h, m); else swprintf_s(buf, L"in %uh", h); }
+    else swprintf_s(buf, L"in %um", m);
+    return buf;
+}
+
+// ----- PURE HELPERS (calendar conversion, parsing, text effects) -----
+
+struct BengaliDate {
+    int year;
+    int month;  // 1 = Boishakh ... 12 = Choitro
+    int day;
+};
+
+// Bangladesh revised Bengali calendar (Bangla Academy, 1987): the new year is
+// April 14; months 1-6 have 31 days, 7-11 have 30, Falgun (11) has 29 (30 in a
+// leap year) and Choitro (12) has 30. The Gregorian date on which each month
+// starts is the same every year.
+BengaliDate GregorianToBengali(int y, int m, int d) {
+    struct Start { int gm, gd, bengaliMonth; };
+    static const Start kStarts[12] = {
+        {1, 15, 10}, {2, 14, 11}, {3, 15, 12}, {4, 14, 1},  {5, 15, 2},  {6, 15, 3},
+        {7, 16, 4},  {8, 16, 5},  {9, 16, 6},  {10, 17, 7}, {11, 16, 8}, {12, 16, 9},
+    };
+    int idx = -1;
+    for (int i = 0; i < 12; i++) {
+        if (m > kStarts[i].gm || (m == kStarts[i].gm && d >= kStarts[i].gd)) idx = i;
+    }
+    int startYear = y, gm, gd, bm;
+    if (idx < 0) {  // before January 15: still Poush, which began on December 16
+        startYear = y - 1;
+        gm = 12;
+        gd = 16;
+        bm = 9;
+    } else {
+        gm = kStarts[idx].gm;
+        gd = kStarts[idx].gd;
+        bm = kStarts[idx].bengaliMonth;
+    }
+    BengaliDate r;
+    r.month = bm;
+    r.day = static_cast<int>(IcsDaysFromCivil(y, m, d) - IcsDaysFromCivil(startYear, gm, gd)) + 1;
+    r.year = (m > 4 || (m == 4 && d >= 14)) ? y - 593 : y - 594;
+    return r;
+}
+
+std::wstring ToBanglaDigits(const std::wstring& s) {
+    std::wstring r = s;
+    for (auto& c : r) {
+        if (c >= L'0' && c <= L'9') c = static_cast<wchar_t>(0x09E6 + (c - L'0'));
+    }
+    return r;
+}
+
+// Dotted-quad IPv4 address in network byte order (as used by IcmpSendEcho).
+bool ParseIPv4(const std::wstring& s, unsigned long* out) {
+    unsigned long parts[4];
+    const wchar_t* p = s.c_str();
+    for (int i = 0; i < 4; i++) {
+        if (*p < L'0' || *p > L'9') return false;
+        wchar_t* end;
+        unsigned long v = wcstoul(p, &end, 10);
+        if (v > 255 || end == p) return false;
+        parts[i] = v;
+        p = end;
+        if (i < 3) {
+            if (*p != L'.') return false;
+            p++;
+        }
+    }
+    if (*p != L'\0') return false;
+    *out = parts[0] | (parts[1] << 8) | (parts[2] << 16) | (parts[3] << 24);
+    return true;
+}
+
+// "m:ss", or "h:mm:ss" from one hour up.
+std::wstring FormatMediaClock(double seconds) {
+    if (seconds < 0) seconds = 0;
+    unsigned total = static_cast<unsigned>(std::min(seconds, 359999.0));
+    unsigned h = total / 3600, m = (total % 3600) / 60, s = total % 60;
+    WCHAR buf[24];
+    if (h) swprintf_s(buf, L"%u:%02u:%02u", h, m, s);
+    else swprintf_s(buf, L"%u:%02u", m, s);
+    return buf;
+}
+
+std::wstring MediaProgressBar(double position, double duration, int cells) {
+    if (duration <= 0 || cells <= 0) return L"";
+    double frac = std::min(std::max(position / duration, 0.0), 1.0);
+    int filled = static_cast<int>(frac * cells + 0.5);
+    std::wstring bar;
+    for (int i = 0; i < cells; i++) bar += i < filled ? L'\u25B0' : L'\u25B1';
+    return bar;
+}
+
+// A scrolling window over text + gap, `window` characters wide, starting at
+// `offset`. Never starts or ends in the middle of a surrogate pair.
+std::wstring MarqueeWindow(const std::wstring& text, size_t window, size_t offset) {
+    if (text.size() <= window || window == 0) return text;
+    const std::wstring cycle = text + L"   ";
+    offset %= cycle.size();
+    auto isLow = [](wchar_t c) { return c >= 0xDC00 && c <= 0xDFFF; };
+    auto isHigh = [](wchar_t c) { return c >= 0xD800 && c <= 0xDBFF; };
+    if (isLow(cycle[offset])) offset = (offset + 1) % cycle.size();
+    std::wstring out;
+    for (size_t i = 0; i < window; i++) out += cycle[(offset + i) % cycle.size()];
+    if (!out.empty() && isHigh(out.back())) out.back() = L' ';
+    return out;
+}
+
+int64_t IcsUtcToLocalWindows(int64_t utc) {
+    ULARGE_INTEGER u;
+    u.QuadPart = static_cast<ULONGLONG>(utc + 11644473600LL) * 10000000ULL;
+    FILETIME ft{u.LowPart, u.HighPart};
+    SYSTEMTIME stUtc, stLocal;
+    if (!FileTimeToSystemTime(&ft, &stUtc) || !SystemTimeToTzSpecificLocalTime(nullptr, &stUtc, &stLocal)) return utc;
+    return IcsDaysFromCivil(stLocal.wYear, stLocal.wMonth, stLocal.wDay) * 86400 + stLocal.wHour * 3600 +
+           stLocal.wMinute * 60 + stLocal.wSecond;
+}
+
+std::vector<IcsEvent> g_icsEvents;  // guarded by g_webContentMutex
+unsigned g_icsVersion = 0;          // guarded by g_webContentMutex
+
+bool UpdateCalendarEvents() {
+    if (g_settings.icsUrl.empty()) return true;
+    std::wstring url = g_settings.icsUrl;
+    if (url.rfind(L"webcal://", 0) == 0) url = L"https://" + url.substr(9);
+
+    auto content = GetUrlContent(url.c_str());
+    if (!content) return false;
+
+    g_icsUtcToLocal = IcsUtcToLocalWindows;
+    std::vector<IcsEvent> events;
+    try {
+        events = IcsParse(*content, g_settings.icsIncludeAllDay);
+    } catch (...) {
+        return false;
+    }
+
+    std::lock_guard<std::mutex> guard(g_webContentMutex);
+    g_icsEvents = std::move(events);
+    g_icsVersion++;
     return true;
 }
 
@@ -1877,6 +2851,7 @@ void UpdateWebContent() {
     }
 
     if (IsStrInDateTimePatternSettings(L"%weather%") && !UpdateWeatherWebContent()) failed++;
+    if (IsStrInDateTimePatternSettings(L"%next_event") && !UpdateCalendarEvents()) failed++;
     if (failed == 0) g_webContentLoaded = true;
 }
 
@@ -1899,7 +2874,8 @@ void WebContentUpdateThreadInit() {
     std::lock_guard<std::mutex> guard(g_webContentMutex);
     g_webContentStrings.resize(g_settings.webContentsItems.size());
     g_webContentStringsFull.resize(g_settings.webContentsItems.size());
-    if (IsStrInDateTimePatternSettings(L"%web") || IsStrInDateTimePatternSettings(L"%weather%")) {
+    if (IsStrInDateTimePatternSettings(L"%web") || IsStrInDateTimePatternSettings(L"%weather%") ||
+        IsStrInDateTimePatternSettings(L"%next_event")) {
         g_webContentUpdateRefreshEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         g_webContentUpdateStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
         g_webContentUpdateThread = CreateThread(nullptr, 0, WebContentUpdateThread, nullptr, 0, nullptr);
@@ -2517,6 +3493,35 @@ std::vector<std::wstring> QueryDataCollectionSession::FilterGpuPathsByAdapterNam
 std::optional<QueryDataCollectionSession> g_dataCollectionSession;
 DWORD g_dataCollectionLastFormatIndex;
 
+enum GraphKind { kGraphCpu, kGraphRam, kGraphGpu, kGraphDownload, kGraphUpload, kGraphDisk, kGraphCount };
+constexpr int kGraphMaxLength = 32;
+
+struct GraphHistory {
+    double v[kGraphMaxLength];
+    int count;
+    void Push(double x) {
+        if (count < kGraphMaxLength) {
+            v[count++] = x;
+        } else {
+            memmove(v, v + 1, sizeof(double) * (kGraphMaxLength - 1));
+            v[kGraphMaxLength - 1] = x;
+        }
+    }
+};
+
+GraphHistory g_graphHistory[kGraphCount];
+bool g_graphUsed[kGraphCount];
+FormattedString<FORMATTED_BUFFER_SIZE> g_graphFormatted[kGraphCount];
+
+enum RuleMetric { kRuleNone, kRuleCpu, kRuleRam, kRuleGpu, kRuleCpuTemp, kRuleBattery };
+
+bool ColorRulesUseMetric(int metric) {
+    for (const auto& r : g_settings.colorRules) {
+        if (r.metric == metric) return true;
+    }
+    return false;
+}
+
 // ----- MEDIA PLAYER INTEGRATION -----
 
 bool IsMediaPlayerIgnored(const winrt::hstring& appId) {
@@ -2573,6 +3578,8 @@ std::wstring RemoveBracketsFromString(std::wstring_view input) {
 
 void ClearMediaFormattedStrings() {
     g_mediaActive = false;
+    g_mediaPlaying = false;
+    g_mediaTimeline.valid = false;
     wcscpy_s(g_mediaTitleFormatted.buffer, L"");
     wcscpy_s(g_mediaArtistFormatted.buffer, L"");
     wcscpy_s(g_mediaAlbumFormatted.buffer, L"");
@@ -2616,6 +3623,8 @@ void RefreshMediaData() {
         g_mediaActive = true;
         using Status = winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSessionPlaybackStatus;
         auto status = session.GetPlaybackInfo().PlaybackStatus();
+        g_mediaPlaying = status == Status::Playing;
+        g_mediaTimelineLastQuery = 0;  // track or state changed: re-read the timeline
         switch (status) {
             case Status::Playing: wcscpy_s(g_mediaStatusFormatted.buffer, L"\u23EF"); break;
             case Status::Paused: wcscpy_s(g_mediaStatusFormatted.buffer, L"\u23F8"); break;
@@ -2634,6 +3643,45 @@ void RefreshMediaData() {
         ClearMediaFormattedStrings();
     }
     g_mediaDataDirty = false;
+}
+
+// Reads the playback position and duration of the active session (at most
+// every 3 seconds). Between reads the position is extrapolated while playing.
+void QueryMediaTimelineIfNeeded() {
+    ULONGLONG now = GetTickCount64() | 1;
+    if (g_mediaTimelineLastQuery && now - g_mediaTimelineLastQuery < 3000) return;
+    g_mediaTimelineLastQuery = now;
+
+    std::lock_guard<std::mutex> guard(g_mediaMutex);
+    g_mediaTimeline.valid = false;
+    try {
+        if (!g_mediaSessionManager) return;
+        auto session = FindActiveMediaSession();
+        if (!session) return;
+
+        auto toSeconds = [](auto ts) { return std::chrono::duration_cast<std::chrono::duration<double>>(ts).count(); };
+        auto timeline = session.GetTimelineProperties();
+        double start = toSeconds(timeline.StartTime());
+        double end = toSeconds(timeline.EndTime());
+        double position = toSeconds(timeline.Position()) - start;
+
+        auto info = session.GetPlaybackInfo();
+        bool playing = info.PlaybackStatus() ==
+                       winrt::Windows::Media::Control::GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing;
+        double rate = 1;
+        if (auto r = info.PlaybackRate()) rate = r.Value();
+        if (playing) {
+            double elapsed = toSeconds(winrt::clock::now() - timeline.LastUpdatedTime());
+            if (elapsed > 0 && elapsed < 86400) position += elapsed * rate;
+        }
+
+        g_mediaTimeline.position = std::max(position, 0.0);
+        g_mediaTimeline.duration = std::max(end - start, 0.0);
+        g_mediaTimeline.rate = rate;
+        g_mediaTimeline.queryTick = now;
+        g_mediaTimeline.valid = true;
+        g_mediaPlaying = playing;
+    } catch (...) {}
 }
 
 void DataCollectionSessionInit() {
@@ -2656,6 +3704,24 @@ void DataCollectionSessionInit() {
     metrics[static_cast<int>(MetricType::kVramSharedUsed)] = IsStrInDateTimePatternSettings(L"%vram_shared%") || IsStrInDateTimePatternSettings(L"%vram_shared_used%");
     metrics[static_cast<int>(MetricType::kCpuTemp)] = IsStrInDateTimePatternSettings(L"%cpu_temp%") || IsStrInDateTimePatternSettings(L"%cpu_temp_f%");
 
+    static const PCWSTR kGraphTags[kGraphCount] = {
+        L"%cpu_graph%", L"%ram_graph%", L"%gpu_graph%", L"%download_graph%", L"%upload_graph%", L"%disk_graph%",
+    };
+    for (int i = 0; i < kGraphCount; i++) {
+        g_graphUsed[i] = IsStrInDateTimePatternSettings(kGraphTags[i]);
+        g_graphHistory[i].count = 0;
+    }
+    auto enable = [&](MetricType m, bool on) {
+        if (on) metrics[static_cast<int>(m)] = true;
+    };
+    enable(MetricType::kCpu, g_graphUsed[kGraphCpu] || ColorRulesUseMetric(kRuleCpu));
+    enable(MetricType::kGpuUsage, g_graphUsed[kGraphGpu] || ColorRulesUseMetric(kRuleGpu));
+    enable(MetricType::kCpuTemp, ColorRulesUseMetric(kRuleCpuTemp));
+    enable(MetricType::kDownloadSpeed, g_graphUsed[kGraphDownload]);
+    enable(MetricType::kUploadSpeed, g_graphUsed[kGraphUpload]);
+    enable(MetricType::kDiskReadSpeed, g_graphUsed[kGraphDisk]);
+    enable(MetricType::kDiskWriteSpeed, g_graphUsed[kGraphDisk]);
+
     if (!std::any_of(std::begin(metrics), std::end(metrics), [](bool x) { return x; })) return;
 
     try {
@@ -2674,11 +3740,7 @@ void DataCollectionSessionUninit() {
 }
 
 bool IsMediaPatternUsed() {
-    return IsStrInDateTimePatternSettings(L"%media_title%") ||
-           IsStrInDateTimePatternSettings(L"%media_artist%") ||
-           IsStrInDateTimePatternSettings(L"%media_album%") ||
-           IsStrInDateTimePatternSettings(L"%media_status%") ||
-           IsStrInDateTimePatternSettings(L"%media_info%");
+    return IsStrInDateTimePatternSettings(L"%media_");
 }
 
 void UnsubscribeFromMediaSession() {
@@ -2727,13 +3789,33 @@ void MediaSessionInit() {
     }
 }
 
+// Update interval in seconds, using the slower "on battery" interval when
+// the PC is unplugged. The power state is checked at most every 5 seconds.
+int GetEffectiveUpdateInterval() {
+    int normal = std::max(g_settings.dataCollection.updateInterval, 1);
+    int onBattery = g_settings.dataCollection.batteryUpdateInterval;
+    if (onBattery <= normal) return normal;
+
+    static ULONGLONG s_lastCheck = 0;
+    static bool s_onBattery = false;
+    ULONGLONG now = GetTickCount64() | 1;
+    if (!s_lastCheck || now - s_lastCheck >= 5000) {
+        SYSTEM_POWER_STATUS ps;
+        s_onBattery = GetSystemPowerStatus(&ps) && ps.ACLineStatus == 0;
+        s_lastCheck = now;
+    }
+    return s_onBattery ? onBattery : normal;
+}
+
 DWORD GetDataCollectionFormatIndex() {
     FILETIME ft{};
     SystemTimeToFileTime(&g_formatTime, &ft);
     ULARGE_INTEGER i{.LowPart = ft.dwLowDateTime, .HighPart = ft.dwHighDateTime};
-    ULONGLONG interval = 10000000ULL * std::max(g_settings.dataCollection.updateInterval, 1);
+    ULONGLONG interval = 10000000ULL * GetEffectiveUpdateInterval();
     return static_cast<DWORD>(i.QuadPart / interval);
 }
+
+void RecordGraphHistory();
 
 void DataCollectionSampleIfNeeded() {
     DWORD idx = GetDataCollectionFormatIndex();
@@ -2742,6 +3824,7 @@ void DataCollectionSampleIfNeeded() {
             g_dataCollectionSession->UpdateAllMetrics();
             g_dataCollectionSession->SampleData();
         }
+        RecordGraphHistory();
         g_dataCollectionLastFormatIndex = idx;
     }
 }
@@ -3072,6 +4155,811 @@ PCWSTR GetCpuTempFFormatted() {
     });
 }
 
+// ----- NETWORK INFO, ALTERNATE CALENDARS, NEXT EVENT -----
+
+// Network snapshot, refreshed at most every 5 seconds.
+
+struct NetworkSnapshot {
+    std::wstring ssid;
+    int signalPercent = -1;
+    bool vpn = false;
+    std::wstring localIp;
+    ULONGLONG tick = 0;
+} g_net;
+
+void RefreshNetworkSnapshotIfNeeded() {
+    ULONGLONG now = GetTickCount64() | 1;
+    if (g_net.tick && now - g_net.tick < 5000) return;
+    g_net = NetworkSnapshot();
+    g_net.tick = now;
+    try {
+        namespace Conn = winrt::Windows::Networking::Connectivity;
+        auto profile = Conn::NetworkInformation::GetInternetConnectionProfile();
+        if (profile) {
+            if (profile.IsWlanConnectionProfile()) {
+                g_net.ssid = std::wstring(profile.WlanConnectionProfileDetails().GetConnectedSsid());
+            }
+            // The API reports 0-5 signal bars, not a percentage.
+            if (auto bars = profile.GetSignalBars()) g_net.signalPercent = bars.Value() * 20;
+            if (auto adapter = profile.NetworkAdapter()) {
+                for (auto const& hostName : Conn::NetworkInformation::GetHostNames()) {
+                    if (hostName.Type() != winrt::Windows::Networking::HostNameType::Ipv4) continue;
+                    auto ipInfo = hostName.IPInformation();
+                    if (ipInfo && ipInfo.NetworkAdapter() &&
+                        ipInfo.NetworkAdapter().NetworkAdapterId() == adapter.NetworkAdapterId()) {
+                        g_net.localIp = std::wstring(hostName.CanonicalName());
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Best effort: a connected profile on a PPP / tunnel / virtual adapter, or named "VPN".
+        for (auto const& p : Conn::NetworkInformation::GetConnectionProfiles()) {
+            if (p.GetNetworkConnectivityLevel() == Conn::NetworkConnectivityLevel::None) continue;
+            auto adapter = p.NetworkAdapter();
+            if (!adapter) continue;
+            uint32_t type = adapter.IanaInterfaceType();
+            bool vpnLike = type == 23 || type == 131 || type == 53;
+            if (!vpnLike) {
+                std::wstring name(p.ProfileName());
+                for (auto& c : name) c = static_cast<wchar_t>(towlower(c));
+                vpnLike = name.find(L"vpn") != std::wstring::npos;
+            }
+            if (vpnLike) {
+                g_net.vpn = true;
+                break;
+            }
+        }
+    } catch (...) {}
+}
+
+PCWSTR GetWifiSsidFormatted() {
+    RefreshNetworkSnapshotIfNeeded();
+    return g_net.ssid.c_str();
+}
+
+PCWSTR GetWifiSignalFormatted() {
+    RefreshNetworkSnapshotIfNeeded();
+    static WCHAR buf[8];
+    if (g_net.signalPercent < 0) return L"";
+    swprintf_s(buf, L"%d%%", g_net.signalPercent);
+    return buf;
+}
+
+PCWSTR GetVpnFormatted() {
+    RefreshNetworkSnapshotIfNeeded();
+    return g_net.vpn ? L"VPN" : L"";
+}
+
+PCWSTR GetLocalIpFormatted() {
+    RefreshNetworkSnapshotIfNeeded();
+    return g_net.localIp.c_str();
+}
+
+// Ping, measured on a background thread (iphlpapi is loaded on demand).
+
+struct PingReplyHeader {  // first fields of ICMP_ECHO_REPLY
+    ULONG Address;
+    ULONG Status;
+    ULONG RoundTripTime;
+};
+using IcmpCreateFile_t = HANDLE(WINAPI*)();
+using IcmpCloseHandle_t = BOOL(WINAPI*)(HANDLE);
+using IcmpSendEcho_t = DWORD(WINAPI*)(HANDLE, ULONG, LPVOID, WORD, LPVOID, LPVOID, DWORD, DWORD);
+
+std::atomic<int> g_pingMs{-2};  // -2 not measured yet, -1 failed or timed out
+HANDLE g_pingThread = nullptr;
+HANDLE g_pingStopEvent = nullptr;
+unsigned long g_pingAddress = 0;
+int g_pingIntervalSec = 5;
+
+DWORD WINAPI PingThread(LPVOID) {
+    HMODULE hIp = LoadLibraryW(L"iphlpapi.dll");
+    if (!hIp) return 0;
+    auto pCreate = reinterpret_cast<IcmpCreateFile_t>(GetProcAddress(hIp, "IcmpCreateFile"));
+    auto pClose = reinterpret_cast<IcmpCloseHandle_t>(GetProcAddress(hIp, "IcmpCloseHandle"));
+    auto pSend = reinterpret_cast<IcmpSendEcho_t>(GetProcAddress(hIp, "IcmpSendEcho"));
+    HANDLE hIcmp = (pCreate && pClose && pSend) ? pCreate() : INVALID_HANDLE_VALUE;
+    if (hIcmp != INVALID_HANDLE_VALUE) {
+        char payload[32] = "WindhawkTaskbarPing";
+        alignas(8) BYTE reply[256];
+        while (true) {
+            DWORD n = pSend(hIcmp, g_pingAddress, payload, sizeof(payload), nullptr, reply, sizeof(reply), 1500);
+            const auto* header = reinterpret_cast<const PingReplyHeader*>(reply);
+            g_pingMs = (n > 0 && header->Status == 0) ? static_cast<int>(header->RoundTripTime) : -1;
+            if (WaitForSingleObject(g_pingStopEvent, g_pingIntervalSec * 1000) != WAIT_TIMEOUT) break;
+        }
+        pClose(hIcmp);
+    }
+    FreeLibrary(hIp);
+    return 0;
+}
+
+void PingThreadInit() {
+    g_pingMs = -2;
+    if (!IsStrInDateTimePatternSettings(L"%ping%")) return;
+    if (!ParseIPv4(g_settings.pingHost, &g_pingAddress)) return;  // %ping% shows "--"
+    g_pingIntervalSec = std::clamp(g_settings.pingInterval, 2, 300);
+    g_pingStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+    g_pingThread = CreateThread(nullptr, 0, PingThread, nullptr, 0, nullptr);
+}
+
+void PingThreadUninit() {
+    if (!g_pingThread) return;
+    SetEvent(g_pingStopEvent);
+    WaitForSingleObject(g_pingThread, INFINITE);
+    CloseHandle(g_pingThread);
+    CloseHandle(g_pingStopEvent);
+    g_pingThread = nullptr;
+    g_pingStopEvent = nullptr;
+}
+
+PCWSTR GetPingFormatted() {
+    static WCHAR buf[24];
+    int ms = g_pingMs;
+    if (ms < 0) return L"--";
+    swprintf_s(buf, L"%d ms", ms);
+    return buf;
+}
+
+// Alternate calendars
+
+std::wstring ComputeAltCalendarDate(int kind) {  // 0 Hijri, 1 Persian, 2 Japanese
+    try {
+        namespace Glob = winrt::Windows::Globalization;
+        winrt::hstring id;
+        PCWSTR language = L"en-US";
+        if (kind == 0) id = g_settings.hijriCivil ? Glob::CalendarIdentifiers::Hijri() : Glob::CalendarIdentifiers::UmAlQura();
+        else if (kind == 1) id = Glob::CalendarIdentifiers::Persian();
+        else {
+            id = Glob::CalendarIdentifiers::Japanese();
+            language = L"ja-JP";
+        }
+
+        // The calendar runs in UTC so the local wall-clock time in g_formatTime is read back unchanged.
+        Glob::Calendar cal(std::vector<winrt::hstring>{winrt::hstring(language)}, id,
+                           Glob::ClockIdentifiers::TwentyFourHour(), L"UTC");
+        FILETIME ft{};
+        SystemTimeToFileTime(&g_formatTime, &ft);
+        cal.SetDateTime(winrt::clock::from_file_time(ft));
+        if (kind == 0 && g_settings.hijriOffset) cal.AddDays(g_settings.hijriOffset);
+
+        if (kind == 2) {
+            int year = cal.Year();
+            return std::wstring(cal.EraAsString()) + (year == 1 ? std::wstring(L"\u5143") : std::to_wstring(year)) +
+                   L"\u5E74" + std::to_wstring(cal.Month()) + L"\u6708" + std::to_wstring(cal.Day()) + L"\u65E5";
+        }
+        return std::to_wstring(cal.Day()) + L" " + std::wstring(cal.MonthAsString()) + L" " + std::to_wstring(cal.Year());
+    } catch (...) {
+        return L"?";
+    }
+}
+
+PCWSTR GetAltCalendarDate(int kind) {
+    static std::wstring cache[3];
+    static int64_t cacheKey[3] = {-1, -1, -1};
+    int64_t key = (static_cast<int64_t>(g_formatTime.wYear) * 10000 + g_formatTime.wMonth * 100 + g_formatTime.wDay) * 100 +
+                  (g_settings.hijriOffset + 10) * 2 + (g_settings.hijriCivil ? 1 : 0);
+    if (cacheKey[kind] != key) {
+        cache[kind] = ComputeAltCalendarDate(kind);
+        cacheKey[kind] = key;
+    }
+    return cache[kind].c_str();
+}
+
+PCWSTR GetBengaliDate(bool bangla) {
+    static std::wstring cache[2];
+    static int cacheKey[2] = {-1, -1};
+    int key = g_formatTime.wYear * 10000 + g_formatTime.wMonth * 100 + g_formatTime.wDay;
+    int idx = bangla ? 1 : 0;
+    if (cacheKey[idx] != key) {
+        static const wchar_t* kLatin[12] = {L"Boishakh", L"Joishtho", L"Asharh",    L"Shrabon", L"Bhadro",  L"Ashwin",
+                                            L"Kartik",   L"Agrahayan", L"Poush",     L"Magh",    L"Falgun",  L"Choitro"};
+        static const wchar_t* kBangla[12] = {L"\u09AC\u09C8\u09B6\u09BE\u0996", L"\u099C\u09CD\u09AF\u09C8\u09B7\u09CD\u09A0",
+                                             L"\u0986\u09B7\u09BE\u09A2\u09BC",   L"\u09B6\u09CD\u09B0\u09BE\u09AC\u09A3",
+                                             L"\u09AD\u09BE\u09A6\u09CD\u09B0",   L"\u0986\u09B6\u09CD\u09AC\u09BF\u09A8",
+                                             L"\u0995\u09BE\u09B0\u09CD\u09A4\u09BF\u0995", L"\u0985\u0997\u09CD\u09B0\u09B9\u09BE\u09AF\u09BC\u09A3",
+                                             L"\u09AA\u09CC\u09B7",               L"\u09AE\u09BE\u0998",
+                                             L"\u09AB\u09BE\u09B2\u09CD\u0997\u09C1\u09A8", L"\u099A\u09C8\u09A4\u09CD\u09B0"};
+        BengaliDate b = GregorianToBengali(g_formatTime.wYear, g_formatTime.wMonth, g_formatTime.wDay);
+        std::wstring text = std::to_wstring(b.day) + L" " + (bangla ? kBangla : kLatin)[b.month - 1] + L" " +
+                            std::to_wstring(b.year);
+        cache[idx] = bangla ? ToBanglaDigits(text) : text;
+        cacheKey[idx] = key;
+    }
+    return cache[idx].c_str();
+}
+
+// Next calendar event (from the ICS feed)
+
+int64_t LocalSecondsFromSystemTime(const SYSTEMTIME& st) {
+    return IcsDaysFromCivil(st.wYear, st.wMonth, st.wDay) * 86400 + st.wHour * 3600 + st.wMinute * 60 + st.wSecond;
+}
+
+struct NextEventCache {
+    int64_t minuteKey = -1;
+    unsigned version = ~0u;
+    IcsNext next;
+} g_nextEventCache;
+
+IcsNext GetNextEventCached(int64_t* nowLocalOut) {
+    int64_t nowLocal = LocalSecondsFromSystemTime(g_formatTime);
+    int64_t key = nowLocal / 60;
+    *nowLocalOut = nowLocal;
+    std::lock_guard<std::mutex> guard(g_webContentMutex);
+    if (key != g_nextEventCache.minuteKey || g_icsVersion != g_nextEventCache.version) {
+        g_nextEventCache.next = IcsFindNext(g_icsEvents, nowLocal);
+        g_nextEventCache.minuteKey = key;
+        g_nextEventCache.version = g_icsVersion;
+    }
+    return g_nextEventCache.next;
+}
+
+PCWSTR GetNextEventFormatted() {
+    static std::wstring buf;
+    int64_t nowLocal;
+    IcsNext next = GetNextEventCached(&nowLocal);
+    if (!next.found) {
+        buf = g_settings.icsNoEventText;
+    } else {
+        buf = next.summary;
+        size_t maxLen = g_settings.icsMaxLength > 0 ? static_cast<size_t>(g_settings.icsMaxLength) : 0;
+        if (maxLen >= 4 && buf.size() > maxLen) buf = buf.substr(0, maxLen - 3) + L"...";
+    }
+    return buf.c_str();
+}
+
+PCWSTR GetNextEventTimeFormatted() {
+    static std::wstring buf;
+    int64_t nowLocal;
+    IcsNext next = GetNextEventCached(&nowLocal);
+    if (!next.found) return L"";
+
+    int64_t startDay = IcsFloorDiv(next.start, 86400);
+    int64_t tod = next.start - startDay * 86400;
+    int64_t dayDiff = startDay - IcsFloorDiv(nowLocal, 86400);
+    WCHAR hm[8];
+    swprintf_s(hm, L"%02d:%02d", static_cast<int>(tod / 3600), static_cast<int>((tod % 3600) / 60));
+    if (dayDiff <= 0) {
+        buf = hm;
+    } else if (dayDiff < 7) {
+        static const wchar_t* kWeekday[] = {L"Mon", L"Tue", L"Wed", L"Thu", L"Fri", L"Sat", L"Sun"};
+        buf = std::wstring(kWeekday[IcsWeekday(startDay)]) + L" " + hm;
+    } else {
+        static const wchar_t* kMonth[] = {L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun",
+                                          L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"};
+        int y;
+        unsigned m, d;
+        IcsCivilFromDays(startDay, &y, &m, &d);
+        buf = std::wstring(kMonth[m - 1]) + L" " + std::to_wstring(d) + L" " + hm;
+    }
+    return buf.c_str();
+}
+
+PCWSTR GetNextEventInFormatted() {
+    static std::wstring buf;
+    int64_t nowLocal;
+    IcsNext next = GetNextEventCached(&nowLocal);
+    if (!next.found) return L"";
+    buf = IcsFormatIn(next.start - nowLocal);
+    return buf.c_str();
+}
+
+// Common outline icons from Tabler Icons 3.49.0 (name, codepoint).
+struct TablerIcon {
+    const wchar_t* name;
+    unsigned codepoint;
+};
+
+const TablerIcon kTablerIcons[] = {
+    {L"activity", 0xED23}, {L"alarm", 0xEA04}, {L"alert-triangle", 0xEA06}, {L"antenna-bars-5", 0xECCB},
+    {L"arrow-big-down", 0xEDDA}, {L"arrow-big-up", 0xEDDD}, {L"arrow-down", 0xEA16}, {L"arrow-up", 0xEA25},
+    {L"arrows-up-down", 0xEDB6}, {L"battery", 0xEA34}, {L"battery-1", 0xEA2F}, {L"battery-2", 0xEA30},
+    {L"battery-3", 0xEA31}, {L"battery-4", 0xEA32}, {L"battery-charging", 0xEA33},
+    {L"battery-charging-2", 0xEF3B}, {L"battery-off", 0xED1C}, {L"bell", 0xEA35}, {L"bell-off", 0xECE9},
+    {L"bike", 0xEA36}, {L"bluetooth", 0xEA37}, {L"bluetooth-connected", 0xECEA}, {L"bolt", 0xEA38},
+    {L"bookmark", 0xEA3A}, {L"brand-chrome", 0xEC18}, {L"brand-discord", 0xECE3}, {L"brand-github", 0xEC1C},
+    {L"brand-spotify", 0xED03}, {L"brand-steam", 0xED6F}, {L"brand-telegram", 0xEC26},
+    {L"brand-whatsapp", 0xEC74}, {L"brand-windows", 0xECD8}, {L"brand-youtube", 0xEC90}, {L"bug", 0xEA48},
+    {L"bulb", 0xEA51}, {L"calendar", 0xEA53}, {L"calendar-event", 0xEA52}, {L"calendar-time", 0xEE21},
+    {L"camera", 0xEA54}, {L"cash", 0xEA55}, {L"cast", 0xEA56}, {L"chart-bar", 0xEA59},
+    {L"chart-line", 0xEA5C}, {L"check", 0xEA5E}, {L"clipboard", 0xEA6F}, {L"clock", 0xEA70},
+    {L"clock-hour-3", 0xF318}, {L"cloud", 0xEA76}, {L"cloud-rain", 0xEA72}, {L"cloud-snow", 0xEA73},
+    {L"cloud-storm", 0xEA74}, {L"code", 0xEA77}, {L"coffee", 0xEF0E}, {L"coin", 0xEB82}, {L"cpu", 0xEF8E},
+    {L"cpu-2", 0xF075}, {L"database", 0xEA88}, {L"device-desktop", 0xEA89}, {L"device-gamepad", 0xEB63},
+    {L"device-laptop", 0xEB64}, {L"device-sd-card", 0xF384}, {L"disc", 0xEA90}, {L"download", 0xEA96},
+    {L"droplet", 0xEA97}, {L"eye", 0xEA9A}, {L"eye-off", 0xECF0}, {L"file", 0xEAA4}, {L"flag", 0xEAA6},
+    {L"flame", 0xEC2C}, {L"folder", 0xEAAD}, {L"gift", 0xEB68}, {L"git-branch", 0xEAB2},
+    {L"headphones", 0xEABD}, {L"heart", 0xEABE}, {L"home", 0xEAC1}, {L"hourglass", 0xEF93},
+    {L"info-circle", 0xEAC5}, {L"keyboard", 0xEBD6}, {L"language", 0xEBBE}, {L"lock", 0xEAE2},
+    {L"lock-open", 0xEAE1}, {L"mail", 0xEAE5}, {L"map-pin", 0xEAE8}, {L"memory", 0x102B7},
+    {L"message", 0xEAEF}, {L"message-circle", 0xEAED}, {L"microphone", 0xEAF0}, {L"microphone-off", 0xED16},
+    {L"moon", 0xEAF8}, {L"mouse", 0xEAF9}, {L"music", 0xEAFC}, {L"network", 0xF09F}, {L"photo", 0xEB0A},
+    {L"pin", 0xEC9C}, {L"pinned", 0xED60}, {L"player-pause", 0xED45}, {L"player-play", 0xED46},
+    {L"player-skip-back", 0xED48}, {L"player-skip-forward", 0xED49}, {L"player-stop", 0xED4A},
+    {L"plug", 0xEBD9}, {L"plug-connected", 0xF00A}, {L"power", 0xEB0D}, {L"refresh", 0xEB13},
+    {L"rocket", 0xEC45}, {L"router", 0xEB18}, {L"run", 0xEC82}, {L"screenshot", 0xF201}, {L"search", 0xEB1C},
+    {L"server", 0xEB1F}, {L"settings", 0xEB20}, {L"shield", 0xEB24}, {L"shield-check", 0xEB22},
+    {L"shopping-cart", 0xEB25}, {L"snowflake", 0xEC0B}, {L"star", 0xEB2E}, {L"stopwatch", 0xFF9B},
+    {L"sun", 0xEB30}, {L"sunrise", 0xEF1C}, {L"sunset", 0xEC31}, {L"tag", 0x10096}, {L"temperature", 0xEB38},
+    {L"terminal", 0xEBDC}, {L"thermometer", 0xEF67}, {L"tools", 0xEBCA}, {L"trash", 0xEB41},
+    {L"umbrella", 0xEBF1}, {L"upload", 0xEB47}, {L"usb", 0xF00C}, {L"user", 0xEB4D}, {L"users", 0xEBF2},
+    {L"video", 0xED22}, {L"volume", 0xEB51}, {L"volume-2", 0xEB4F}, {L"volume-3", 0xEB50},
+    {L"volume-off", 0xF1C3}, {L"walk", 0xEC87}, {L"wand", 0xEBCB}, {L"wifi", 0xEB52}, {L"wifi-0", 0xEBA3},
+    {L"wifi-1", 0xEBA4}, {L"wifi-2", 0xEBA5}, {L"wifi-off", 0xECFA}, {L"wind", 0xEC34}, {L"world", 0xEB54},
+    {L"x", 0xEB55},
+};
+
+// Parses a Tabler Icons stylesheet (expanded or minified) into name -> codepoint.
+// Handles rules such as  .ti-bell:before { content: "\ea35"; }  and selector
+// lists such as  .ti-a:before, .ti-b:before { content: "\ea35"; }.
+void ParseTablerCss(const std::string& css, std::unordered_map<std::wstring, unsigned>* out) {
+    size_t pos = 0;
+    size_t ruleStart = 0;
+    while ((pos = css.find('{', pos)) != std::string::npos) {
+        size_t close = css.find('}', pos);
+        if (close == std::string::npos) break;
+        std::string selectors = css.substr(ruleStart, pos - ruleStart);
+        std::string block = css.substr(pos + 1, close - pos - 1);
+        pos = close + 1;
+        ruleStart = pos;
+
+        size_t c = block.find("content");
+        if (c == std::string::npos) continue;
+        size_t q = block.find("\"\\", c);
+        if (q == std::string::npos) continue;
+        size_t hexStart = q + 2, hexEnd = hexStart;
+        while (hexEnd < block.size() && isxdigit(static_cast<unsigned char>(block[hexEnd]))) hexEnd++;
+        if (hexEnd == hexStart || hexEnd - hexStart > 6) continue;
+        unsigned cp = static_cast<unsigned>(strtoul(block.substr(hexStart, hexEnd - hexStart).c_str(), nullptr, 16));
+
+        size_t s = 0;
+        while ((s = selectors.find(".ti-", s)) != std::string::npos) {
+            size_t nameStart = s + 4, nameEnd = nameStart;
+            while (nameEnd < selectors.size() &&
+                   (islower(static_cast<unsigned char>(selectors[nameEnd])) ||
+                    isdigit(static_cast<unsigned char>(selectors[nameEnd])) || selectors[nameEnd] == '-')) {
+                nameEnd++;
+            }
+            if (selectors.compare(nameEnd, 7, ":before") == 0 && nameEnd > nameStart) {
+                out->emplace(std::wstring(selectors.begin() + nameStart, selectors.begin() + nameEnd), cp);
+            }
+            s = nameEnd;
+        }
+    }
+}
+
+// "U+EA35", "u+ea35" -> codepoint; 0 if the text is not a valid private-use style codepoint.
+unsigned ParseCodepointToken(std::wstring_view s) {
+    if (s.size() < 3 || s.size() > 8 || (s[0] != L'U' && s[0] != L'u') || s[1] != L'+') return 0;
+    unsigned cp = 0;
+    for (size_t i = 2; i < s.size(); i++) {
+        wchar_t c = s[i];
+        unsigned v = (c >= L'0' && c <= L'9') ? c - L'0' : (c >= L'a' && c <= L'f') ? c - L'a' + 10
+                   : (c >= L'A' && c <= L'F') ? c - L'A' + 10 : 0xFFFFFFFFu;
+        if (v == 0xFFFFFFFFu) return 0;
+        cp = cp * 16 + v;
+    }
+    // Icon fonts live in the private-use area and above; never allow ordinary text.
+    return (cp >= 0xE000 && cp <= 0x10FFFF && !(cp >= 0xD800 && cp <= 0xDFFF)) ? cp : 0;
+}
+
+// Appends a codepoint as UTF-16 (one unit, or a surrogate pair above U+FFFF).
+void AppendCodepointUtf16(unsigned cp, std::wstring* out) {
+    if (cp <= 0xFFFF) {
+        out->push_back(static_cast<wchar_t>(cp));
+    } else {
+        cp -= 0x10000;
+        out->push_back(static_cast<wchar_t>(0xD800 + (cp >> 10)));
+        out->push_back(static_cast<wchar_t>(0xDC00 + (cp & 0x3FF)));
+    }
+}
+
+// ----- TABLER ICONS -----
+
+std::unordered_map<std::wstring, unsigned> g_tablerCss;  // from the user's CSS file, if one is set
+std::wstring g_loadedIconFont;
+bool g_iconsUsed = false;  // an icon tag appears in a clock line
+
+void LoadTablerCssFile(PCWSTR path) {
+    g_tablerCss.clear();
+    if (!path || !*path) return;
+    HANDLE h = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (h == INVALID_HANDLE_VALUE) {
+        Wh_Log(L"Icons: cannot open %s", path);
+        return;
+    }
+    std::string data;
+    LARGE_INTEGER size{};
+    if (GetFileSizeEx(h, &size) && size.QuadPart > 0 && size.QuadPart <= 16 * 1024 * 1024) {
+        data.resize(static_cast<size_t>(size.QuadPart));
+        DWORD read = 0;
+        if (!ReadFile(h, data.data(), static_cast<DWORD>(data.size()), &read, nullptr)) read = 0;
+        data.resize(read);
+    }
+    CloseHandle(h);
+    ParseTablerCss(data, &g_tablerCss);
+    Wh_Log(L"Icons: read %u icon names from %s", static_cast<unsigned>(g_tablerCss.size()), path);
+}
+
+void BroadcastFontChange() {
+    DWORD_PTR result = 0;
+    SendMessageTimeoutW(HWND_BROADCAST, WM_FONTCHANGE, 0, 0, SMTO_ABORTIFHUNG, 1000, &result);
+}
+
+void UnloadIconFont() {
+    if (g_loadedIconFont.empty()) return;
+    RemoveFontResourceExW(g_loadedIconFont.c_str(), 0, nullptr);
+    g_loadedIconFont.clear();
+    BroadcastFontChange();
+}
+
+// Makes a font file available for the current Windows session (no admin rights
+// needed). Removed again when the mod unloads.
+void LoadIconFont(PCWSTR path) {
+    UnloadIconFont();
+    if (!path || !*path) return;
+    if (AddFontResourceExW(path, 0, nullptr) > 0) {
+        g_loadedIconFont = path;
+        BroadcastFontChange();
+    } else {
+        Wh_Log(L"Icons: could not load the font file %s", path);
+    }
+}
+
+// name: an icon name, or U+XXXX for a raw codepoint. 0 if unknown.
+unsigned LookupTablerIcon(std::wstring_view name) {
+    if (unsigned cp = ParseCodepointToken(name)) return cp;
+    std::wstring key(name);
+    if (!g_tablerCss.empty()) {
+        auto it = g_tablerCss.find(key);
+        return it != g_tablerCss.end() ? it->second : 0;
+    }
+    for (const auto& icon : kTablerIcons) {
+        if (key == icon.name) return icon.codepoint;
+    }
+    return 0;
+}
+
+// %ti:name% and %ti:U+EA35%
+size_t ResolveIconToken(std::wstring_view format, const std::function<void(PCWSTR)>& callback) {
+    constexpr std::wstring_view kPrefix = L"%ti:";
+    if (!format.starts_with(kPrefix)) return 0;
+    size_t end = format.find(L'%', kPrefix.size());
+    if (end == std::wstring_view::npos) return 0;
+    std::wstring_view name = format.substr(kPrefix.size(), end - kPrefix.size());
+    if (name.empty() || name.size() > 64) return 0;
+
+    std::wstring text;
+    if (unsigned cp = LookupTablerIcon(name)) {
+        AppendCodepointUtf16(cp, &text);
+    } else if (g_settings.showTagHints) {
+        text = L"[?ti:" + std::wstring(name) + L"]";
+    } else {
+        return 0;
+    }
+    callback(text.c_str());
+    return end + 1;
+}
+
+// ----- GRAPHS, SYSTEM INFO, KEYBOARD, DRIVES, COUNTDOWNS -----
+
+void RecordGraphHistory() {
+    for (int k = 0; k < kGraphCount; k++) {
+        if (!g_graphUsed[k]) continue;
+        double val = 0;
+        auto query = [](MetricType m) -> double {
+            if (!g_dataCollectionSession) return 0;
+            auto v = g_dataCollectionSession->QueryData(m);
+            return v ? std::max(*v, 0.0) : 0.0;
+        };
+        switch (k) {
+            case kGraphCpu: val = std::min(query(MetricType::kCpu), 100.0); break;
+            case kGraphGpu: val = std::min(query(MetricType::kGpuUsage), 100.0); break;
+            case kGraphRam: {
+                auto r = GetRamStatus();
+                if (r) val = r->dwMemoryLoad;
+                break;
+            }
+            case kGraphDownload: val = query(MetricType::kDownloadSpeed); break;
+            case kGraphUpload: val = query(MetricType::kUploadSpeed); break;
+            case kGraphDisk: val = query(MetricType::kDiskReadSpeed) + query(MetricType::kDiskWriteSpeed); break;
+        }
+        g_graphHistory[k].Push(val);
+    }
+}
+
+PCWSTR GetGraphFormatted(int kind) {
+    DataCollectionSampleIfNeeded();
+    auto& s = g_graphFormatted[kind];
+    DWORD idx = GetDataCollectionFormatIndex();
+    if (s.formatIndex != idx) {
+        static const WCHAR kBlocks[] = L"\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588";
+        int len = std::clamp(g_settings.dataCollection.graphLength, 4, kGraphMaxLength);
+        const auto& h = g_graphHistory[kind];
+
+        double maxV = 100.0;  // percentages
+        if (kind == kGraphDownload || kind == kGraphUpload || kind == kGraphDisk) {
+            maxV = 100.0 * 1024;  // bytes/s floor so an idle link doesn't fill the graph
+            for (int i = 0; i < h.count; i++) maxV = std::max(maxV, h.v[i]);
+        }
+
+        for (int i = 0; i < len; i++) {
+            int src = h.count - len + i;
+            int level = 0;
+            if (src >= 0) level = std::clamp(static_cast<int>(h.v[src] / maxV * 7.0 + 0.5), 0, 7);
+            s.buffer[i] = kBlocks[level];
+        }
+        s.buffer[len] = L'\0';
+        s.formatIndex = idx;
+    }
+    return s.buffer;
+}
+
+ULONGLONG FtToU64(const FILETIME& f) {
+    return (static_cast<ULONGLONG>(f.dwHighDateTime) << 32) | f.dwLowDateTime;
+}
+
+// Uptime
+
+FormattedString<FORMATTED_BUFFER_SIZE> g_uptimeFormatted;
+
+PCWSTR GetUptimeFormatted() {
+    return GetMetricFormatted(g_uptimeFormatted, [](PWSTR b, size_t s) {
+        ULONGLONG sec = GetTickCount64() / 1000;
+        unsigned d = static_cast<unsigned>(sec / 86400);
+        unsigned h = static_cast<unsigned>((sec % 86400) / 3600);
+        unsigned m = static_cast<unsigned>((sec % 3600) / 60);
+        if (d) swprintf_s(b, s, L"%ud %uh %um", d, h, m);
+        else if (h) swprintf_s(b, s, L"%uh %um", h, m);
+        else swprintf_s(b, s, L"%um", m);
+        return true;
+    });
+}
+
+// Process count and busiest process (sampled at most every few seconds)
+
+struct ProcessSampleState {
+    ULONGLONG lastTick = 0;
+    std::unordered_map<DWORD, ULONGLONG> prevCpuTime;
+    int count = 0;
+    std::wstring topName;
+    int topCpu = -1;
+} g_proc;
+
+void SampleProcessesIfNeeded() {
+    ULONGLONG now = GetTickCount64();
+    ULONGLONG minGap = std::max<ULONGLONG>(3000, static_cast<ULONGLONG>(GetEffectiveUpdateInterval()) * 1000);
+    if (g_proc.lastTick && now - g_proc.lastTick < minGap) return;
+
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) return;
+
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    double cpuCount = std::max<DWORD>(si.dwNumberOfProcessors, 1);
+    ULONGLONG wallMs = g_proc.lastTick ? now - g_proc.lastTick : 0;
+
+    std::unordered_map<DWORD, ULONGLONG> cur;
+    int count = 0;
+    double bestPct = -1;
+    std::wstring bestName;
+
+    PROCESSENTRY32W pe{};
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            count++;
+            if (pe.th32ProcessID == 0) continue;
+            HANDLE h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pe.th32ProcessID);
+            if (!h) continue;
+            FILETIME c, e, k, u;
+            if (GetProcessTimes(h, &c, &e, &k, &u)) {
+                ULONGLONG total = FtToU64(k) + FtToU64(u);
+                cur[pe.th32ProcessID] = total;
+                auto it = g_proc.prevCpuTime.find(pe.th32ProcessID);
+                if (wallMs > 0 && it != g_proc.prevCpuTime.end() && total >= it->second) {
+                    double pct = static_cast<double>(total - it->second) / (wallMs * 10000.0 * cpuCount) * 100.0;
+                    if (pct > bestPct) {
+                        bestPct = pct;
+                        bestName = pe.szExeFile;
+                    }
+                }
+            }
+            CloseHandle(h);
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+
+    if (bestPct >= 0) {
+        if (bestName.size() > 4 && _wcsicmp(bestName.c_str() + bestName.size() - 4, L".exe") == 0) {
+            bestName.resize(bestName.size() - 4);
+        }
+        g_proc.topName = bestName;
+        g_proc.topCpu = std::min(static_cast<int>(bestPct + 0.5), 100);
+    }
+    g_proc.prevCpuTime = std::move(cur);
+    g_proc.count = count;
+    g_proc.lastTick = now;
+}
+
+PCWSTR GetProcessCountFormatted() {
+    SampleProcessesIfNeeded();
+    static WCHAR buf[16];
+    swprintf_s(buf, L"%d", g_proc.count);
+    return buf;
+}
+
+PCWSTR GetTopProcessFormatted() {
+    SampleProcessesIfNeeded();
+    return g_proc.topName.empty() ? L"-" : g_proc.topName.c_str();
+}
+
+PCWSTR GetTopProcessCpuFormatted() {
+    SampleProcessesIfNeeded();
+    static WCHAR buf[16];
+    if (g_proc.topCpu < 0) return L"-";
+    swprintf_s(buf, L"%d%%", g_proc.topCpu);
+    return buf;
+}
+
+// Keyboard state
+
+PCWSTR GetInputLanguage(bool full) {
+    static WCHAR buf[2][64];
+    WCHAR* b = buf[full ? 1 : 0];
+    HWND fg = GetForegroundWindow();
+    DWORD tid = fg ? GetWindowThreadProcessId(fg, nullptr) : 0;
+    HKL hkl = GetKeyboardLayout(tid);
+    LANGID lid = LOWORD(reinterpret_cast<DWORD_PTR>(hkl));
+    int n = GetLocaleInfoW(MAKELCID(lid, SORT_DEFAULT), full ? LOCALE_SENGLISHLANGUAGENAME : LOCALE_SISO639LANGNAME, b, 64);
+    if (n <= 0) {
+        wcscpy_s(b, 64, L"-");
+        return b;
+    }
+    if (!full) CharUpperW(b);
+    return b;
+}
+
+PCWSTR GetLangFormatted() { return GetInputLanguage(false); }
+PCWSTR GetLangFullFormatted() { return GetInputLanguage(true); }
+PCWSTR GetCapsLockFormatted() { return (GetKeyState(VK_CAPITAL) & 1) ? L"CAPS" : L""; }
+PCWSTR GetNumLockFormatted() { return (GetKeyState(VK_NUMLOCK) & 1) ? L"NUM" : L""; }
+
+// Drive space (local fixed / removable drives only)
+
+struct DriveSpaceCache {
+    ULONGLONG tick;
+    ULONGLONG total;
+    ULONGLONG free;
+    bool valid;
+};
+DriveSpaceCache g_driveCache[26];
+
+bool GetDriveSpace(int idx, ULONGLONG* total, ULONGLONG* freeBytes) {
+    ULONGLONG now = GetTickCount64() | 1;
+    auto& c = g_driveCache[idx];
+    if (!c.tick || now - c.tick >= 10000) {
+        c.tick = now;
+        c.valid = false;
+        WCHAR root[4] = {static_cast<WCHAR>(L'A' + idx), L':', L'\\', 0};
+        UINT type = GetDriveTypeW(root);
+        if (type == DRIVE_FIXED || type == DRIVE_REMOVABLE) {
+            DWORD oldMode = 0;
+            BOOL modeSet = SetThreadErrorMode(SEM_FAILCRITICALERRORS, &oldMode);
+            ULARGE_INTEGER avail{}, tot{}, fr{};
+            if (GetDiskFreeSpaceExW(root, &avail, &tot, &fr)) {
+                c.total = tot.QuadPart;
+                c.free = fr.QuadPart;
+                c.valid = true;
+            }
+            if (modeSet) SetThreadErrorMode(oldMode, nullptr);
+        }
+    }
+    if (!c.valid) return false;
+    *total = c.total;
+    *freeBytes = c.free;
+    return true;
+}
+
+void FormatByteSize(double bytes, PWSTR b, size_t s) {
+    double gb = bytes / kGBInBytes;
+    if (gb >= 1000.0) swprintf_s(b, s, L"%s TB", FormatLocaleNum(gb / 1024.0, 2).c_str());
+    else if (gb >= 100.0) swprintf_s(b, s, L"%s GB", FormatLocaleNum(gb, 0).c_str());
+    else swprintf_s(b, s, L"%s GB", FormatLocaleNum(gb, 1).c_str());
+}
+
+size_t ResolveDriveToken(std::wstring_view format, const std::function<void(PCWSTR)>& callback) {
+    struct { std::wstring_view pre; int kind; } kinds[] = {
+        {L"%drive_free_pct_"sv, 3}, {L"%drive_used_pct_"sv, 4},
+        {L"%drive_free_"sv, 0}, {L"%drive_used_"sv, 1}, {L"%drive_total_"sv, 2},
+    };
+    for (const auto& k : kinds) {
+        if (!format.starts_with(k.pre)) continue;
+        if (format.size() < k.pre.size() + 2 || format[k.pre.size() + 1] != L'%') return 0;
+        WCHAR letter = format[k.pre.size()];
+        if (letter >= L'a' && letter <= L'z') letter -= 32;
+        if (letter < L'A' || letter > L'Z') return 0;
+
+        size_t len = k.pre.size() + 2;
+        ULONGLONG total = 0, freeBytes = 0;
+        if (!GetDriveSpace(letter - L'A', &total, &freeBytes) || total == 0) {
+            callback(L"-");
+            return len;
+        }
+        ULONGLONG used = total - std::min(freeBytes, total);
+        WCHAR buf[64];
+        switch (k.kind) {
+            case 0: FormatByteSize(static_cast<double>(freeBytes), buf, ARRAYSIZE(buf)); break;
+            case 1: FormatByteSize(static_cast<double>(used), buf, ARRAYSIZE(buf)); break;
+            case 2: FormatByteSize(static_cast<double>(total), buf, ARRAYSIZE(buf)); break;
+            case 3: FormatPercentValue(static_cast<int>(freeBytes * 100.0 / total + 0.5), buf, ARRAYSIZE(buf), 100); break;
+            default: FormatPercentValue(static_cast<int>(used * 100.0 / total + 0.5), buf, ARRAYSIZE(buf), 100); break;
+        }
+        callback(buf);
+        return len;
+    }
+    return 0;
+}
+
+// Countdowns
+
+PCWSTR GetCountdownFormatted(int n, bool daysOnly) {
+    static WCHAR buf[64];
+    size_t i = static_cast<size_t>(n - 1);
+    if (i >= g_settings.countdownTargets.size() || g_settings.countdownTargets[i] == 0) return L"-";
+
+    FILETIME ft{};
+    SystemTimeToFileTime(&g_formatTime, &ft);
+    ULONGLONG now = FtToU64(ft);
+    ULONGLONG target = g_settings.countdownTargets[i];
+    if (target <= now) return daysOnly ? L"0" : L"Done";
+
+    ULONGLONG sec = (target - now) / 10000000ULL;
+    unsigned d = static_cast<unsigned>(sec / 86400);
+    unsigned h = static_cast<unsigned>((sec % 86400) / 3600);
+    unsigned m = static_cast<unsigned>((sec % 3600) / 60);
+    if (daysOnly) swprintf_s(buf, L"%u", d);
+    else if (d) swprintf_s(buf, L"%ud %uh %um", d, h, m);
+    else if (h) swprintf_s(buf, L"%uh %um", h, m);
+    else swprintf_s(buf, L"%um", m);
+    return buf;
+}
+
+// Numeric values for threshold color rules
+
+bool GetRuleMetricValue(int metric, double* out) {
+    switch (metric) {
+        case kRuleCpu:
+        case kRuleGpu:
+        case kRuleCpuTemp: {
+            DataCollectionSampleIfNeeded();
+            if (!g_dataCollectionSession) return false;
+            MetricType type = metric == kRuleCpu ? MetricType::kCpu
+                            : metric == kRuleGpu ? MetricType::kGpuUsage
+                                                 : MetricType::kCpuTemp;
+            auto v = g_dataCollectionSession->QueryData(type);
+            if (!v) return false;
+            *out = *v;
+            return true;
+        }
+        case kRuleRam: {
+            auto r = GetRamStatus();
+            if (!r) return false;
+            *out = r->dwMemoryLoad;
+            return true;
+        }
+        case kRuleBattery: {
+            SYSTEM_POWER_STATUS ps;
+            if (!GetSystemPowerStatus(&ps) || ps.BatteryLifePercent == 255) return false;
+            *out = ps.BatteryLifePercent;
+            return true;
+        }
+    }
+    return false;
+}
+
 PCWSTR GetBatteryFormatted() {
     return GetMetricFormatted(g_batteryFormatted, [](PWSTR b, size_t s) {
         SYSTEM_POWER_STATUS ps;
@@ -3208,6 +5096,62 @@ PCWSTR GetMediaArtistFormatted() { RefreshMediaDataIfDirty(); return g_mediaArti
 PCWSTR GetMediaAlbumFormatted() { RefreshMediaDataIfDirty(); return g_mediaAlbumFormatted.buffer; }
 PCWSTR GetMediaStatusFormatted() { RefreshMediaDataIfDirty(); return g_mediaStatusFormatted.buffer; }
 
+// Playback position (extrapolated while playing) and duration in seconds.
+bool GetMediaTimelineNow(double* position, double* duration) {
+    RefreshMediaDataIfDirty();
+    QueryMediaTimelineIfNeeded();
+    std::lock_guard<std::mutex> guard(g_mediaMutex);
+    if (!g_mediaActive || !g_mediaTimeline.valid) return false;
+    double p = g_mediaTimeline.position;
+    if (g_mediaPlaying) p += (GetTickCount64() - g_mediaTimeline.queryTick) / 1000.0 * g_mediaTimeline.rate;
+    if (g_mediaTimeline.duration > 0) p = std::min(p, g_mediaTimeline.duration);
+    *position = std::max(p, 0.0);
+    *duration = g_mediaTimeline.duration;
+    return true;
+}
+
+PCWSTR GetMediaPositionFormatted() {
+    static std::wstring s;
+    double p, d;
+    if (!GetMediaTimelineNow(&p, &d)) return L"";
+    s = FormatMediaClock(p);
+    return s.c_str();
+}
+
+PCWSTR GetMediaDurationFormatted() {
+    static std::wstring s;
+    double p, d;
+    if (!GetMediaTimelineNow(&p, &d)) return L"";
+    if (d <= 0) return L"--:--";
+    s = FormatMediaClock(d);
+    return s.c_str();
+}
+
+PCWSTR GetMediaRemainingFormatted() {
+    static std::wstring s;
+    double p, d;
+    if (!GetMediaTimelineNow(&p, &d)) return L"";
+    if (d <= 0) return L"--:--";
+    s = L"-" + FormatMediaClock(d - p);
+    return s.c_str();
+}
+
+PCWSTR GetMediaProgressFormatted() {
+    static WCHAR buf[8];
+    double p, d;
+    if (!GetMediaTimelineNow(&p, &d) || d <= 0) return L"";
+    swprintf_s(buf, L"%d%%", std::clamp(static_cast<int>(p / d * 100.0), 0, 100));
+    return buf;
+}
+
+PCWSTR GetMediaBarFormatted() {
+    static std::wstring s;
+    double p, d;
+    if (!GetMediaTimelineNow(&p, &d)) return L"";
+    s = MediaProgressBar(p, d, 8);
+    return s.c_str();
+}
+
 int FormatLineNoLock(PWSTR buffer, size_t bufferSize, std::wstring_view format);
 
 PCWSTR GetMediaInfoFormatted() {
@@ -3220,7 +5164,17 @@ PCWSTR GetMediaInfoFormatted() {
             maxLen = g_settings.mediaPlayer.maxLength;
         }
         g_inMediaInfoFormat = true;
-        FormatLineNoLock(g_mediaInfoFormatted.buffer, maxLen + 1, fmt);
+        if (g_settings.mediaPlayer.marquee && g_settings.mediaPlayer.maxLength > 0) {
+            // Scroll instead of cutting the text off (only while playing).
+            WCHAR full[FORMATTED_BUFFER_SIZE];
+            FormatLineNoLock(full, ARRAYSIZE(full), fmt);
+            size_t speed = static_cast<size_t>(std::clamp(g_settings.mediaPlayer.marqueeSpeed, 1, 20));
+            size_t offset = g_mediaPlaying ? static_cast<size_t>(GetTickCount64() / 1000) * speed : 0;
+            std::wstring window = MarqueeWindow(full, static_cast<size_t>(maxLen), offset);
+            wcsncpy_s(g_mediaInfoFormatted.buffer, ARRAYSIZE(g_mediaInfoFormatted.buffer), window.c_str(), _TRUNCATE);
+        } else {
+            FormatLineNoLock(g_mediaInfoFormatted.buffer, maxLen + 1, fmt);
+        }
         g_inMediaInfoFormat = false;
         g_mediaInfoFormatted.formatIndex = g_formatIndex;
     }
@@ -3257,6 +5211,29 @@ size_t ResolveFormatToken(std::wstring_view format, std::function<void(PCWSTR)> 
         {L"%media_artist%"sv, GetMediaArtistFormatted}, {L"%media_album%"sv, GetMediaAlbumFormatted},
         {L"%media_status%"sv, GetMediaStatusFormatted}, {L"%media_info%"sv, GetMediaInfoFormatted},
         {L"%newline%"sv, []() { return L"\n"; }}, {L"%n%"sv, []() { return L"\n"; }},
+        {L"%uptime%"sv, GetUptimeFormatted}, {L"%process_count%"sv, GetProcessCountFormatted},
+        {L"%top_process%"sv, GetTopProcessFormatted}, {L"%top_process_cpu%"sv, GetTopProcessCpuFormatted},
+        {L"%lang%"sv, GetLangFormatted}, {L"%lang_full%"sv, GetLangFullFormatted},
+        {L"%capslock%"sv, GetCapsLockFormatted}, {L"%numlock%"sv, GetNumLockFormatted},
+        {L"%cpu_graph%"sv, []() { return GetGraphFormatted(kGraphCpu); }},
+        {L"%ram_graph%"sv, []() { return GetGraphFormatted(kGraphRam); }},
+        {L"%gpu_graph%"sv, []() { return GetGraphFormatted(kGraphGpu); }},
+        {L"%download_graph%"sv, []() { return GetGraphFormatted(kGraphDownload); }},
+        {L"%upload_graph%"sv, []() { return GetGraphFormatted(kGraphUpload); }},
+        {L"%disk_graph%"sv, []() { return GetGraphFormatted(kGraphDisk); }},
+        {L"%ping%"sv, GetPingFormatted}, {L"%wifi_ssid%"sv, GetWifiSsidFormatted},
+        {L"%wifi_signal%"sv, GetWifiSignalFormatted}, {L"%vpn%"sv, GetVpnFormatted},
+        {L"%local_ip%"sv, GetLocalIpFormatted},
+        {L"%date_hijri%"sv, []() { return GetAltCalendarDate(0); }},
+        {L"%date_persian%"sv, []() { return GetAltCalendarDate(1); }},
+        {L"%date_japanese%"sv, []() { return GetAltCalendarDate(2); }},
+        {L"%date_bengali%"sv, []() { return GetBengaliDate(true); }},
+        {L"%date_bengali_en%"sv, []() { return GetBengaliDate(false); }},
+        {L"%next_event%"sv, GetNextEventFormatted}, {L"%next_event_time%"sv, GetNextEventTimeFormatted},
+        {L"%next_event_in%"sv, GetNextEventInFormatted},
+        {L"%media_position%"sv, GetMediaPositionFormatted}, {L"%media_duration%"sv, GetMediaDurationFormatted},
+        {L"%media_remaining%"sv, GetMediaRemainingFormatted}, {L"%media_progress%"sv, GetMediaProgressFormatted},
+        {L"%media_bar%"sv, GetMediaBarFormatted},
     };
 
     for (const auto& t : tokens) {
@@ -3316,6 +5293,21 @@ size_t ResolveFormatToken(std::wstring_view format, std::function<void(PCWSTR)> 
         callback(g_webContentWeather ? g_webContentWeather->c_str() : L"Loading...");
         return 9;
     }
+
+    if (format.starts_with(L"%ti:"sv)) {
+        if (size_t len = ResolveIconToken(format, callback)) return len;
+    }
+    if (format.starts_with(L"%drive_"sv)) {
+        if (size_t len = ResolveDriveToken(format, callback)) return len;
+    }
+    if (int d = ResolveFormatTokenWithDigit(format, L"%countdown"sv, L"_days%"sv)) {
+        callback(GetCountdownFormatted(d, true));
+        return 17;
+    }
+    if (int d = ResolveFormatTokenWithDigit(format, L"%countdown"sv, L"%"sv)) {
+        callback(GetCountdownFormatted(d, false));
+        return 12;
+    }
     return 0;
 }
 
@@ -3325,6 +5317,25 @@ void EnsureFormattingInitialized() {
     WebContentUpdateThreadInit();
     DataCollectionSessionInit();
     MediaSessionInit();
+    PingThreadInit();
+    g_liveTagsUsed = IsStrInDateTimePatternSettings(L"%lang") || IsStrInDateTimePatternSettings(L"%capslock%") ||
+                     IsStrInDateTimePatternSettings(L"%numlock%") || IsStrInDateTimePatternSettings(L"%top_process") ||
+                     IsStrInDateTimePatternSettings(L"%process_count%") || IsStrInDateTimePatternSettings(L"_graph%") ||
+                     IsStrInDateTimePatternSettings(L"%ping%") || IsStrInDateTimePatternSettings(L"%wifi_signal%") ||
+                     IsStrInDateTimePatternSettings(L"%media_position%") || IsStrInDateTimePatternSettings(L"%media_remaining%") ||
+                     IsStrInDateTimePatternSettings(L"%media_progress%") || IsStrInDateTimePatternSettings(L"%media_bar%") ||
+                     (g_settings.mediaPlayer.marquee && IsStrInDateTimePatternSettings(L"%media_info%")) ||
+                     !g_settings.colorRules.empty();
+}
+
+// Length of a "%name%" token made of lowercase letters, digits and underscores
+// (at least two characters), or 0 if the text does not start with one.
+size_t MatchTagLikeToken(std::wstring_view s) {
+    if (s.empty() || s[0] != L'%') return 0;
+    size_t j = 1;
+    while (j < s.size() && ((s[j] >= L'a' && s[j] <= L'z') || (s[j] >= L'0' && s[j] <= L'9') || s[j] == L'_')) j++;
+    if (j < 3 || j >= s.size() || s[j] != L'%' || j > 60) return 0;
+    return j + 1;
 }
 
 int FormatLineNoLock(PWSTR buffer, size_t bufferSize, std::wstring_view format) {
@@ -3344,6 +5355,18 @@ int FormatLineNoLock(PWSTR buffer, size_t bufferSize, std::wstring_view format) 
                 suffix = suffix.substr(len);
                 continue;
             }
+            if (g_settings.showTagHints) {
+                if (size_t hintLen = MatchTagLikeToken(suffix)) {
+                    std::wstring hint = L"[?";
+                    hint.append(suffix.substr(1, hintLen - 2));
+                    hint += L"]";
+                    bool hintTrunc = false;
+                    buffer += StringCopyTruncated(buffer, end - buffer, hint.c_str(), &hintTrunc);
+                    if (hintTrunc) break;
+                    suffix = suffix.substr(hintLen);
+                    continue;
+                }
+            }
         }
         *buffer++ = suffix[0];
         suffix = suffix.substr(1);
@@ -3355,10 +5378,65 @@ int FormatLineNoLock(PWSTR buffer, size_t bufferSize, std::wstring_view format) 
     return buffer - start;
 }
 
+enum ProfileCondition { kProfNone, kProfOnBattery, kProfPluggedIn, kProfBatteryBelow, kProfMultiMonitor, kProfSingleMonitor, kProfHours };
+
+int ParseProfileCondition(PCWSTR s) {
+    if (wcscmp(s, L"onBattery") == 0) return kProfOnBattery;
+    if (wcscmp(s, L"pluggedIn") == 0) return kProfPluggedIn;
+    if (wcscmp(s, L"batteryBelow") == 0) return kProfBatteryBelow;
+    if (wcscmp(s, L"multiMonitor") == 0) return kProfMultiMonitor;
+    if (wcscmp(s, L"singleMonitor") == 0) return kProfSingleMonitor;
+    if (wcscmp(s, L"hours") == 0) return kProfHours;
+    return kProfNone;
+}
+
+// True if `hour` is in [start, end). A range that wraps midnight (for example
+// 22 to 6) is supported, and start == end means the whole day.
+bool HourInRange(int hour, int start, int end) {
+    if (start == end) return true;
+    if (start < end) return hour >= start && hour < end;
+    return hour >= start || hour < end;
+}
+
+// Chooses the automatic profile (a clock layout preset) at most every 2 seconds.
+void UpdateActiveProfile() {
+    if (g_settings.profileRules.empty()) {
+        g_profilePreset = nullptr;
+        return;
+    }
+    static ULONGLONG s_last = 0;
+    ULONGLONG now = GetTickCount64() | 1;
+    if (s_last && now - s_last < 2000) return;
+    s_last = now;
+
+    SYSTEM_POWER_STATUS ps{};
+    const bool havePower = GetSystemPowerStatus(&ps) != 0;
+    const LinePreset* chosen = nullptr;
+    for (const auto& r : g_settings.profileRules) {
+        bool match = false;
+        switch (r.condition) {
+            case kProfOnBattery: match = havePower && ps.ACLineStatus == 0; break;
+            case kProfPluggedIn: match = havePower && ps.ACLineStatus == 1; break;
+            case kProfBatteryBelow:
+                match = havePower && ps.BatteryLifePercent != 255 && ps.BatteryLifePercent < r.threshold;
+                break;
+            case kProfMultiMonitor: match = GetSystemMetrics(SM_CMONITORS) > 1; break;
+            case kProfSingleMonitor: match = GetSystemMetrics(SM_CMONITORS) <= 1; break;
+            case kProfHours: match = HourInRange(g_formatTime.wHour, r.startHour, r.endHour); break;
+        }
+        if (match) {
+            chosen = r.preset;
+            break;
+        }
+    }
+    g_profilePreset = chosen;
+}
+
 int FormatLine(PWSTR buffer, size_t bufferSize, std::wstring_view format) {
     if (bufferSize == 0) return 0;
     std::lock_guard<std::mutex> guard(g_formatLineMutex);
     EnsureFormattingInitialized();
+    UpdateActiveProfile();
     return FormatLineNoLock(buffer, bufferSize, format);
 }
 
@@ -3390,16 +5468,53 @@ ThreadPoolTimer_CreateTimer_t ThreadPoolTimer_CreateTimer_Original;
 using ThreadPoolTimer_CreateTimer_lambda_t = LPVOID(WINAPI*)(DWORD_PTR**, LPVOID, LPVOID);
 ThreadPoolTimer_CreateTimer_lambda_t ThreadPoolTimer_CreateTimer_lambda_Original;
 
+// ----- DIAGNOSTICS -----
+
+// Logs which thread each clock model runs on and which thread / monitor each
+// taskbar window belongs to. Used to investigate per-monitor clock settings.
+void LogClockModelThread(LPVOID model) {
+    static std::vector<std::pair<LPVOID, DWORD>> s_seen;
+    DWORD tid = GetCurrentThreadId();
+    for (const auto& s : s_seen) {
+        if (s.first == model && s.second == tid) return;
+    }
+    if (s_seen.size() >= 40) return;
+    s_seen.emplace_back(model, tid);
+
+    Wh_Log(L"[clock] model=%p thread=%u", model, tid);
+    EnumWindows(
+        [](HWND hWnd, LPARAM) -> BOOL {
+            DWORD pid = 0;
+            DWORD wndTid = GetWindowThreadProcessId(hWnd, &pid);
+            WCHAR cls[64]{};
+            if (pid != GetCurrentProcessId() || !GetClassNameW(hWnd, cls, ARRAYSIZE(cls))) return TRUE;
+            if (_wcsicmp(cls, L"Shell_TrayWnd") != 0 && _wcsicmp(cls, L"Shell_SecondaryTrayWnd") != 0) return TRUE;
+
+            MONITORINFO mi{sizeof(mi)};
+            HMONITOR mon = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+            GetMonitorInfoW(mon, &mi);
+            Wh_Log(L"[clock] taskbar %s hwnd=%p thread=%u monitor=(%ld,%ld)-(%ld,%ld)%s", cls, hWnd, wndTid,
+                   mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right, mi.rcMonitor.bottom,
+                   (mi.dwFlags & MONITORINFOF_PRIMARY) ? L" primary" : L"");
+            return TRUE;
+        },
+        0);
+}
+
+void UpdateClockColorRules();
+
 void ClockSystemTrayIconDataModel_RefreshIcon_Hook_Impl(LPVOID pThis, LPVOID param1, ClockSystemTrayIconDataModel_RefreshIcon_t orig) {
     {
         std::lock_guard<std::mutex> guard(g_formatLineMutex);
         EnsureFormattingInitialized();
     }
+    if (g_settings.logClockThreads) LogClockModelThread(pThis);
     g_refreshIconThreadId = GetCurrentThreadId();
-    g_refreshIconNeedToAdjustTimer = g_settings.showSeconds || g_dataCollectionSession || (g_webContentUpdateThread && !g_webContentLoaded);
+    g_refreshIconNeedToAdjustTimer = g_settings.showSeconds || g_dataCollectionSession || g_liveTagsUsed || (g_webContentUpdateThread && !g_webContentLoaded);
     orig(pThis, param1);
     g_refreshIconThreadId = 0;
     g_refreshIconNeedToAdjustTimer = false;
+    try { UpdateClockColorRules(); } catch (...) {}
 }
 
 void WINAPI ClockSystemTrayIconDataModel_RefreshIcon_Hook(LPVOID pThis, LPVOID p1) {
@@ -3412,7 +5527,7 @@ void WINAPI ClockSystemTrayIconDataModel2_RefreshIcon_Hook(LPVOID pThis, LPVOID 
 void UpdateToolTipString(LPVOID tooltipPtrPtr) {
     auto sep = L"\r\n\r\n"sv;
     WCHAR extra[4096];
-    size_t len = FormatLine(extra, ARRAYSIZE(extra), g_settings.tooltipLine.get());
+    size_t len = FormatLine(extra, ARRAYSIZE(extra), EffTooltipLine());
     if (len == 0) return;
 
     struct shared_hstring_header {
@@ -3472,7 +5587,19 @@ LPVOID WINAPI ClockSystemTrayIconDataModel2_GetTimeToolTipString2_Hook(LPVOID pT
     return ClockSystemTrayIconDataModel_GetTimeToolTipString2_Hook_Impl(pThis, p1, p2, p3, p4, ClockSystemTrayIconDataModel2_GetTimeToolTipString2_Original);
 }
 
-void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings* s, bool noWrap, std::optional<int64_t>* token) {
+Media::Brush ParseBrush(PCWSTR value) {
+    try {
+        return Markup::XamlBindingHelper::ConvertValue(
+                   winrt::xaml_typename<Media::Brush>(),
+                   winrt::box_value(winrt::hstring(value)))
+            .as<Media::Brush>();
+    } catch (...) {
+        return nullptr;
+    }
+}
+
+// line: 0 = top line, 1 = bottom line, -1 = no color rules.
+void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings* s, bool noWrap, std::optional<int64_t>* token, int line) {
     if (token->has_value()) {
         textBlock.UnregisterPropertyChangedCallback(UIElement::VisibilityProperty(), token->value());
     }
@@ -3491,12 +5618,25 @@ void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings
     if (noWrap) textBlock.TextWrapping(TextWrapping::NoWrap);
     else textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::TextWrappingProperty());
 
+    std::wstring ruleColor;
+    if (s && line >= 0) {
+        std::lock_guard<std::mutex> guard(g_clockRuleMutex);
+        ruleColor = g_clockRuleColor[line];
+    }
+
+    Media::Brush brush = nullptr;
     if (g_isBatteryLow) {
-        textBlock.Foreground(Media::SolidColorBrush(winrt::Windows::UI::Colors::Red()));
-    } else if (s && *s->textColor) {
-        textBlock.Foreground(Media::SolidColorBrush(winrt::Windows::UI::Colors::White()));
+        brush = Media::SolidColorBrush(winrt::Windows::UI::Colors::Red());
+    } else if (!ruleColor.empty()) {
+        brush = ParseBrush(ruleColor.c_str());
+    }
+    if (!brush && s && *s->textColor) {
+        brush = ParseBrush(s->textColor.get());
+    }
+    if (brush) {
+        textBlock.Foreground(brush);
     } else {
-        textBlock.ClearValue(Controls::TextBlock::ForegroundProperty());
+        textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::ForegroundProperty());
     }
 
     if (s && *s->textAlignment) {
@@ -3509,8 +5649,22 @@ void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings
     if (s && s->fontSize) textBlock.FontSize(s->fontSize);
     else textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::FontSizeProperty());
 
-    if (s && *s->fontFamily) {
-        auto f = Markup::XamlBindingHelper::ConvertValue(winrt::xaml_typename<Media::FontFamily>(), winrt::box_value(s->fontFamily.get())).as<Media::FontFamily>();
+    // Icon tags need the icon font first in the fallback list. It has no Latin
+    // glyphs, so ordinary text still uses the regular font. Icons are placed
+    // first because some of them sit on codepoints other fonts also cover.
+    std::wstring family;
+    if (s && *s->fontFamily) family = s->fontFamily.get();
+    if (s && g_iconsUsed && family.rfind(L"tabler-icons", 0) != 0) {
+        if (family.empty()) {
+            // Read the inherited font, so the clock keeps its normal look.
+            textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::FontFamilyProperty());
+            family = std::wstring(textBlock.FontFamily().Source());
+            if (family.empty() || family == L"XamlAutoFontFamily") family = L"Segoe UI Variable, Segoe UI";
+        }
+        family = L"tabler-icons, " + family;
+    }
+    if (!family.empty()) {
+        auto f = Markup::XamlBindingHelper::ConvertValue(winrt::xaml_typename<Media::FontFamily>(), winrt::box_value(winrt::hstring(family))).as<Media::FontFamily>();
         textBlock.FontFamily(f);
     } else {
         textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::FontFamilyProperty());
@@ -3547,6 +5701,109 @@ void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings
         textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::LineHeightProperty());
         textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::LineStackingStrategyProperty());
     }
+}
+
+// ----- CLOCK CLICK & SCROLL ACTIONS -----
+
+void StartProcessDetached(const std::wstring& commandLine) {
+    if (commandLine.empty()) return;
+    std::wstring cmd = commandLine;  // CreateProcess may modify the buffer
+    STARTUPINFOW si{};
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi{};
+    if (CreateProcessW(nullptr, cmd.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
+        CloseHandle(pi.hThread);
+        CloseHandle(pi.hProcess);
+    }
+}
+
+void SendKeyTap(WORD vk) {
+    INPUT in[2] = {};
+    in[0].type = INPUT_KEYBOARD;
+    in[0].ki.wVk = vk;
+    in[1] = in[0];
+    in[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, in, sizeof(INPUT));
+}
+
+// Returns true when the wheel event was used.
+bool PerformClockScrollAction(bool up) {
+    switch (g_settings.clockScrollAction) {
+        case 1: SendKeyTap(up ? VK_VOLUME_UP : VK_VOLUME_DOWN); return true;
+        case 2: SendKeyTap(up ? VK_MEDIA_NEXT_TRACK : VK_MEDIA_PREV_TRACK); return true;
+    }
+    return false;
+}
+
+bool PerformClockMiddleAction() {
+    switch (g_settings.clockMiddleAction) {
+        case 1: SendKeyTap(VK_MEDIA_PLAY_PAUSE); return true;
+        case 2: SendKeyTap(VK_VOLUME_MUTE); return true;
+        case 3: SendKeyTap(VK_MEDIA_NEXT_TRACK); return true;
+        case 4: SendKeyTap(VK_MEDIA_PREV_TRACK); return true;
+        case 5: StartProcessDetached(L"taskmgr.exe"); return true;
+        case 6: StartProcessDetached(g_settings.clockCommand); return true;
+    }
+    return false;
+}
+
+// Attaches (or removes) the wheel / middle-click handlers on the clock button.
+// Nothing is attached unless a click or scroll action is configured.
+void ApplyClockActionHandlers(FrameworkElement content, ClockElementStyleData* d, bool enabled) {
+    namespace Input = winrt::Windows::UI::Xaml::Input;
+    const bool want = enabled && (g_settings.clockScrollAction || g_settings.clockMiddleAction);
+    UIElement target = d->actionTarget.get();
+
+    if (!want) {
+        if (target) {
+            try {
+                if (d->wheelHandler) target.RemoveHandler(UIElement::PointerWheelChangedEvent(), winrt::box_value(*d->wheelHandler));
+                if (d->pressedHandler) target.RemoveHandler(UIElement::PointerPressedEvent(), winrt::box_value(*d->pressedHandler));
+            } catch (...) {}
+        }
+        d->wheelHandler.reset();
+        d->pressedHandler.reset();
+        d->actionTarget = nullptr;
+        return;
+    }
+    if (target && d->wheelHandler && d->pressedHandler) return;  // already attached
+
+    // The clickable element is the SystemTray.IconView that hosts the clock content.
+    UIElement found = nullptr;
+    DependencyObject cur = content;
+    while (cur) {
+        if (winrt::get_class_name(cur) == L"SystemTray.IconView") {
+            found = cur.try_as<UIElement>();
+            break;
+        }
+        cur = Media::VisualTreeHelper::GetParent(cur);
+    }
+    if (!found) found = content;
+
+    d->wheelHandler = Input::PointerEventHandler(
+        [](winrt::Windows::Foundation::IInspectable const& sender, Input::PointerRoutedEventArgs const& e) {
+            try {
+                auto relativeTo = sender.try_as<UIElement>();
+                if (!relativeTo) return;
+                int delta = e.GetCurrentPoint(relativeTo).Properties().MouseWheelDelta();
+                if (delta != 0 && PerformClockScrollAction(delta > 0)) e.Handled(true);
+            } catch (...) {}
+        });
+    d->pressedHandler = Input::PointerEventHandler(
+        [](winrt::Windows::Foundation::IInspectable const& sender, Input::PointerRoutedEventArgs const& e) {
+            try {
+                auto relativeTo = sender.try_as<UIElement>();
+                if (!relativeTo) return;
+                if (e.GetCurrentPoint(relativeTo).Properties().IsMiddleButtonPressed() && PerformClockMiddleAction()) {
+                    e.Handled(true);
+                }
+            } catch (...) {}
+        });
+
+    // handledEventsToo: the button marks pointer events as handled before they reach us.
+    found.AddHandler(UIElement::PointerWheelChangedEvent(), winrt::box_value(*d->wheelHandler), true);
+    found.AddHandler(UIElement::PointerPressedEvent(), winrt::box_value(*d->pressedHandler), true);
+    d->actionTarget = winrt::make_weak(found);
 }
 
 void ApplyDateTimeIconContentStyles(FrameworkElement dateTimeIconContentElement) {
@@ -3586,9 +5843,70 @@ void ApplyDateTimeIconContentStyles(FrameworkElement dateTimeIconContentElement)
     if (maxW) sp.MaxWidth(maxW); else sp.as<DependencyObject>().ClearValue(FrameworkElement::MaxWidthProperty());
     if (spacing) sp.Spacing(spacing); else sp.as<DependencyObject>().ClearValue(Controls::StackPanel::SpacingProperty());
 
-    ApplyTextBlockStyles(dTb, enabled ? &g_settings.dateStyle : nullptr, maxW, &dataPtr->dateVisibilityPropertyChangedToken);
-    ApplyTextBlockStyles(tTb, enabled ? &g_settings.timeStyle : nullptr, maxW, &dataPtr->timeVisibilityPropertyChangedToken);
+    ApplyTextBlockStyles(dTb, enabled ? &g_settings.dateStyle : nullptr, maxW, &dataPtr->dateVisibilityPropertyChangedToken, 1);
+    ApplyTextBlockStyles(tTb, enabled ? &g_settings.timeStyle : nullptr, maxW, &dataPtr->timeVisibilityPropertyChangedToken, 0);
+    try { ApplyClockActionHandlers(dateTimeIconContentElement, dataPtr, enabled); } catch (...) {}
     dataPtr->styleIndex = curIdx;
+}
+
+std::vector<HWND> GetXamlHostWnds();
+HWND GetTaskbarUiWnd();
+
+void RefreshClockElementStylesOnCurrentThread() {
+    std::vector<FrameworkElement> elements;
+    for (const auto& d : g_clockElementStyleData) {
+        if (auto e = d.dateTimeIconContentElement.get()) elements.push_back(e);
+    }
+    ++g_clockElementStyleIndex;
+    for (auto& e : elements) {
+        // Elements that live on another XAML thread throw here and are
+        // handled when that thread runs this function.
+        try { ApplyDateTimeIconContentStyles(e); } catch (...) {}
+    }
+}
+
+void RefreshClockElementStyles() {
+    if (g_winVersion < WinVersion::Win11_22H2 || g_unloading) return;
+    if (HWND hUi = GetTaskbarUiWnd()) {
+        RunFromWindowThread(hUi, [](PVOID) { RefreshClockElementStylesOnCurrentThread(); }, nullptr);
+    }
+    for (HWND hHost : GetXamlHostWnds()) {
+        RunFromWindowThread(hHost, [](PVOID) { RefreshClockElementStylesOnCurrentThread(); }, nullptr);
+    }
+}
+
+// Picks the first matching color rule for the top and bottom line and
+// re-applies the clock styles when the chosen colors change.
+void UpdateClockColorRules() {
+    if (g_colorRuleCount == 0 || g_unloading) return;
+
+    std::wstring newColors[2];
+    {
+        std::lock_guard<std::mutex> guard(g_formatLineMutex);
+        for (int line = 0; line < 2; line++) {
+            for (const auto& r : g_settings.colorRules) {
+                if (!(r.lines & (1 << line))) continue;
+                double v = 0;
+                if (!GetRuleMetricValue(r.metric, &v)) continue;
+                if (r.above ? v > r.threshold : v < r.threshold) {
+                    newColors[line] = r.color.get();
+                    break;
+                }
+            }
+        }
+    }
+
+    bool changed = false;
+    {
+        std::lock_guard<std::mutex> guard(g_clockRuleMutex);
+        for (int line = 0; line < 2; line++) {
+            if (g_clockRuleColor[line] != newColors[line]) {
+                g_clockRuleColor[line] = newColors[line];
+                changed = true;
+            }
+        }
+    }
+    if (changed) RefreshClockElementStyles();
 }
 
 HRESULT WINAPI DateTimeIconContent_OnApplyTemplate_Hook(LPVOID pThis) {
@@ -3665,9 +5983,9 @@ VOID WINAPI GetLocalTime_Hook_Win11(LPSYSTEMTIME lpSystemTime) {
 
 int WINAPI GetTimeFormatEx_Hook_Win11(LPCWSTR loc, DWORD fl, CONST SYSTEMTIME* t, LPCWSTR fmt, LPWSTR str, int cch) {
     if (g_refreshIconThreadId == GetCurrentThreadId() && !g_inGetTimeToolTipString) {
-        if (wcscmp(g_settings.topLine, L"-") != 0) {
+        if (wcscmp(EffTopLine(), L"-") != 0) {
             if (!cch) return FORMATTED_BUFFER_SIZE;
-            return FormatLine(str, cch, g_settings.topLine.get()) + 1;
+            return FormatLine(str, cch, EffTopLine()) + 1;
         }
     }
     return GetTimeFormatEx_Original(loc, fl, t, fmt, str, cch);
@@ -3687,9 +6005,9 @@ int WINAPI GetDateFormatEx_Hook_Win11(LPCWSTR loc, DWORD fl, CONST SYSTEMTIME* d
                 g_formatTime = *dt;
                 g_formatIndex++;
             }
-            if (wcscmp(g_settings.bottomLine, L"-") != 0) {
+            if (wcscmp(EffBottomLine(), L"-") != 0) {
                 if (!cch) return FORMATTED_BUFFER_SIZE;
-                return FormatLine(str, cch, g_settings.bottomLine.get()) + 1;
+                return FormatLine(str, cch, EffBottomLine()) + 1;
             }
         }
     }
@@ -3741,14 +6059,14 @@ HRESULT WINAPI ClockButton_v_GetTooltipText_Hook(LPVOID pThis, LPVOID p1, LPVOID
     HRESULT ret = ClockButton_v_GetTooltipText_Original(pThis, p1, p2, p3, p4);
     if (g_getTooltipTextBuffer) {
         if (g_settings.tooltipLineMode == TooltipLineMode::replace) {
-            FormatLine(g_getTooltipTextBuffer, g_getTooltipTextBufferSize, g_settings.tooltipLine.get());
+            FormatLine(g_getTooltipTextBuffer, g_getTooltipTextBufferSize, EffTooltipLine());
         } else {
             size_t slen = wcslen(g_getTooltipTextBuffer);
             WCHAR* p = g_getTooltipTextBuffer + slen;
             size_t rem = g_getTooltipTextBufferSize - slen;
             if (rem > 4) {
                 wcscpy(p, L"\r\n\r\n");
-                FormatLine(p + 4, rem - 4, g_settings.tooltipLine.get());
+                FormatLine(p + 4, rem - 4, EffTooltipLine());
             }
         }
     }
@@ -3801,8 +6119,8 @@ int WINAPI GetTimeFormatEx_Hook_Win10(LPCWSTR loc, DWORD fl, CONST SYSTEMTIME* t
     if (g_updateTextStringThreadId == GetCurrentThreadId()) {
         g_formatTime = *t;
         g_formatIndex++;
-        if (wcscmp(g_settings.topLine, L"-") != 0) {
-            return FormatLine(str, cch, g_settings.topLine.get()) + 1;
+        if (wcscmp(EffTopLine(), L"-") != 0) {
+            return FormatLine(str, cch, EffTopLine()) + 1;
         }
     }
     return GetTimeFormatEx_Original(loc, fl, t, fmt, str, cch);
@@ -3811,7 +6129,7 @@ int WINAPI GetTimeFormatEx_Hook_Win10(LPCWSTR loc, DWORD fl, CONST SYSTEMTIME* t
 int WINAPI GetDateFormatEx_Hook_Win10(LPCWSTR loc, DWORD fl, CONST SYSTEMTIME* dt, LPCWSTR fmt, LPWSTR str, int cch, LPCWSTR cal) {
     if (g_updateTextStringThreadId == GetCurrentThreadId()) {
         g_getDateFormatExCounter++;
-        PCWSTR f = (g_getDateFormatExCounter > 1) ? g_settings.middleLine : g_settings.bottomLine;
+        PCWSTR f = (g_getDateFormatExCounter > 1) ? g_settings.middleLine.get() : EffBottomLine();
         if (wcscmp(f, L"-") != 0) {
             return FormatLine(str, cch, f) + 1;
         }
@@ -3966,6 +6284,41 @@ NetworkMetricsFormat ParseNetworkMetricsFormat(PCWSTR value) {
     return NetworkMetricsFormat::mbs;
 }
 
+// Parses "YYYY-MM-DD" or "YYYY-MM-DD HH:MM" (local time) into FILETIME ticks.
+bool ParseCountdownTarget(PCWSTR s, ULONGLONG* out) {
+    PWSTR p = const_cast<PWSTR>(s);
+    long v[5] = {0, 0, 0, 0, 0};
+    v[0] = wcstol(p, &p, 10);
+    if (*p != L'-') return false;
+    v[1] = wcstol(p + 1, &p, 10);
+    if (*p != L'-') return false;
+    v[2] = wcstol(p + 1, &p, 10);
+    while (*p == L' ' || *p == L'T') p++;
+    if (*p) {
+        v[3] = wcstol(p, &p, 10);
+        if (*p == L':') v[4] = wcstol(p + 1, &p, 10);
+    }
+    SYSTEMTIME st{};
+    st.wYear = static_cast<WORD>(v[0]);
+    st.wMonth = static_cast<WORD>(v[1]);
+    st.wDay = static_cast<WORD>(v[2]);
+    st.wHour = static_cast<WORD>(v[3]);
+    st.wMinute = static_cast<WORD>(v[4]);
+    FILETIME ft;
+    if (!SystemTimeToFileTime(&st, &ft)) return false;
+    *out = FtToU64(ft);
+    return true;
+}
+
+int ParseRuleMetric(PCWSTR s) {
+    if (wcscmp(s, L"cpu") == 0) return kRuleCpu;
+    if (wcscmp(s, L"ram") == 0) return kRuleRam;
+    if (wcscmp(s, L"gpu") == 0) return kRuleGpu;
+    if (wcscmp(s, L"cpu_temp") == 0) return kRuleCpuTemp;
+    if (wcscmp(s, L"battery") == 0) return kRuleBattery;
+    return kRuleNone;
+}
+
 void LoadSettings() {
     // Tray settings
     g_settings.hideVolumeIcon = Wh_GetIntSetting(L"SystemTray.hideVolumeIcon");
@@ -4013,6 +6366,85 @@ void LoadSettings() {
     StringSetting tlm = StringSetting::make(L"ClockLines.TooltipLineMode");
     if (wcscmp(tlm, L"replace") == 0) g_settings.tooltipLineMode = TooltipLineMode::replace;
 
+    g_presetTopLine = g_presetBottomLine = g_presetTooltipLine = nullptr;
+    {
+        StringSetting preset = StringSetting::make(L"ClockLines.Preset");
+        for (const auto& p : kLinePresets) {
+            if (wcscmp(preset, p.id) == 0) {
+                g_presetTopLine = p.top;
+                g_presetBottomLine = p.bottom;
+                g_presetTooltipLine = p.tooltip;
+                break;
+            }
+        }
+    }
+    g_settings.showTagHints = Wh_GetIntSetting(L"ClockLines.ShowTagHints");
+
+    g_settings.pingHost = StringSetting::make(L"NetworkInfo.PingHost").get();
+    g_settings.pingInterval = Wh_GetIntSetting(L"NetworkInfo.PingInterval");
+    {
+        StringSetting hijri = StringSetting::make(L"AlternateCalendars.HijriType");
+        g_settings.hijriCivil = wcscmp(hijri, L"civil") == 0;
+    }
+    g_settings.hijriOffset = std::clamp<int>(Wh_GetIntSetting(L"AlternateCalendars.HijriOffset"), -2, 2);
+    g_settings.icsUrl = StringSetting::make(L"CalendarEvents.IcsUrl").get();
+    g_settings.icsMaxLength = Wh_GetIntSetting(L"CalendarEvents.MaxLength");
+    g_settings.icsIncludeAllDay = Wh_GetIntSetting(L"CalendarEvents.IncludeAllDay");
+    g_settings.icsNoEventText = StringSetting::make(L"CalendarEvents.NoEventText").get();
+
+    {
+        StringSetting scroll = StringSetting::make(L"ClockActions.Scroll");
+        g_settings.clockScrollAction = wcscmp(scroll, L"volume") == 0 ? 1 : wcscmp(scroll, L"track") == 0 ? 2 : 0;
+        StringSetting mid = StringSetting::make(L"ClockActions.MiddleClick");
+        g_settings.clockMiddleAction = wcscmp(mid, L"playpause") == 0  ? 1
+                                       : wcscmp(mid, L"mute") == 0     ? 2
+                                       : wcscmp(mid, L"next") == 0     ? 3
+                                       : wcscmp(mid, L"previous") == 0 ? 4
+                                       : wcscmp(mid, L"taskmgr") == 0  ? 5
+                                       : wcscmp(mid, L"command") == 0  ? 6
+                                                                       : 0;
+    }
+    g_settings.clockCommand = StringSetting::make(L"ClockActions.Command").get();
+    {
+        StringSetting dyn = StringSetting::make(L"TaskbarAppearance.DynamicTransparency");
+        g_settings.dynamicTransparency = wcscmp(dyn, L"opaque") == 0 ? 1 : 0;
+    }
+    g_settings.logClockThreads = Wh_GetIntSetting(L"Diagnostics.LogClockThreads");
+
+    LoadTablerCssFile(StringSetting::make(L"Icons.CssFile").get());
+    LoadIconFont(StringSetting::make(L"Icons.FontFile").get());
+
+    g_settings.profileRules.clear();
+    g_profilePreset = nullptr;
+    for (int i = 0;; i++) {
+        StringSetting cond = StringSetting::make(L"Profiles.Rules[%d].Condition", i);
+        if (*cond == L'\0') break;
+        ProfileRule r{};
+        r.condition = ParseProfileCondition(cond);
+        StringSetting presetId = StringSetting::make(L"Profiles.Rules[%d].Preset", i);
+        r.preset = FindLinePreset(presetId);
+        if (!r.condition || !r.preset) continue;
+        r.threshold = Wh_GetIntSetting(L"Profiles.Rules[%d].Threshold", i);
+        r.startHour = Wh_GetIntSetting(L"Profiles.Rules[%d].StartHour", i);
+        r.endHour = Wh_GetIntSetting(L"Profiles.Rules[%d].EndHour", i);
+        g_settings.profileRules.push_back(r);
+    }
+    {
+        // The feed is fetched again by the web content thread after a settings change.
+        std::lock_guard<std::mutex> icsGuard(g_webContentMutex);
+        g_icsEvents.clear();
+        g_icsVersion++;
+    }
+
+    g_settings.countdownTargets.clear();
+    for (int i = 0;; i++) {
+        StringSetting c = StringSetting::make(L"ClockFormat.Countdowns[%d]", i);
+        if (*c == L'\0') break;
+        ULONGLONG target = 0;
+        if (!ParseCountdownTarget(c.get(), &target)) target = 0;
+        g_settings.countdownTargets.push_back(target);
+    }
+
     g_settings.width = Wh_GetIntSetting(L"ClockLayout.Width");
     g_settings.height = Wh_GetIntSetting(L"ClockLayout.Height");
     g_settings.maxWidth = Wh_GetIntSetting(L"ClockLayout.MaxWidth");
@@ -4038,6 +6470,8 @@ void LoadSettings() {
     else if (wcscmp(pf, L"noPadding") == 0) g_settings.dataCollection.percentageFormat = PercentageFormat::noPadding;
 
     g_settings.dataCollection.updateInterval = Wh_GetIntSetting(L"DataCollection.UpdateInterval");
+    g_settings.dataCollection.graphLength = Wh_GetIntSetting(L"DataCollection.GraphLength");
+    g_settings.dataCollection.batteryUpdateInterval = Wh_GetIntSetting(L"DataCollection.BatteryUpdateInterval");
     g_settings.dataCollection.networkAdapterName = StringSetting::make(L"DataCollection.NetworkAdapterName");
     g_settings.dataCollection.gpuAdapterName = StringSetting::make(L"DataCollection.GpuAdapterName");
 
@@ -4045,6 +6479,8 @@ void LoadSettings() {
     g_settings.mediaPlayer.mediaInfoFormat = StringSetting::make(L"MediaPlayer.MediaInfoFormat");
     g_settings.mediaPlayer.noMediaText = StringSetting::make(L"MediaPlayer.NoMediaText");
     g_settings.mediaPlayer.removeBrackets = Wh_GetIntSetting(L"MediaPlayer.RemoveBrackets");
+    g_settings.mediaPlayer.marquee = Wh_GetIntSetting(L"MediaPlayer.Marquee");
+    g_settings.mediaPlayer.marqueeSpeed = Wh_GetIntSetting(L"MediaPlayer.MarqueeSpeed");
     g_settings.mediaPlayer.ignoredPlayers.clear();
     for (int i = 0;; i++) {
         StringSetting player = StringSetting::make(L"MediaPlayer.IgnoredPlayers[%d]", i);
@@ -4059,6 +6495,14 @@ void LoadSettings() {
     if (wcscmp(wu, L"uscs") == 0) g_settings.webContentWeatherUnits = WebContentWeatherUnits::uscs;
     else if (wcscmp(wu, L"metric") == 0) g_settings.webContentWeatherUnits = WebContentWeatherUnits::metric;
     else if (wcscmp(wu, L"metricMsWind") == 0) g_settings.webContentWeatherUnits = WebContentWeatherUnits::metricMsWind;
+
+    g_settings.weatherPreset = 0;
+    {
+        StringSetting wp = StringSetting::make(L"WebContent.WeatherPreset");
+        if (wcscmp(wp, L"conditions") == 0) g_settings.weatherPreset = 1;
+        else if (wcscmp(wp, L"sun") == 0) g_settings.weatherPreset = 2;
+        else if (wcscmp(wp, L"full") == 0) g_settings.weatherPreset = 3;
+    }
 
     g_settings.webContentsItems.clear();
     for (int i = 0;; i++) {
@@ -4122,8 +6566,34 @@ void LoadSettings() {
     g_settings.dateStyle.characterSpacing = Wh_GetIntSetting(L"DateStyle.CharacterSpacing");
     g_settings.dateStyle.lineHeight = Wh_GetIntSetting(L"DateStyle.LineHeight");
 
+    g_settings.colorRules.clear();
+    for (int i = 0;; i++) {
+        StringSetting metric = StringSetting::make(L"ClockColors.Rules[%d].Metric", i);
+        if (*metric == L'\0') break;
+        int m = ParseRuleMetric(metric);
+        if (!m) continue;
+
+        ColorRule r;
+        r.metric = m;
+        StringSetting cond = StringSetting::make(L"ClockColors.Rules[%d].Condition", i);
+        r.above = wcscmp(cond, L"below") != 0;
+        r.threshold = Wh_GetIntSetting(L"ClockColors.Rules[%d].Threshold", i);
+        r.color = StringSetting::make(L"ClockColors.Rules[%d].Color", i);
+        StringSetting line = StringSetting::make(L"ClockColors.Rules[%d].Line", i);
+        r.lines = wcscmp(line, L"top") == 0 ? 1 : wcscmp(line, L"bottom") == 0 ? 2 : 3;
+        g_settings.colorRules.push_back(std::move(r));
+    }
+    g_colorRuleCount = static_cast<int>(g_settings.colorRules.size());
+    {
+        std::lock_guard<std::mutex> ruleGuard(g_clockRuleMutex);
+        g_clockRuleColor[0].clear();
+        g_clockRuleColor[1].clear();
+    }
+
+    g_iconsUsed = IsStrInDateTimePatternSettings(L"%ti:");
     g_clockElementStyleEnabled =
-        (g_settings.maxWidth || g_settings.textSpacing ||
+        (g_settings.maxWidth || g_settings.textSpacing || !g_settings.colorRules.empty() ||
+         g_settings.clockScrollAction || g_settings.clockMiddleAction || g_iconsUsed ||
          g_settings.timeStyle.hidden || *g_settings.timeStyle.textColor ||
          *g_settings.timeStyle.textAlignment || g_settings.timeStyle.fontSize ||
          *g_settings.timeStyle.fontFamily || *g_settings.timeStyle.fontWeight ||
@@ -4206,7 +6676,7 @@ void ApplySettingsWin10Clock() {
 // Forward declarations for transparency & app visibility
 void ApplyTaskbarTransparency();
 void ApplyTaskbarWindowComposition(HWND hTaskbar);
-void ApplyTaskbarXamlBackgroundTransparency(XamlRoot xamlRoot);
+void ApplyTaskbarXamlBackgroundTransparency(XamlRoot xamlRoot, HWND hTaskbar);
 void ApplyTaskbarAppVisibility(XamlRoot xamlRoot);
 void ApplyTaskbarAppVisibilityToButton(FrameworkElement button);
 
@@ -4237,7 +6707,7 @@ void ApplySettingsTray(HWND hTaskbarWnd) {
 
         auto xamlRoot = GetTaskbarXamlRoot(hWnd);
         if (xamlRoot) {
-            ApplyTaskbarXamlBackgroundTransparency(xamlRoot);
+            ApplyTaskbarXamlBackgroundTransparency(xamlRoot, hWnd);
             ApplyTrayStylesVisualTree(xamlRoot);
             ApplyTaskbarAppVisibility(xamlRoot);
         }
@@ -4299,6 +6769,88 @@ enum class TaskbarBackdropType : DWORD {
     Tabbed = 4,
 };
 
+// ----- DYNAMIC TRANSPARENCY -----
+
+using DwmGetWindowAttribute_t = HRESULT(WINAPI*)(HWND, DWORD, PVOID, DWORD);
+
+bool IsWindowCloaked(HWND hWnd) {
+    static DwmGetWindowAttribute_t s_get = []() -> DwmGetWindowAttribute_t {
+        HMODULE hDwm = LoadLibraryExW(L"dwmapi.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        return hDwm ? reinterpret_cast<DwmGetWindowAttribute_t>(GetProcAddress(hDwm, "DwmGetWindowAttribute")) : nullptr;
+    }();
+    DWORD cloaked = 0;
+    constexpr DWORD kDwmaCloaked = 14;
+    return s_get && SUCCEEDED(s_get(hWnd, kDwmaCloaked, &cloaked, sizeof(cloaked))) && cloaked;
+}
+
+std::mutex g_maximizedMutex;
+std::vector<HMONITOR> g_maximizedMonitors;
+ULONGLONG g_maximizedTick = 0;
+
+// Monitors that currently show a visible, maximized, top-level app window.
+void RefreshMaximizedMonitors() {
+    std::vector<HMONITOR> found;
+    EnumWindows(
+        [](HWND hWnd, LPARAM lParam) -> BOOL {
+            auto* out = reinterpret_cast<std::vector<HMONITOR>*>(lParam);
+            if (!IsWindowVisible(hWnd) || IsIconic(hWnd) || !IsZoomed(hWnd)) return TRUE;
+            if (GetWindow(hWnd, GW_OWNER)) return TRUE;
+            if (GetWindowLongPtrW(hWnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) return TRUE;
+            if (IsWindowCloaked(hWnd)) return TRUE;
+
+            WCHAR cls[64]{};
+            if (GetClassNameW(hWnd, cls, ARRAYSIZE(cls))) {
+                if (_wcsicmp(cls, L"Progman") == 0 || _wcsicmp(cls, L"WorkerW") == 0 ||
+                    _wcsicmp(cls, L"Shell_TrayWnd") == 0 || _wcsicmp(cls, L"Shell_SecondaryTrayWnd") == 0) {
+                    return TRUE;
+                }
+            }
+            HMONITOR mon = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL);
+            if (mon && std::find(out->begin(), out->end(), mon) == out->end()) out->push_back(mon);
+            return TRUE;
+        },
+        reinterpret_cast<LPARAM>(&found));
+
+    std::lock_guard<std::mutex> guard(g_maximizedMutex);
+    g_maximizedMonitors = std::move(found);
+    g_maximizedTick = GetTickCount64() | 1;
+}
+
+void RefreshMaximizedMonitorsIfStale() {
+    {
+        std::lock_guard<std::mutex> guard(g_maximizedMutex);
+        if (g_maximizedTick && GetTickCount64() - g_maximizedTick < 300) return;
+    }
+    RefreshMaximizedMonitors();
+}
+
+bool MonitorHasMaximizedWindow(HMONITOR mon) {
+    RefreshMaximizedMonitorsIfStale();
+    std::lock_guard<std::mutex> guard(g_maximizedMutex);
+    return std::find(g_maximizedMonitors.begin(), g_maximizedMonitors.end(), mon) != g_maximizedMonitors.end();
+}
+
+// Changes whenever the set of monitors with a maximized window changes.
+uintptr_t MaximizedMonitorsSignature() {
+    RefreshMaximizedMonitors();
+    std::lock_guard<std::mutex> guard(g_maximizedMutex);
+    uintptr_t sig = 0;
+    for (HMONITOR m : g_maximizedMonitors) sig ^= reinterpret_cast<uintptr_t>(m) * 2654435761u;
+    return sig ^ g_maximizedMonitors.size();
+}
+
+// The transparency mode to use for a taskbar window: the configured mode, or
+// the default (opaque) taskbar while dynamic transparency detects a maximized
+// window on that taskbar's monitor.
+std::wstring GetEffectiveTransparencyMode(HWND hTaskbar) {
+    std::wstring mode = g_settings.transparencyMode ? std::wstring(g_settings.transparencyMode.get()) : L"default";
+    if (!mode.empty() && g_settings.dynamicTransparency && hTaskbar) {
+        HMONITOR mon = MonitorFromWindow(hTaskbar, MONITOR_DEFAULTTOPRIMARY);
+        if (MonitorHasMaximizedWindow(mon)) return L"default";
+    }
+    return mode;
+}
+
 bool IsTransparencyMode(std::wstring_view mode, std::wstring_view expected) {
     return _wcsicmp(std::wstring(mode).c_str(), std::wstring(expected).c_str()) == 0;
 }
@@ -4340,12 +6892,10 @@ void ResetTaskbarWindowComposition(HWND hTaskbar) {
     }
 }
 
-void ApplyTaskbarXamlBackgroundTransparency(XamlRoot xamlRoot) {
+void ApplyTaskbarXamlBackgroundTransparency(XamlRoot xamlRoot, HWND hTaskbar) {
     if (!xamlRoot || !xamlRoot.Content()) return;
 
-    std::wstring mode = g_settings.transparencyMode
-                            ? std::wstring(g_settings.transparencyMode.get())
-                            : L"default";
+    std::wstring mode = GetEffectiveTransparencyMode(hTaskbar);
 
     int transparency = std::clamp(g_settings.transparencyAlpha, 0, 100);
     bool isMica = IsTransparencyMode(mode, L"mica");
@@ -4418,9 +6968,7 @@ void ApplyTaskbarXamlBackgroundTransparency(XamlRoot xamlRoot) {
 void ApplyTaskbarWindowComposition(HWND hTaskbar) {
     if (!hTaskbar) return;
 
-    std::wstring mode = g_settings.transparencyMode
-                            ? std::wstring(g_settings.transparencyMode.get())
-                            : L"default";
+    std::wstring mode = GetEffectiveTransparencyMode(hTaskbar);
 
     if (g_unloading || mode.empty() || IsTransparencyMode(mode, L"default")) {
         ResetTaskbarWindowComposition(hTaskbar);
@@ -4535,11 +7083,22 @@ std::atomic<bool> g_transparencyWatchdogRunning;
 HANDLE g_transparencyWatchdogThread;
 
 DWORD WINAPI TransparencyWatchdogThreadProc(LPVOID) {
+    // Polls every 250 ms. With dynamic transparency the taskbar is updated as
+    // soon as a window is maximized or restored; otherwise it is re-asserted
+    // every 1.5 seconds as before.
+    int sinceApplyMs = 0;
+    uintptr_t lastSignature = 0;
     while (g_transparencyWatchdogRunning) {
-        for (int i = 0; i < 15 && g_transparencyWatchdogRunning; i++) {
-            Sleep(100);
+        for (int i = 0; i < 5 && g_transparencyWatchdogRunning; i++) {
+            Sleep(50);
         }
         if (!g_transparencyWatchdogRunning) break;
+        sinceApplyMs += 250;
+
+        uintptr_t signature = g_settings.dynamicTransparency ? MaximizedMonitorsSignature() : 0;
+        if (signature == lastSignature && sinceApplyMs < 1500) continue;
+        lastSignature = signature;
+        sinceApplyMs = 0;
 
         std::wstring mode = g_settings.transparencyMode
                                 ? std::wstring(g_settings.transparencyMode.get())
@@ -4677,7 +7236,10 @@ void ApplyTaskbarAppVisibility(XamlRoot xamlRoot) {
     WalkVisualTree(root, [](FrameworkElement element) {
         std::wstring className = winrt::get_class_name(element).c_str();
 
-        if (className.find(L"TaskListButton") != std::wstring::npos) {
+        // Exact match: app buttons only. Start, Search, Task View and Widgets
+        // contain a Taskbar.TaskListButtonPanel child, so a substring match
+        // would hide their content too.
+        if (className == L"Taskbar.TaskListButton") {
             ApplyTaskbarAppVisibilityToButton(element);
         }
     });
@@ -12003,8 +14565,80 @@ bool ProcessSingleTargetStylesFromSettings(int index, const StyleConstants& styl
     return true;
 }
 
+// Control styles generated from the quick-toggle settings (taskbar buttons,
+// running indicator, tray icons). They are added before the user's own
+// control styles, so those can still override them. Selectors follow the
+// Windows 11 Taskbar Styler themes.
+void AddBuiltInStyles() {
+    try {
+        // Taskbar buttons
+        if (Wh_GetIntSetting(L"TaskbarButtons.HideStart")) {
+            AddElementCustomizationRules(
+                L"Taskbar.ExperienceToggleButton#LaunchListButton[AutomationProperties.AutomationId=StartButton]",
+                {L"Visibility=Collapsed"});
+        }
+        if (Wh_GetIntSetting(L"TaskbarButtons.HideSearch")) {
+            AddElementCustomizationRules(
+                L"Taskbar.SearchBoxButton#SearchBoxButton[AutomationProperties.AutomationId=SearchButton]",
+                {L"Visibility=Collapsed"});
+        }
+        if (Wh_GetIntSetting(L"TaskbarButtons.HideTaskView")) {
+            AddElementCustomizationRules(
+                L"Taskbar.ExperienceToggleButton#LaunchListButton[AutomationProperties.AutomationId=TaskViewButton]",
+                {L"Visibility=Collapsed"});
+        }
+        if (Wh_GetIntSetting(L"TaskbarButtons.HideWidgets")) {
+            AddElementCustomizationRules(
+                L"Taskbar.AugmentedEntryPointButton[AutomationProperties.AutomationId=WidgetsButton]",
+                {L"Visibility=Collapsed"});
+        }
+
+        // Running-app indicator
+        StringSetting indicatorMode = StringSetting::make(L"RunningIndicator.Mode");
+        if (wcscmp(indicatorMode, L"hidden") == 0) {
+            AddElementCustomizationRules(L"Rectangle#RunningIndicator", {L"Visibility=Collapsed"});
+        } else if (wcscmp(indicatorMode, L"custom") == 0) {
+            std::vector<std::wstring> styles;
+            StringSetting color = StringSetting::make(L"RunningIndicator.Color");
+            if (*color) styles.push_back(std::wstring(L"Fill=") + color.get());
+            StringSetting activeColor = StringSetting::make(L"RunningIndicator.ActiveColor");
+            if (*activeColor) styles.push_back(std::wstring(L"Fill@ActiveRunningIndicator=") + activeColor.get());
+            if (int v = Wh_GetIntSetting(L"RunningIndicator.Width"); v > 0) {
+                styles.push_back(L"Width=" + std::to_wstring(v));
+            }
+            if (int v = Wh_GetIntSetting(L"RunningIndicator.ActiveWidth"); v > 0) {
+                styles.push_back(L"Width@ActiveRunningIndicator=" + std::to_wstring(v));
+            }
+            if (int v = Wh_GetIntSetting(L"RunningIndicator.Height"); v > 0) {
+                styles.push_back(L"Height=" + std::to_wstring(v));
+            }
+            if (int v = Wh_GetIntSetting(L"RunningIndicator.CornerRadius"); v > 0) {
+                styles.push_back(L"RadiusX=" + std::to_wstring(v));
+                styles.push_back(L"RadiusY=" + std::to_wstring(v));
+            }
+            if (!styles.empty()) {
+                AddElementCustomizationRules(
+                    L"Grid#IconPanel@RunningIndicatorStates > Rectangle#RunningIndicator, "
+                    L"Taskbar.TaskListLabeledButtonPanel@RunningIndicatorStates > Rectangle#RunningIndicator",
+                    styles);
+            }
+        }
+
+        // Classic notification-area icons, matched by their exact name (tooltip text)
+        for (int i = 0;; i++) {
+            StringSetting name = StringSetting::make(L"TrayIcons.HiddenNames[%d]", i);
+            if (*name == L'\0') break;
+            if (wcschr(name.get(), L']')) continue;  // would end the selector early
+            AddElementCustomizationRules(
+                std::wstring(L"SystemTray.NotifyIconView#NotifyItemIcon[AutomationProperties.Name=") + name.get() + L"]",
+                {L"Visibility=Collapsed"});
+        }
+    } catch (...) {}
+}
+
 void ProcessAllStylesFromSettings() {
     StyleConstants styleConstants = LoadStyleConstants();
+    AddBuiltInStyles();
 
     for (int i = 0;; i++) {
         try {
@@ -12466,6 +15100,8 @@ void Wh_ModUninit() {
         std::lock_guard<std::mutex> guard(g_formatLineMutex);
         WebContentUpdateThreadUninit();
         DataCollectionSessionUninit();
+        PingThreadUninit();
+        UnloadIconFont();
         MediaSessionUninit();
     }
 
@@ -12499,6 +15135,7 @@ BOOL Wh_ModSettingsChanged(BOOL* bReload) {
         std::lock_guard<std::mutex> guard(g_formatLineMutex);
         WebContentUpdateThreadUninit();
         DataCollectionSessionUninit();
+        PingThreadUninit();
         MediaSessionUninit();
         g_formattingInitialized = false;
 
