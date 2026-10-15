@@ -1,70 +1,49 @@
-hideVolumeIcon: 1
-hideNetworkIcon: 0
-hideBatteryIcon: 1
-grayscaleBatteryIcon: 0
-hideMicrophoneIcon: 1
-hideGeolocationIcon: 0
-hideStudioEffectsIcon: 0
-hideRecallIcon: 0
-hideLanguageBar: 1
-hideLanguageSupplementaryIcons: 0
-hideBellIcon: always
-showDesktopButtonWidth: 12
-ShowSeconds: 1
-TimeFormat: hh':'mm' 'tt
-DateFormat: ddd',' MMM dd
-DateLocale: ''
-WeekdayFormat: dddd
-WeekdayFormatCustom: Sun, Mon, Tue, Wed, Thu, Fri, Sat
-TopLine: 🔼 %upload_speed% 🔽 %download_speed% ⚙ %cpu% 🗃️ %ram% %weather% 📅 %date% 🌿 %time% %mic% %volume% ♻️ %battery%
-BottomLine: ''
-MiddleLine: ''
-TooltipLine: ''
-TooltipLineMode: append
-Width: 0
-Height: 0
-MaxWidth: 0
-TextSpacing: 0
-DataCollection:
-  NetworkMetricsFormat: mbsDynamic
-  NetworkMetricsFixedDecimals: -1
-  DiskMetricsFormat: sameAsNetwork
-  DiskMetricsFixedDecimals: -1
-  PercentageFormat: spacePaddingAndSymbol
-  UpdateInterval: 1
-  NetworkAdapterName: ''
-  GpuAdapterName: ''
-MediaPlayer:
-  IgnoredPlayers:
+oldTaskbarOnWin11: 0
+SystemTray:
+  hideVolumeIcon: 1
+  hideNetworkIcon: 0
+  hideBatteryIcon: 1
+  grayscaleBatteryIcon: 0
+  hideMicrophoneIcon: 1
+  hideGeolocationIcon: 0
+  hideStudioEffectsIcon: 0
+  hideRecallIcon: 0
+  hideLanguageBar: 1
+  hideLanguageSupplementaryIcons: 0
+  hideBellIcon: always
+  showDesktopButtonWidth: 12
+ClockFormat:
+  ShowSeconds: 1
+  TimeFormat: hh':'mm' 'tt
+  DateFormat: ddd',' MMM dd yyyy
+  DateLocale: ''
+  WeekdayFormat: dddd
+  WeekdayFormatCustom: Sun, Mon, Tue, Wed, Thu, Fri, Sat
+  TimeZones:
+    - Eastern Standard Time
+  Countdowns:
     - ''
-  MaxLength: 28
-  MediaInfoFormat: '%media_artist% - %media_title%'
-  NoMediaText: No media
-  RemoveBrackets: 0
-WebContentWeatherLocation: Dhaka, Bangladesh
-WebContentWeatherFormat: '%c%t'
-WebContentWeatherUnits: metric
-WebContentsItems:
-  - Url: ''
-    BlockStart: ''
-    Start: ''
-    End: ''
-    ContentMode: ''
-    SearchReplace:
-      - Search: ''
-        Replace: ''
-    MaxLength: 10
-WebContentsUpdateInterval: 30
-TimeZones:
-  - Eastern Standard Time
+ClockLines:
+  Preset: custom
+  TopLine: '%vpn% 🔼 %upload_speed% 🔽 %download_speed% (%wifi_signal%)%media_info% %media_bar%⚙%cpu% 📦 %top_process% 🗃️ %ram% / %uptime% 💾 %drive_free_C% %weather% 📅 %date% / %date_bengali% 🌿 %time% %mic% %volume% ♻️ %battery% (%battery_time%)'
+  BottomLine: '%web1%'
+  MiddleLine: '%weekday%'
+  TooltipLine: '%web1_full%'
+  TooltipLineMode: append
+  ShowTagHints: 1
+ClockLayout:
+  Width: 180
+  Height: 60
+  MaxWidth: 0
+  TextSpacing: 0
 TimeStyle:
   Hidden: 0
   TextColor: ''
-  TextAlignment: Center
+  TextAlignment: ''
   FontSize: 11
   FontFamily: ''
-  FontWeight: '600'
-  FontStyle: Normal
+  FontWeight: ''
+  FontStyle: ''
   FontStretch: ''
   CharacterSpacing: 0
   LineHeight: 0
@@ -79,53 +58,151 @@ DateStyle:
   FontStretch: ''
   CharacterSpacing: 0
   LineHeight: 0
-oldTaskbarOnWin11: 0
-TransparencyMode: transparent
-TransparencyAlpha: 100
-HideTaskbarApps: 1
-AppExceptions:
-  - ''
-TaskbarHeight: 23
-IconSize: 12
-TaskbarButtonWidth: 19
-IconSizeSmall: 16
-TaskbarButtonWidthSmall: 32
-styleConstants:
-  - ''
-controlStyles:
-  - target: SystemTray.SystemTrayFrame
-    styles:
-      - HorizontalAlignment=Center
-  - target: SystemTray.TextIconContent > Grid#ContainerGrid > SystemTray.AdaptiveTextBlock#Base > TextBlock#InnerTextBlock
-    styles:
-      - FontSize=13
-  - target: SystemTray.OmniButton
-    styles:
-      - Padding=1
-      - Margin=-4,0,-5,0
-  - target: SystemTray.Stack#NotifyIconStack
-    styles:
-      - Grid.Column=8
-  - target: SystemTray.ChevronIconView > * > TextBlock#InnerTextBlock
-    styles:
-      - Text=🦊
-      - FontFamily=Segoe UI Emoji
-      - FontSize= 11
-  - target: SystemTray.OmniButton#ShowDesktopButton, SystemTray.ChevronIconView
-    styles:
-      - Width=19
-      - Padding=0
-      - Margin=-6,-4,0,0
-  - target: SystemTray.ImageIconContent > Grid#ContainerGrid > Image
-    styles:
-      - Height=12
-      - Width=12
-  - target: SystemTray.NotifyIconView
-    styles:
-      - Width=23
-      - MinWidth=0
-      - Padding=0
-      - Margin=1
-themeResourceVariables:
-  - ''
-xamlDiagnosticsHandling: alert
+ClockColors:
+  Rules:
+    - Metric: ''
+      Condition: above
+      Threshold: 90
+      Color: '#FF5555'
+      Line: both
+ClockActions:
+  Scroll: none
+  MiddleClick: none
+  Command: ''
+ClockTimer:
+  TimerMinutes: 25
+  WorkMinutes: 25
+  BreakMinutes: 5
+  PlaySound: 1
+Profiles:
+  Rules:
+    - Condition: ''
+      Threshold: 20
+      StartHour: 9
+      EndHour: 18
+      Preset: minimal
+DataCollection:
+  NetworkMetricsFormat: mbsDynamic
+  NetworkMetricsFixedDecimals: -1
+  DiskMetricsFormat: sameAsNetwork
+  DiskMetricsFixedDecimals: -1
+  PercentageFormat: spacePaddingAndSymbol
+  UpdateInterval: 1
+  NetworkAdapterName: ''
+  GpuAdapterName: ''
+  GraphLength: 8
+  BatteryUpdateInterval: 0
+MediaPlayer:
+  IgnoredPlayers:
+    - ''
+  MaxLength: 28
+  MediaInfoFormat: 🎵 %media_artist% - %media_title%
+  NoMediaText: ''
+  RemoveBrackets: 0
+  Marquee: 0
+  MarqueeSpeed: 2
+WebContent:
+  WeatherPreset: custom
+  WeatherLocation: ''
+  WeatherFallback: 1
+  WeatherFormat: '%c%t'
+  WeatherUnits: autoDetect
+  Items:
+    - Url: https://rss.nytimes.com/services/xml/rss/nyt/World.xml
+      BlockStart: <item>
+      Start: <title>
+      End: </title>
+      ContentMode: xmlHtml
+      SearchReplace:
+        - Search: ''
+          Replace: ''
+      MaxLength: 28
+  UpdateInterval: 10
+NetworkInfo:
+  PingHost: 1.1.1.1
+  PingInterval: 5
+AlternateCalendars:
+  HijriType: umalqura
+  HijriOffset: 0
+CalendarEvents:
+  IcsUrl: ''
+  MaxLength: 30
+  IncludeAllDay: 0
+  NoEventText: No upcoming events
+TaskbarAppearance:
+  TransparencyMode: transparent
+  TransparencyAlpha: 100
+  DynamicTransparency: 'off'
+  HideTaskbarApps: 1
+  AppExceptions:
+    - ''
+TaskbarSize:
+  TaskbarHeight: 23
+  IconSize: 12
+  TaskbarButtonWidth: 20
+  IconSizeSmall: 16
+  TaskbarButtonWidthSmall: 32
+TaskbarShape:
+  Style: default
+  CornerRadius: 0
+  FillColor: ''
+  BorderColor: ''
+  BorderThickness: 0
+TaskbarButtons:
+  HideStart: 1
+  HideSearch: 1
+  HideTaskView: 1
+  HideWidgets: 1
+RunningIndicator:
+  Mode: hidden
+  Color: ''
+  ActiveColor: ''
+  Width: 0
+  ActiveWidth: 0
+  Height: 0
+  CornerRadius: 0
+TrayIcons:
+  HiddenNames:
+    - ''
+Styling:
+  styleConstants:
+    - ''
+  controlStyles:
+    - target: SystemTray.SystemTrayFrame
+      styles:
+        - HorizontalAlignment=Center
+    - target: SystemTray.TextIconContent > Grid#ContainerGrid > SystemTray.AdaptiveTextBlock#Base > TextBlock#InnerTextBlock
+      styles:
+        - FontSize=13
+    - target: SystemTray.OmniButton
+      styles:
+        - Padding=1
+        - Margin=-5,0,-7,0
+    - target: SystemTray.Stack#NotifyIconStack
+      styles:
+        - Grid.Column=8
+    - target: SystemTray.ChevronIconView > * > TextBlock#InnerTextBlock
+      styles:
+        - Text=🦊
+        - FontFamily=Segoe UI Emoji
+        - FontSize= 12
+    - target: SystemTray.OmniButton#ShowDesktopButton, SystemTray.ChevronIconView
+      styles:
+        - Width=19
+        - Padding=0
+        - Margin=-5,-3,0,0
+    - target: SystemTray.ImageIconContent > Grid#ContainerGrid > Image
+      styles:
+        - Height=15
+        - Width=12
+    - target: SystemTray.NotifyIconView
+      styles:
+        - Width=23
+        - MinWidth=0
+        - Padding=0
+        - Margin=1
+  themeResourceVariables:
+    - ''
+  xamlDiagnosticsHandling: alert
+Diagnostics:
+  LogClockThreads: 0
