@@ -16,11 +16,11 @@ A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifi
 * **Timers:** `%stopwatch%`, `%timer%` and `%pomodoro%` with a shared run state, plus middle-click actions to start / pause and reset them, and a Pomodoro clock layout preset.
 * **`%cpu_freq%`** shows the average CPU clock.
 * **Weather fallback:** when wttr.in does not answer, the weather is fetched from [Open-Meteo](https://open-meteo.com) instead.
-* **Tabler icons removed:** the `%ti:name%` tag and its settings were taken out because they did not fit the mod.
+* **Tabler icons removed:** the `%ti:name%` tag and its settings were taken out because they did not fit the mod (done in v1.5.1).
 
 Earlier release notes are in [`CHANGELOG.md`](./CHANGELOG.md).
 
-> **Upgrading from a version before 1.5.0:** settings that moved into categories are stored under new names, so they **fall back to their defaults** and must be entered again. This covers the tray icon options, clock formats, clock lines, clock size and spacing, weather and web content, transparency, taskbar size and the advanced styling rules. Settings that were already grouped (live metrics, media player, top/bottom line style) and *Customize the old taskbar on Windows 11* keep their values. A previously exported [`settings.txt`](./settings.txt) no longer matches the new layout.
+> **Upgrading from a version before 1.5.0:** settings that moved into categories are stored under new names, so they **fall back to their defaults** and must be entered again. This covers the tray icon options, clock formats, clock lines, clock size and spacing, weather and web content, transparency, taskbar size and the advanced styling rules. Settings that were already grouped (live metrics, media player, top/bottom line style) and *Customize the old taskbar on Windows 11* keep their values.
 
 ---
 
