@@ -16,7 +16,7 @@ A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifi
 * **Timers:** `%stopwatch%`, `%timer%` and `%pomodoro%` with a shared run state, plus middle-click actions to start / pause and reset them, and a Pomodoro clock layout preset.
 * **`%cpu_freq%`** shows the average CPU clock.
 * **Weather fallback:** when wttr.in does not answer, the weather is fetched from [Open-Meteo](https://open-meteo.com) instead.
-* **Tabler icons removed:** the `%ti:name%` tag and its settings were taken out because they did not fit the mod (done in v1.5.1).
+* **Tabler icons removed:** the `%ti:name%` tag and its settings were taken out because they did not fit the mod.
 
 Earlier release notes are in [`CHANGELOG.md`](./CHANGELOG.md).
 
