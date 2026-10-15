@@ -2,7 +2,7 @@
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
 // @description     Taskbar clock with live metrics, media info and weather; system tray icon control; taskbar size and transparency; and XAML control styling.
-// @version         1.5.0
+// @version         1.6.0
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -43,18 +43,19 @@ Supports **Windows 10 (64-bit)** and **Windows 11**. Everything except the clock
 | Clock: size & spacing | Clock width / height (Windows 10), max width and line spacing (Windows 11) |
 | Clock: top / bottom line style | Color, font, alignment and spacing per line (Windows 11 22H2+) |
 | Clock: click & scroll actions | Mouse wheel and middle click on the clock: volume, media keys, Task Manager or a command (Windows 11) |
+| Clock: timer, stopwatch & Pomodoro | Lengths and sound for `%stopwatch%`, `%timer%`, `%pomodoro%`; start / pause / reset with a middle click |
 | Clock: automatic profiles | Switch the clock to a ready-made layout on battery, with several monitors, or at certain hours |
-| Icons (Tabler Icons) | Show Tabler icons in the clock lines with `%ti:name%` |
 | Clock: color rules | Change the clock text color when CPU, RAM, GPU, temperature or battery cross a threshold (Windows 11 22H2+) |
 | Network info | Ping, Wi-Fi name and signal, VPN status, local IP |
 | Alternate calendars | Hijri, Persian, Japanese and Bengali (Bangladesh) dates |
 | Calendar events (ICS) | Next event from a calendar feed |
 | Live metrics | Update interval (and a slower one on battery), number formats, network / GPU adapter, graph length |
 | Media player info | Format, length limit, scrolling marquee and ignored players for `%media_*%` |
-| Weather & web content | Weather (wttr.in) with presets, and web / RSS extraction for `%weather%`, `%web<n>%` |
+| Weather & web content | Weather (wttr.in, with an Open-Meteo fallback) with presets, and web / RSS extraction for `%weather%`, `%web<n>%` |
 | Taskbar transparency & app visibility | Transparency mode and level, dynamic transparency, hide running / pinned apps |
 | Taskbar size & icons | Taskbar height, icon size, button width |
 | Tray icons | Hide individual notification-area icons by name |
+| Taskbar shape | Rounded bar or pill: corner radius, background and border |
 | Taskbar buttons | Hide the Start, Search, Task View and Widgets buttons |
 | Running-app indicator | Hide it, or set its color, size and corner radius (with a separate look for the focused app) |
 | Advanced styling (XAML) | Style constants, control styles, theme resources |
@@ -74,13 +75,15 @@ Use these in the top, middle, bottom and tooltip lines.
 * `%newline%` or `%n%` - line break.
 * `%date_hijri%`, `%date_persian%`, `%date_japanese%` - the date in the Hijri (Umm al-Qura or civil, adjustable by days), Persian or Japanese-era calendar.
 * `%date_bengali%` / `%date_bengali_en%` - the Bengali date of the Bangladesh revised calendar, in Bangla script and digits or in Latin letters (e.g. `25 Ashwin 1433`).
+* `%stopwatch%` / `%timer%` / `%pomodoro%` - count up, count down from the configured length, or alternate work and break phases. They share one run state: set a middle-click action to start / pause or reset them.
+* `%if(condition,then,else)%` - show text only when a condition holds, e.g. `%if(battery<20,"low",)%` or `%if(cpu>=90,%cpu%,)%`. Conditions are `<metric><op><number>` with metric `cpu`, `ram`, `gpu`, `cpu_temp`, `cpu_freq`, `battery`, `charging` (1/0), `hour`, `minute` or `weekday` (Mon=1) and op `>`, `>=`, `<`, `<=`, `==`, `!=`. The text parts may contain other tags; wrap them in double quotes to keep commas or spaces. Do not put a space right after `%if(`.
 * `%countdown<n>%` - time left until target `<n>` (e.g. `12d 4h 3m`, or `Done`); `%countdown<n>_days%` - whole days left. Targets are set in the date and time settings.
 
 ### Hardware & performance
 * **Graphs:** `%cpu_graph%`, `%ram_graph%`, `%gpu_graph%`, `%download_graph%`, `%upload_graph%`, `%disk_graph%` - recent history drawn with block characters (▁▂▃▅▇). Percent graphs use a fixed 0-100% scale; speed graphs scale to the recent peak.
 * **Network:** `%upload_speed%`, `%download_speed%`, `%total_speed%`
 * **Disk:** `%disk_read%`, `%disk_write%`, `%disk_total%`
-* **CPU:** `%cpu%` (%), `%cpu_temp%` (°C), `%cpu_temp_f%` (°F)
+* **CPU:** `%cpu%` (%), `%cpu_temp%` (°C), `%cpu_temp_f%` (°F), `%cpu_freq%` (average clock, e.g. `3.4 GHz`)
 * **RAM:** `%ram%` (%), `%ram_used%`, `%ram_total%` (GB), `%ram_committed%` (%), `%ram_committed_used%`, `%ram_committed_total%` (GB)
 * **GPU / VRAM:** `%gpu%` (3D engine %), `%vram%` (%), `%vram_used%`, `%vram_total%` (GB), `%vram_shared%` (%), `%vram_shared_used%`, `%vram_shared_total%` (GB)
 * **Battery:**
@@ -100,16 +103,6 @@ Use these in the top, middle, bottom and tooltip lines.
 
 A tag that does not exist is shown as `[?name]` so typos are easy to spot (can be turned off).
 
-### Icons (Tabler Icons)
-`%ti:name%` shows an icon from [Tabler Icons](https://tabler.io/icons) (MIT licensed, by Paweł Kuna), for example `%ti:battery-charging% %battery%` or `%ti:wifi% %wifi_ssid%`. `%ti:U+EA35%` uses a raw codepoint. An unknown name is shown as `[?ti:name]`.
-
-Setup:
-1. Get the Tabler webfont package (npm: `@tabler/icons-webfont`) and install `dist/fonts/tabler-icons.ttf`. Install only one Tabler font style (outline, filled, 200 or 300 weight): they all share the family name `tabler-icons`, so Windows cannot hold two at once.
-2. Optional: set the path to the matching `tabler-icons.css` in the Icons settings, so every icon name works. Without it, a built-in list of 146 common outline icons is used (battery, wifi, volume, cpu, weather, media and more).
-3. The mod puts the icon font first in the clock text's font list. It has no letters or digits, so normal text keeps its font.
-
-Icons need Windows 11 and work in the top and bottom lines, not in the tooltip. The mod does not include the font or any icon artwork.
-
 ### Network & calendar events
 * `%ping%` - round-trip time to the configured IPv4 host (e.g. `23 ms`, `--` when unreachable).
 * `%wifi_ssid%`, `%wifi_signal%` - connected Wi-Fi name and signal (Windows reports 0-5 bars, shown in 20% steps).
@@ -123,7 +116,7 @@ Icons need Windows 11 and work in the top and bottom lines, not in the tooltip. 
 Playback progress: `%media_position%`, `%media_duration%`, `%media_remaining%`, `%media_progress%` (percent) and `%media_bar%` (▰▰▰▱▱▱▱▱). They stay empty when the player does not report a timeline.
 
 ### Weather & web
-* `%weather%` - from [wttr.in](https://wttr.in), using your location, units and format.
+* `%weather%` - from [wttr.in](https://wttr.in), using your location, units and format. When wttr.in does not answer, [Open-Meteo](https://open-meteo.com) is used instead (`%c %t %w %h %l %S %s` only).
 * `%web<n>%` / `%web<n>_full%` - text extracted from RSS, XML, HTML or plain web pages (item `<n>` in the web content list).
 
 ## Taskbar features (Windows 11)
@@ -133,6 +126,9 @@ Playback progress: `%media_position%`, `%media_duration%`, `%media_remaining%`, 
 * Level: 0% (opaque) to 100% (fully transparent) for the transparent, blur and acrylic modes; Mica ignores it.
 * Hide running / pinned apps while keeping Start, Search, Task View, Widgets and the tray (those have their own switches under Taskbar buttons). Exceptions accept an AUMID or app name (case-insensitive, partial match). The Copilot button counts as an app button; add `Copilot` to the exceptions to keep it.
 * Applied to the primary and secondary taskbars and reset when the mod unloads.
+
+### Shape (rounded, pill)
+Gives the taskbar background rounded corners. With a shape selected, the Fully Transparent, Blurry Glass and Liquid Glass modes are drawn inside the shape and Mica is not applied.
 
 ### Size & icons
 Icons are normally 24x24, a downscaled 32x32 that looks blurry. Set the icon size to 32 (or any other size) for crisp icons, and adjust the taskbar height and button width to match. Small icon settings apply to newer builds with small taskbar icons.
@@ -236,6 +232,7 @@ Simple switches that generate the matching control styles for you, so common twe
     - battery: Battery
     - media: Media player
     - weather: Weather
+    - pomodoro: Pomodoro timer
   - TopLine: '%date% | %time%'
     $name: Top line
   - BottomLine: '%web1%'
@@ -438,6 +435,8 @@ Simple switches that generate the matching control styles for you, so common twe
     - previous: Previous track
     - taskmgr: Open Task Manager
     - command: Run the command below
+    - timer_toggle: Start / pause the timer
+    - timer_reset: Reset the timer
   - Command: ""
     $name: Command to run
     $description: >-
@@ -446,6 +445,22 @@ Simple switches that generate the matching control styles for you, so common twe
   $name: 'Clock: click & scroll actions'
   $description: >-
     Windows 11 only. Nothing is attached to the clock unless an action is set.
+- ClockTimer:
+  - TimerMinutes: 25
+    $name: Timer length (minutes)
+    $description: >-
+      Length counted down by %timer%.
+  - WorkMinutes: 25
+    $name: Pomodoro work length (minutes)
+  - BreakMinutes: 5
+    $name: Pomodoro break length (minutes)
+  - PlaySound: true
+    $name: Play a sound when the timer ends or the Pomodoro phase changes
+  $name: 'Clock: timer, stopwatch & Pomodoro'
+  $description: >-
+    %stopwatch%, %timer% and %pomodoro% share one run state. Start / pause and
+    reset them with a middle-click action under "Clock: click & scroll
+    actions". Windows 11 only for the click actions.
 - Profiles:
   - Rules:
     - - Condition: ""
@@ -472,6 +487,7 @@ Simple switches that generate the matching control styles for you, so common twe
         - battery: Battery
         - media: Media player
         - weather: Weather
+        - pomodoro: Pomodoro timer
     $name: Rules
     $description: >-
       Rules are checked in order and the first match wins. The threshold applies
@@ -562,6 +578,12 @@ Simple switches that generate the matching control styles for you, so common twe
     - full: Conditions, humidity, wind, sunrise and sunset
   - WeatherLocation: ""
     $name: Weather location
+  - WeatherFallback: true
+    $name: Use Open-Meteo when wttr.in does not answer
+    $description: >-
+      Falls back to Open-Meteo (no account needed). It supports the placeholders
+      %c, %t, %w, %h, %l, %S and %s in the weather format; others are dropped.
+      Without a location, the place is estimated from your IP address.
   - WeatherFormat: "%c 🌡️%t 🌬️%w"
     $name: Weather format
   - WeatherUnits: autoDetect
@@ -644,25 +666,6 @@ Simple switches that generate the matching control styles for you, so common twe
     Tags: %next_event%, %next_event_time%, %next_event_in%. Daily, weekly
     (with weekdays), monthly and yearly repeats are supported. Times given in
     another time zone are read as local time.
-- Icons:
-  - CssFile: ""
-    $name: Icon name list (tabler-icons.css)
-    $description: >-
-      Path to the tabler-icons.css that matches your icon font, for example
-      C:\Fonts\tabler\tabler-icons.css. It lets %ti:name% use every icon.
-      Without it, a built-in list of 146 common outline icons is used.
-  - FontFile: ""
-    $name: Icon font file (optional)
-    $description: >-
-      Path to tabler-icons.ttf. If the font is not installed, the mod adds it
-      for the current Windows session. This is experimental; installing the
-      font normally is more reliable.
-  $name: Icons (Tabler Icons)
-  $description: >-
-    Windows 11 only. Use %ti:name% in the top or bottom clock line, for example
-    %ti:battery-charging% %battery%. Names are listed at tabler.io/icons.
-    Install the tabler-icons font first, and only one Tabler font style at a
-    time. Icons are not shown in the tooltip.
 - TaskbarAppearance:
   - TransparencyMode: default
     $name: Transparency mode
@@ -720,6 +723,35 @@ Simple switches that generate the matching control styles for you, so common twe
   $name: Taskbar size & icons
   $description: >-
     Windows 11 new taskbar only. Ignored when customizing the old taskbar, and on Windows 10.
+- TaskbarShape:
+  - Style: default
+    $name: Shape
+    $description: >-
+      Gives the taskbar background rounded corners.
+    $options:
+    - default: Default
+    - rounded: Rounded bar
+    - pill: Pill
+  - CornerRadius: 0
+    $name: Corner radius
+    $description: >-
+      In pixels. 0 uses the preset's radius (rounded 12, pill 24).
+  - FillColor: ""
+    $name: Background color
+    $description: >-
+      Hex (#RRGGBB or #AARRGGBB) or a named color. Empty keeps the transparency
+      mode below, or the default taskbar color.
+  - BorderColor: ""
+    $name: Border color
+  - BorderThickness: 0
+    $name: Border thickness
+    $description: >-
+      In pixels. 0 for no border.
+  $name: Taskbar shape
+  $description: >-
+    Windows 11 new taskbar only. With a shape selected, the transparency modes
+    Fully Transparent, Blurry Glass and Liquid Glass are drawn inside the shape
+    instead of on the whole taskbar window, and Mica is not applied.
 - TaskbarButtons:
   - HideStart: false
     $name: Hide Start button
@@ -1090,11 +1122,22 @@ struct Settings {
 
     // Click / scroll actions, dynamic transparency, profiles, diagnostics
     int clockScrollAction;  // 0 none, 1 volume, 2 track
-    int clockMiddleAction;  // 0 none, 1 play/pause, 2 mute, 3 next, 4 previous, 5 Task Manager, 6 command
+    int clockMiddleAction;  // 0 none, 1 play/pause, 2 mute, 3 next, 4 previous, 5 Task Manager, 6 command, 7 timer start/pause, 8 timer reset
     std::wstring clockCommand;
     int dynamicTransparency;  // 0 off, 1 default taskbar while a window is maximized
     std::vector<ProfileRule> profileRules;
     bool logClockThreads;
+
+    // Taskbar shape preset: 0 default, 1 rounded, 2 pill
+    int shapeStyle;
+
+    // Timer / stopwatch / Pomodoro
+    int timerMinutes;
+    int pomodoroWorkMinutes;
+    int pomodoroBreakMinutes;
+    bool timerSound;
+
+    bool weatherFallback;
 
     // Transparency and App Hiding
     StringSetting transparencyMode;
@@ -1117,6 +1160,7 @@ const LinePreset kLinePresets[] = {
     {L"battery", L"%time%", L"%battery% %power%", L"%battery_time%"},
     {L"media", L"%time%", L"%media_info%", L"%media_title%%n%%media_artist%%n%%media_album%"},
     {L"weather", L"%time%", L"%weather%", L"%date%"},
+    {L"pomodoro", L"%time%", L"%pomodoro%", L"%date%%n%%stopwatch% elapsed | %timer% left"},
 };
 
 // When a clock line preset is selected, these point at the preset's strings
@@ -2008,6 +2052,7 @@ FormattedString<FORMATTED_BUFFER_SIZE> g_vramSharedUsedFormatted;
 FormattedString<FORMATTED_BUFFER_SIZE> g_vramSharedTotalFormatted;
 FormattedString<FORMATTED_BUFFER_SIZE> g_cpuTempFormatted;
 FormattedString<FORMATTED_BUFFER_SIZE> g_cpuTempFFormatted;
+FormattedString<FORMATTED_BUFFER_SIZE> g_cpuFreqFormatted;
 FormattedString<FORMATTED_BUFFER_SIZE> g_batteryFormatted;
 std::atomic<bool> g_isBatteryLow{false};
 FormattedString<FORMATTED_BUFFER_SIZE> g_batteryTimeFormatted;
@@ -2257,6 +2302,148 @@ std::wstring EscapeUrlComponent(PCWSTR input, DWORD flags = URL_ESCAPE_ASCII_URI
     return out;
 }
 
+// ----- WEATHER FALLBACK (Open-Meteo) -----
+//
+// wttr.in is a single volunteer-run service that is often rate limited. When it
+// does not answer, the weather is fetched from Open-Meteo instead (no API key).
+// Supported format placeholders: %c condition icon, %t temperature, %w wind,
+// %h humidity, %l location, %S sunrise, %s sunset.
+
+bool JsonFindNumber(const std::wstring& json, size_t from, PCWSTR key, double* out) {
+    std::wstring needle = L"\"" + std::wstring(key) + L"\":";
+    size_t p = json.find(needle, from);
+    if (p == std::wstring::npos) return false;
+    p += needle.size();
+    PWSTR end = nullptr;
+    double v = wcstod(json.c_str() + p, &end);
+    if (end == json.c_str() + p) return false;
+    *out = v;
+    return true;
+}
+
+std::wstring JsonFindString(const std::wstring& json, size_t from, PCWSTR key) {
+    std::wstring needle = L"\"" + std::wstring(key) + L"\":\"";
+    size_t p = json.find(needle, from);
+    if (p == std::wstring::npos) return {};
+    p += needle.size();
+    size_t e = json.find(L'"', p);
+    if (e == std::wstring::npos) return {};
+    return json.substr(p, e - p);
+}
+
+PCWSTR WeatherCodeIcon(int code) {
+    if (code == 0) return L"☀️";
+    if (code <= 2) return L"\U0001F324️";
+    if (code == 3) return L"☁️";
+    if (code == 45 || code == 48) return L"\U0001F32B️";
+    if (code >= 51 && code <= 57) return L"\U0001F326️";
+    if (code >= 61 && code <= 67) return L"\U0001F327️";
+    if (code >= 71 && code <= 77) return L"\U0001F328️";
+    if (code >= 80 && code <= 82) return L"\U0001F327️";
+    if (code == 85 || code == 86) return L"\U0001F328️";
+    if (code >= 95) return L"⛈️";
+    return L"❓";
+}
+
+bool WeatherUnitsAreImperial() {
+    switch (g_settings.webContentWeatherUnits) {
+        case WebContentWeatherUnits::uscs: return true;
+        case WebContentWeatherUnits::metric:
+        case WebContentWeatherUnits::metricMsWind: return false;
+        default: break;
+    }
+    DWORD measure = 0;
+    if (GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_IMEASURE | LOCALE_RETURN_NUMBER,
+                        reinterpret_cast<LPWSTR>(&measure), sizeof(measure) / sizeof(WCHAR)) == 0) {
+        return false;
+    }
+    return measure == 1;  // 1 = US measurement system
+}
+
+bool UpdateWeatherFallback(const std::wstring& format) {
+    double lat = 0, lon = 0;
+    std::wstring place;
+    const std::wstring location = g_settings.webContentWeatherLocation.get();
+
+    if (location.empty()) {
+        auto ip = GetUrlContent(L"http://ip-api.com/json/?fields=status,city,lat,lon");
+        if (!ip || !JsonFindNumber(*ip, 0, L"lat", &lat) || !JsonFindNumber(*ip, 0, L"lon", &lon)) return false;
+        place = JsonFindString(*ip, 0, L"city");
+    } else {
+        auto geo = GetUrlContent((L"https://geocoding-api.open-meteo.com/v1/search?count=1&name=" +
+                                  EscapeUrlComponent(location.c_str())).c_str());
+        if (!geo || !JsonFindNumber(*geo, 0, L"latitude", &lat) || !JsonFindNumber(*geo, 0, L"longitude", &lon)) {
+            return false;
+        }
+        place = JsonFindString(*geo, 0, L"name");
+    }
+
+    const bool imperial = WeatherUnitsAreImperial();
+    const bool windMs = g_settings.webContentWeatherUnits == WebContentWeatherUnits::metricMsWind;
+    WCHAR url[512];
+    swprintf_s(url,
+               L"https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f"
+               L"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m"
+               L"&daily=sunrise,sunset&forecast_days=1&timezone=auto%s",
+               lat, lon,
+               imperial ? L"&temperature_unit=fahrenheit&wind_speed_unit=mph"
+                        : (windMs ? L"&wind_speed_unit=ms" : L""));
+    auto forecast = GetUrlContent(url);
+    if (!forecast) return false;
+
+    size_t cur = forecast->find(L"\"current\":{");
+    if (cur == std::wstring::npos) return false;
+    double temp = 0, hum = 0, code = 0, wind = 0;
+    if (!JsonFindNumber(*forecast, cur, L"temperature_2m", &temp)) return false;
+    JsonFindNumber(*forecast, cur, L"relative_humidity_2m", &hum);
+    JsonFindNumber(*forecast, cur, L"weather_code", &code);
+    JsonFindNumber(*forecast, cur, L"wind_speed_10m", &wind);
+
+    auto timeOf = [&](PCWSTR key) -> std::wstring {
+        std::wstring needle = L"\"" + std::wstring(key) + L"\":[\"";
+        size_t p = forecast->find(needle);
+        if (p == std::wstring::npos) return L"-";
+        p += needle.size();
+        size_t t = forecast->find(L'T', p);
+        if (t == std::wstring::npos || t + 6 > forecast->size()) return L"-";
+        return forecast->substr(t + 1, 5);
+    };
+
+    WCHAR num[48];
+    std::wstring out;
+    for (size_t i = 0; i < format.size(); i++) {
+        if (format[i] != L'%' || i + 1 >= format.size()) {
+            out += format[i];
+            continue;
+        }
+        wchar_t c = format[++i];
+        switch (c) {
+            case L'c': out += WeatherCodeIcon(static_cast<int>(code)); break;
+            case L't':
+                swprintf_s(num, L"%d°%c", static_cast<int>(std::lround(temp)), imperial ? L'F' : L'C');
+                out += num;
+                break;
+            case L'w':
+                swprintf_s(num, L"%d%s", static_cast<int>(std::lround(wind)), imperial ? L"mph" : (windMs ? L"m/s" : L"km/h"));
+                out += num;
+                break;
+            case L'h':
+                swprintf_s(num, L"%d%%", static_cast<int>(std::lround(hum)));
+                out += num;
+                break;
+            case L'l': out += place; break;
+            case L'S': out += timeOf(L"sunrise"); break;
+            case L's': out += timeOf(L"sunset"); break;
+            case L'%': out += L'%'; break;
+            default: break;  // unsupported placeholder
+        }
+    }
+
+    std::lock_guard<std::mutex> guard(g_webContentMutex);
+    g_webContentWeather = out;
+    return true;
+}
+
 bool UpdateWeatherWebContent() {
     std::wstring format;
     switch (g_settings.weatherPreset) {
@@ -2266,6 +2453,7 @@ bool UpdateWeatherWebContent() {
         default: format = g_settings.webContentWeatherFormat.get(); break;
     }
     if (format.empty()) format = L"%c \U0001F321\uFE0F%t \U0001F32C\uFE0F%w";
+    const std::wstring plainFormat = format;
     format = ReplaceAll(format, L"%c", L"%c\uE000");
 
     std::wstring weatherUrl = L"https://wttr.in/" + EscapeUrlComponent(g_settings.webContentWeatherLocation) + L'?';
@@ -2278,7 +2466,10 @@ bool UpdateWeatherWebContent() {
     weatherUrl += L"format=" + EscapeUrlComponent(format.c_str());
 
     auto urlContent = GetUrlContent(weatherUrl.c_str());
-    if (!urlContent || urlContent->empty() || *urlContent == L"This query is already being processed") return false;
+    if (!urlContent || urlContent->empty() || *urlContent == L"This query is already being processed") {
+        // wttr.in is down or rate limiting: try the fallback provider.
+        return g_settings.weatherFallback && UpdateWeatherFallback(plainFormat);
+    }
 
     std::wstring weatherContent;
     size_t lastPos = 0, findPos;
@@ -3513,7 +3704,11 @@ GraphHistory g_graphHistory[kGraphCount];
 bool g_graphUsed[kGraphCount];
 FormattedString<FORMATTED_BUFFER_SIZE> g_graphFormatted[kGraphCount];
 
-enum RuleMetric { kRuleNone, kRuleCpu, kRuleRam, kRuleGpu, kRuleCpuTemp, kRuleBattery };
+enum RuleMetric {
+    kRuleNone, kRuleCpu, kRuleRam, kRuleGpu, kRuleCpuTemp, kRuleBattery,
+    // Extra values that only the %if(...)% tag can test
+    kRuleCharging, kRuleHour, kRuleMinute, kRuleWeekday, kRuleCpuFreq,
+};
 
 bool ColorRulesUseMetric(int metric) {
     for (const auto& r : g_settings.colorRules) {
@@ -3717,6 +3912,9 @@ void DataCollectionSessionInit() {
     enable(MetricType::kCpu, g_graphUsed[kGraphCpu] || ColorRulesUseMetric(kRuleCpu));
     enable(MetricType::kGpuUsage, g_graphUsed[kGraphGpu] || ColorRulesUseMetric(kRuleGpu));
     enable(MetricType::kCpuTemp, ColorRulesUseMetric(kRuleCpuTemp));
+    enable(MetricType::kCpu, IsStrInDateTimePatternSettings(L"%if(cpu"));
+    enable(MetricType::kGpuUsage, IsStrInDateTimePatternSettings(L"%if(gpu"));
+    enable(MetricType::kCpuTemp, IsStrInDateTimePatternSettings(L"%if(cpu_temp"));
     enable(MetricType::kDownloadSpeed, g_graphUsed[kGraphDownload]);
     enable(MetricType::kUploadSpeed, g_graphUsed[kGraphUpload]);
     enable(MetricType::kDiskReadSpeed, g_graphUsed[kGraphDisk]);
@@ -4446,203 +4644,6 @@ PCWSTR GetNextEventInFormatted() {
     return buf.c_str();
 }
 
-// Common outline icons from Tabler Icons 3.49.0 (name, codepoint).
-struct TablerIcon {
-    const wchar_t* name;
-    unsigned codepoint;
-};
-
-const TablerIcon kTablerIcons[] = {
-    {L"activity", 0xED23}, {L"alarm", 0xEA04}, {L"alert-triangle", 0xEA06}, {L"antenna-bars-5", 0xECCB},
-    {L"arrow-big-down", 0xEDDA}, {L"arrow-big-up", 0xEDDD}, {L"arrow-down", 0xEA16}, {L"arrow-up", 0xEA25},
-    {L"arrows-up-down", 0xEDB6}, {L"battery", 0xEA34}, {L"battery-1", 0xEA2F}, {L"battery-2", 0xEA30},
-    {L"battery-3", 0xEA31}, {L"battery-4", 0xEA32}, {L"battery-charging", 0xEA33},
-    {L"battery-charging-2", 0xEF3B}, {L"battery-off", 0xED1C}, {L"bell", 0xEA35}, {L"bell-off", 0xECE9},
-    {L"bike", 0xEA36}, {L"bluetooth", 0xEA37}, {L"bluetooth-connected", 0xECEA}, {L"bolt", 0xEA38},
-    {L"bookmark", 0xEA3A}, {L"brand-chrome", 0xEC18}, {L"brand-discord", 0xECE3}, {L"brand-github", 0xEC1C},
-    {L"brand-spotify", 0xED03}, {L"brand-steam", 0xED6F}, {L"brand-telegram", 0xEC26},
-    {L"brand-whatsapp", 0xEC74}, {L"brand-windows", 0xECD8}, {L"brand-youtube", 0xEC90}, {L"bug", 0xEA48},
-    {L"bulb", 0xEA51}, {L"calendar", 0xEA53}, {L"calendar-event", 0xEA52}, {L"calendar-time", 0xEE21},
-    {L"camera", 0xEA54}, {L"cash", 0xEA55}, {L"cast", 0xEA56}, {L"chart-bar", 0xEA59},
-    {L"chart-line", 0xEA5C}, {L"check", 0xEA5E}, {L"clipboard", 0xEA6F}, {L"clock", 0xEA70},
-    {L"clock-hour-3", 0xF318}, {L"cloud", 0xEA76}, {L"cloud-rain", 0xEA72}, {L"cloud-snow", 0xEA73},
-    {L"cloud-storm", 0xEA74}, {L"code", 0xEA77}, {L"coffee", 0xEF0E}, {L"coin", 0xEB82}, {L"cpu", 0xEF8E},
-    {L"cpu-2", 0xF075}, {L"database", 0xEA88}, {L"device-desktop", 0xEA89}, {L"device-gamepad", 0xEB63},
-    {L"device-laptop", 0xEB64}, {L"device-sd-card", 0xF384}, {L"disc", 0xEA90}, {L"download", 0xEA96},
-    {L"droplet", 0xEA97}, {L"eye", 0xEA9A}, {L"eye-off", 0xECF0}, {L"file", 0xEAA4}, {L"flag", 0xEAA6},
-    {L"flame", 0xEC2C}, {L"folder", 0xEAAD}, {L"gift", 0xEB68}, {L"git-branch", 0xEAB2},
-    {L"headphones", 0xEABD}, {L"heart", 0xEABE}, {L"home", 0xEAC1}, {L"hourglass", 0xEF93},
-    {L"info-circle", 0xEAC5}, {L"keyboard", 0xEBD6}, {L"language", 0xEBBE}, {L"lock", 0xEAE2},
-    {L"lock-open", 0xEAE1}, {L"mail", 0xEAE5}, {L"map-pin", 0xEAE8}, {L"memory", 0x102B7},
-    {L"message", 0xEAEF}, {L"message-circle", 0xEAED}, {L"microphone", 0xEAF0}, {L"microphone-off", 0xED16},
-    {L"moon", 0xEAF8}, {L"mouse", 0xEAF9}, {L"music", 0xEAFC}, {L"network", 0xF09F}, {L"photo", 0xEB0A},
-    {L"pin", 0xEC9C}, {L"pinned", 0xED60}, {L"player-pause", 0xED45}, {L"player-play", 0xED46},
-    {L"player-skip-back", 0xED48}, {L"player-skip-forward", 0xED49}, {L"player-stop", 0xED4A},
-    {L"plug", 0xEBD9}, {L"plug-connected", 0xF00A}, {L"power", 0xEB0D}, {L"refresh", 0xEB13},
-    {L"rocket", 0xEC45}, {L"router", 0xEB18}, {L"run", 0xEC82}, {L"screenshot", 0xF201}, {L"search", 0xEB1C},
-    {L"server", 0xEB1F}, {L"settings", 0xEB20}, {L"shield", 0xEB24}, {L"shield-check", 0xEB22},
-    {L"shopping-cart", 0xEB25}, {L"snowflake", 0xEC0B}, {L"star", 0xEB2E}, {L"stopwatch", 0xFF9B},
-    {L"sun", 0xEB30}, {L"sunrise", 0xEF1C}, {L"sunset", 0xEC31}, {L"tag", 0x10096}, {L"temperature", 0xEB38},
-    {L"terminal", 0xEBDC}, {L"thermometer", 0xEF67}, {L"tools", 0xEBCA}, {L"trash", 0xEB41},
-    {L"umbrella", 0xEBF1}, {L"upload", 0xEB47}, {L"usb", 0xF00C}, {L"user", 0xEB4D}, {L"users", 0xEBF2},
-    {L"video", 0xED22}, {L"volume", 0xEB51}, {L"volume-2", 0xEB4F}, {L"volume-3", 0xEB50},
-    {L"volume-off", 0xF1C3}, {L"walk", 0xEC87}, {L"wand", 0xEBCB}, {L"wifi", 0xEB52}, {L"wifi-0", 0xEBA3},
-    {L"wifi-1", 0xEBA4}, {L"wifi-2", 0xEBA5}, {L"wifi-off", 0xECFA}, {L"wind", 0xEC34}, {L"world", 0xEB54},
-    {L"x", 0xEB55},
-};
-
-// Parses a Tabler Icons stylesheet (expanded or minified) into name -> codepoint.
-// Handles rules such as  .ti-bell:before { content: "\ea35"; }  and selector
-// lists such as  .ti-a:before, .ti-b:before { content: "\ea35"; }.
-void ParseTablerCss(const std::string& css, std::unordered_map<std::wstring, unsigned>* out) {
-    size_t pos = 0;
-    size_t ruleStart = 0;
-    while ((pos = css.find('{', pos)) != std::string::npos) {
-        size_t close = css.find('}', pos);
-        if (close == std::string::npos) break;
-        std::string selectors = css.substr(ruleStart, pos - ruleStart);
-        std::string block = css.substr(pos + 1, close - pos - 1);
-        pos = close + 1;
-        ruleStart = pos;
-
-        size_t c = block.find("content");
-        if (c == std::string::npos) continue;
-        size_t q = block.find("\"\\", c);
-        if (q == std::string::npos) continue;
-        size_t hexStart = q + 2, hexEnd = hexStart;
-        while (hexEnd < block.size() && isxdigit(static_cast<unsigned char>(block[hexEnd]))) hexEnd++;
-        if (hexEnd == hexStart || hexEnd - hexStart > 6) continue;
-        unsigned cp = static_cast<unsigned>(strtoul(block.substr(hexStart, hexEnd - hexStart).c_str(), nullptr, 16));
-
-        size_t s = 0;
-        while ((s = selectors.find(".ti-", s)) != std::string::npos) {
-            size_t nameStart = s + 4, nameEnd = nameStart;
-            while (nameEnd < selectors.size() &&
-                   (islower(static_cast<unsigned char>(selectors[nameEnd])) ||
-                    isdigit(static_cast<unsigned char>(selectors[nameEnd])) || selectors[nameEnd] == '-')) {
-                nameEnd++;
-            }
-            if (selectors.compare(nameEnd, 7, ":before") == 0 && nameEnd > nameStart) {
-                out->emplace(std::wstring(selectors.begin() + nameStart, selectors.begin() + nameEnd), cp);
-            }
-            s = nameEnd;
-        }
-    }
-}
-
-// "U+EA35", "u+ea35" -> codepoint; 0 if the text is not a valid private-use style codepoint.
-unsigned ParseCodepointToken(std::wstring_view s) {
-    if (s.size() < 3 || s.size() > 8 || (s[0] != L'U' && s[0] != L'u') || s[1] != L'+') return 0;
-    unsigned cp = 0;
-    for (size_t i = 2; i < s.size(); i++) {
-        wchar_t c = s[i];
-        unsigned v = (c >= L'0' && c <= L'9') ? c - L'0' : (c >= L'a' && c <= L'f') ? c - L'a' + 10
-                   : (c >= L'A' && c <= L'F') ? c - L'A' + 10 : 0xFFFFFFFFu;
-        if (v == 0xFFFFFFFFu) return 0;
-        cp = cp * 16 + v;
-    }
-    // Icon fonts live in the private-use area and above; never allow ordinary text.
-    return (cp >= 0xE000 && cp <= 0x10FFFF && !(cp >= 0xD800 && cp <= 0xDFFF)) ? cp : 0;
-}
-
-// Appends a codepoint as UTF-16 (one unit, or a surrogate pair above U+FFFF).
-void AppendCodepointUtf16(unsigned cp, std::wstring* out) {
-    if (cp <= 0xFFFF) {
-        out->push_back(static_cast<wchar_t>(cp));
-    } else {
-        cp -= 0x10000;
-        out->push_back(static_cast<wchar_t>(0xD800 + (cp >> 10)));
-        out->push_back(static_cast<wchar_t>(0xDC00 + (cp & 0x3FF)));
-    }
-}
-
-// ----- TABLER ICONS -----
-
-std::unordered_map<std::wstring, unsigned> g_tablerCss;  // from the user's CSS file, if one is set
-std::wstring g_loadedIconFont;
-bool g_iconsUsed = false;  // an icon tag appears in a clock line
-
-void LoadTablerCssFile(PCWSTR path) {
-    g_tablerCss.clear();
-    if (!path || !*path) return;
-    HANDLE h = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (h == INVALID_HANDLE_VALUE) {
-        Wh_Log(L"Icons: cannot open %s", path);
-        return;
-    }
-    std::string data;
-    LARGE_INTEGER size{};
-    if (GetFileSizeEx(h, &size) && size.QuadPart > 0 && size.QuadPart <= 16 * 1024 * 1024) {
-        data.resize(static_cast<size_t>(size.QuadPart));
-        DWORD read = 0;
-        if (!ReadFile(h, data.data(), static_cast<DWORD>(data.size()), &read, nullptr)) read = 0;
-        data.resize(read);
-    }
-    CloseHandle(h);
-    ParseTablerCss(data, &g_tablerCss);
-    Wh_Log(L"Icons: read %u icon names from %s", static_cast<unsigned>(g_tablerCss.size()), path);
-}
-
-void BroadcastFontChange() {
-    DWORD_PTR result = 0;
-    SendMessageTimeoutW(HWND_BROADCAST, WM_FONTCHANGE, 0, 0, SMTO_ABORTIFHUNG, 1000, &result);
-}
-
-void UnloadIconFont() {
-    if (g_loadedIconFont.empty()) return;
-    RemoveFontResourceExW(g_loadedIconFont.c_str(), 0, nullptr);
-    g_loadedIconFont.clear();
-    BroadcastFontChange();
-}
-
-// Makes a font file available for the current Windows session (no admin rights
-// needed). Removed again when the mod unloads.
-void LoadIconFont(PCWSTR path) {
-    UnloadIconFont();
-    if (!path || !*path) return;
-    if (AddFontResourceExW(path, 0, nullptr) > 0) {
-        g_loadedIconFont = path;
-        BroadcastFontChange();
-    } else {
-        Wh_Log(L"Icons: could not load the font file %s", path);
-    }
-}
-
-// name: an icon name, or U+XXXX for a raw codepoint. 0 if unknown.
-unsigned LookupTablerIcon(std::wstring_view name) {
-    if (unsigned cp = ParseCodepointToken(name)) return cp;
-    std::wstring key(name);
-    if (!g_tablerCss.empty()) {
-        auto it = g_tablerCss.find(key);
-        return it != g_tablerCss.end() ? it->second : 0;
-    }
-    for (const auto& icon : kTablerIcons) {
-        if (key == icon.name) return icon.codepoint;
-    }
-    return 0;
-}
-
-// %ti:name% and %ti:U+EA35%
-size_t ResolveIconToken(std::wstring_view format, const std::function<void(PCWSTR)>& callback) {
-    constexpr std::wstring_view kPrefix = L"%ti:";
-    if (!format.starts_with(kPrefix)) return 0;
-    size_t end = format.find(L'%', kPrefix.size());
-    if (end == std::wstring_view::npos) return 0;
-    std::wstring_view name = format.substr(kPrefix.size(), end - kPrefix.size());
-    if (name.empty() || name.size() > 64) return 0;
-
-    std::wstring text;
-    if (unsigned cp = LookupTablerIcon(name)) {
-        AppendCodepointUtf16(cp, &text);
-    } else if (g_settings.showTagHints) {
-        text = L"[?ti:" + std::wstring(name) + L"]";
-    } else {
-        return 0;
-    }
-    callback(text.c_str());
-    return end + 1;
-}
-
 // ----- GRAPHS, SYSTEM INFO, KEYBOARD, DRIVES, COUNTDOWNS -----
 
 void RecordGraphHistory() {
@@ -4927,7 +4928,52 @@ PCWSTR GetCountdownFormatted(int n, bool daysOnly) {
     return buf;
 }
 
-// Numeric values for threshold color rules
+// Output of CallNtPowerInformation(ProcessorInformation). Declared here because
+// the MinGW headers used by Windhawk do not provide it.
+struct ClockProcessorPowerInfo {
+    ULONG Number;
+    ULONG MaxMhz;
+    ULONG CurrentMhz;
+    ULONG MhzLimit;
+    ULONG MaxIdleState;
+    ULONG CurrentIdleState;
+};
+
+// Average current CPU clock over all logical processors, in MHz.
+bool GetCpuFreqMhz(double* out) {
+    static double cached = 0;
+    static DWORD lastIdx = 0xFFFFFFFF;
+    DWORD idx = GetDataCollectionFormatIndex();
+    if (idx != lastIdx) {
+        lastIdx = idx;
+        cached = 0;
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        DWORD n = std::max<DWORD>(si.dwNumberOfProcessors, 1);
+        std::vector<ClockProcessorPowerInfo> info(n);
+        if (CallNtPowerInformation(ProcessorInformation, nullptr, 0, info.data(),
+                                   static_cast<ULONG>(n * sizeof(ClockProcessorPowerInfo))) == 0) {
+            double sum = 0;
+            for (const auto& p : info) sum += p.CurrentMhz;
+            cached = sum / n;
+        }
+    }
+    if (cached <= 0) return false;
+    *out = cached;
+    return true;
+}
+
+PCWSTR GetCpuFreqFormatted() {
+    return GetMetricFormatted(g_cpuFreqFormatted, [](PWSTR b, size_t s) {
+        double mhz;
+        if (!GetCpuFreqMhz(&mhz)) return false;
+        if (mhz >= 1000) swprintf_s(b, s, L"%.1f GHz", mhz / 1000.0);
+        else swprintf_s(b, s, L"%d MHz", static_cast<int>(mhz));
+        return true;
+    });
+}
+
+// Numeric values for threshold color rules and %if(...)% conditions
 
 bool GetRuleMetricValue(int metric, double* out) {
     switch (metric) {
@@ -4956,6 +5002,16 @@ bool GetRuleMetricValue(int metric, double* out) {
             *out = ps.BatteryLifePercent;
             return true;
         }
+        case kRuleCharging: {
+            SYSTEM_POWER_STATUS ps;
+            if (!GetSystemPowerStatus(&ps) || ps.ACLineStatus == 255) return false;
+            *out = ps.ACLineStatus == 1 ? 1 : 0;
+            return true;
+        }
+        case kRuleHour: *out = g_formatTime.wHour; return true;
+        case kRuleMinute: *out = g_formatTime.wMinute; return true;
+        case kRuleWeekday: *out = g_formatTime.wDayOfWeek == 0 ? 7 : g_formatTime.wDayOfWeek; return true;  // Mon=1 ... Sun=7
+        case kRuleCpuFreq: return GetCpuFreqMhz(out);
     }
     return false;
 }
@@ -5181,6 +5237,238 @@ PCWSTR GetMediaInfoFormatted() {
     return g_mediaInfoFormatted.buffer;
 }
 
+// ----- TIMER, STOPWATCH & POMODORO -----
+//
+// One shared run state drives three tags: %stopwatch% counts up, %timer% counts
+// down from the configured duration and %pomodoro% alternates work and break
+// phases. Start / pause and reset are bound to middle-click actions.
+
+struct ClockTimerState {
+    bool running = false;
+    ULONGLONG startTick = 0;       // GetTickCount64() when it was last started
+    ULONGLONG accumulatedMs = 0;   // time counted before the last start
+    bool timerDoneNotified = false;
+    long long lastPomodoroPhase = -1;
+};
+ClockTimerState g_clockTimer;
+std::mutex g_clockTimerMutex;
+
+ULONGLONG ClockTimerElapsedMs() {
+    std::lock_guard<std::mutex> guard(g_clockTimerMutex);
+    return g_clockTimer.accumulatedMs + (g_clockTimer.running ? GetTickCount64() - g_clockTimer.startTick : 0);
+}
+
+void ClockTimerToggle() {
+    std::lock_guard<std::mutex> guard(g_clockTimerMutex);
+    if (g_clockTimer.running) {
+        g_clockTimer.accumulatedMs += GetTickCount64() - g_clockTimer.startTick;
+        g_clockTimer.running = false;
+    } else {
+        g_clockTimer.startTick = GetTickCount64();
+        g_clockTimer.running = true;
+    }
+}
+
+void ClockTimerReset() {
+    std::lock_guard<std::mutex> guard(g_clockTimerMutex);
+    g_clockTimer = ClockTimerState{};
+}
+
+std::wstring FormatTimerSeconds(ULONGLONG totalSec) {
+    unsigned h = static_cast<unsigned>(totalSec / 3600);
+    unsigned m = static_cast<unsigned>((totalSec % 3600) / 60);
+    unsigned s = static_cast<unsigned>(totalSec % 60);
+    WCHAR buf[32];
+    if (h) swprintf_s(buf, L"%u:%02u:%02u", h, m, s);
+    else swprintf_s(buf, L"%02u:%02u", m, s);
+    return buf;
+}
+
+PCWSTR GetStopwatchFormatted() {
+    static std::wstring s;
+    s = FormatTimerSeconds(ClockTimerElapsedMs() / 1000);
+    return s.c_str();
+}
+
+PCWSTR GetTimerFormatted() {
+    static std::wstring s;
+    ULONGLONG totalMs = static_cast<ULONGLONG>(std::max(1, g_settings.timerMinutes)) * 60000ULL;
+    ULONGLONG elapsed = ClockTimerElapsedMs();
+    bool running;
+    {
+        std::lock_guard<std::mutex> guard(g_clockTimerMutex);
+        running = g_clockTimer.running;
+    }
+    if (elapsed >= totalMs) {
+        bool notify = false;
+        {
+            std::lock_guard<std::mutex> guard(g_clockTimerMutex);
+            if (!g_clockTimer.timerDoneNotified) {
+                g_clockTimer.timerDoneNotified = true;
+                notify = true;
+            }
+        }
+        if (notify && g_settings.timerSound) MessageBeep(MB_ICONEXCLAMATION);
+        s = L"Done";
+    } else {
+        // Round up so the display reaches 00:00 together with the sound.
+        s = FormatTimerSeconds((totalMs - elapsed + 999) / 1000);
+        if (!running && elapsed > 0) s = L"⏸ " + s;
+    }
+    return s.c_str();
+}
+
+PCWSTR GetPomodoroFormatted() {
+    static std::wstring s;
+    ULONGLONG workMs = static_cast<ULONGLONG>(std::max(1, g_settings.pomodoroWorkMinutes)) * 60000ULL;
+    ULONGLONG breakMs = static_cast<ULONGLONG>(std::max(1, g_settings.pomodoroBreakMinutes)) * 60000ULL;
+    ULONGLONG cycle = workMs + breakMs;
+    ULONGLONG elapsed = ClockTimerElapsedMs();
+    ULONGLONG pos = elapsed % cycle;
+    bool working = pos < workMs;
+    ULONGLONG remainingMs = working ? workMs - pos : cycle - pos;
+
+    long long phase = static_cast<long long>(elapsed / cycle) * 2 + (working ? 0 : 1);
+    bool beep = false;
+    bool running;
+    {
+        std::lock_guard<std::mutex> guard(g_clockTimerMutex);
+        running = g_clockTimer.running;
+        if (running && g_clockTimer.lastPomodoroPhase >= 0 && g_clockTimer.lastPomodoroPhase != phase) beep = true;
+        if (running || elapsed == 0) g_clockTimer.lastPomodoroPhase = elapsed == 0 ? -1 : phase;
+    }
+    if (beep && g_settings.timerSound) MessageBeep(MB_ICONASTERISK);
+
+    s = working ? L"\U0001F345 " : L"☕ ";
+    if (!running && elapsed > 0) s = L"⏸ " + s;
+    s += FormatTimerSeconds((remainingMs + 999) / 1000);
+    return s.c_str();
+}
+
+// ----- CONDITIONAL TAG: %if(condition,then,else)% -----
+//
+// Example: %if(battery<20,"low",)% or %if(cpu>=90,%cpu%,)%. The condition is
+// <metric><operator><number> with metric one of cpu, ram, gpu, cpu_temp,
+// cpu_freq, battery, charging, hour, minute or weekday, and operator one of
+// > >= < <= == !=. The text parts may contain other tags and may be wrapped
+// in double quotes to keep commas or spaces. A metric without a value (for
+// example battery on a desktop PC) makes the condition false.
+
+int ParseIfMetric(std::wstring_view name) {
+    struct { std::wstring_view n; int id; } metrics[] = {
+        {L"cpu"sv, kRuleCpu}, {L"ram"sv, kRuleRam}, {L"gpu"sv, kRuleGpu},
+        {L"cpu_temp"sv, kRuleCpuTemp}, {L"cpu_freq"sv, kRuleCpuFreq}, {L"battery"sv, kRuleBattery},
+        {L"charging"sv, kRuleCharging}, {L"hour"sv, kRuleHour}, {L"minute"sv, kRuleMinute},
+        {L"weekday"sv, kRuleWeekday},
+    };
+    for (const auto& m : metrics) {
+        if (name == m.n) return m.id;
+    }
+    return kRuleNone;
+}
+
+// Splits at top-level commas (not inside parentheses or double quotes),
+// returning at most `maxParts` parts; the last part keeps any further commas.
+std::vector<std::wstring_view> SplitIfArguments(std::wstring_view args, size_t maxParts) {
+    std::vector<std::wstring_view> parts;
+    size_t depth = 0, begin = 0;
+    bool quoted = false;
+    for (size_t i = 0; i < args.size() && parts.size() + 1 < maxParts; i++) {
+        wchar_t c = args[i];
+        if (c == L'"') quoted = !quoted;
+        else if (quoted) continue;
+        else if (c == L'(') depth++;
+        else if (c == L')' && depth > 0) depth--;
+        else if (c == L',' && depth == 0) {
+            parts.push_back(args.substr(begin, i - begin));
+            begin = i + 1;
+        }
+    }
+    parts.push_back(args.substr(begin));
+    return parts;
+}
+
+std::wstring_view StripIfQuotes(std::wstring_view s) {
+    s = TrimStringView(s);
+    if (s.size() >= 2 && s.front() == L'"' && s.back() == L'"') return s.substr(1, s.size() - 2);
+    return s;
+}
+
+int FormatLineNoLock(PWSTR buffer, size_t bufferSize, std::wstring_view format);
+
+// Returns the number of characters consumed, or 0 if `format` is not a valid
+// %if(...)% tag.
+size_t ResolveIfToken(std::wstring_view format, const std::function<void(PCWSTR)>& callback) {
+    if (!format.starts_with(L"%if("sv)) return 0;
+
+    size_t depth = 0, close = std::wstring_view::npos;
+    bool quoted = false;
+    for (size_t i = 4; i < format.size(); i++) {
+        wchar_t c = format[i];
+        if (c == L'"') quoted = !quoted;
+        else if (quoted) continue;
+        else if (c == L'(') depth++;
+        else if (c == L')') {
+            if (depth == 0) {
+                if (i + 1 < format.size() && format[i + 1] == L'%') close = i;
+                break;
+            }
+            depth--;
+        }
+    }
+    if (close == std::wstring_view::npos) return 0;
+
+    auto parts = SplitIfArguments(format.substr(4, close - 4), 3);
+    if (parts.size() < 2) return 0;
+
+    // Condition: <metric><op><number>
+    std::wstring_view cond = TrimStringView(parts[0]);
+    size_t opPos = cond.find_first_of(L"<>=!"sv);
+    if (opPos == std::wstring_view::npos || opPos == 0) return 0;
+    std::wstring_view metricName = TrimStringView(cond.substr(0, opPos));
+    size_t opLen = (opPos + 1 < cond.size() && cond[opPos + 1] == L'=') ? 2 : 1;
+    std::wstring_view op = cond.substr(opPos, opLen);
+    std::wstring valueText(TrimStringView(cond.substr(opPos + opLen)));
+    if (valueText.empty()) return 0;
+    PWSTR numEnd = nullptr;
+    double threshold = wcstod(valueText.c_str(), &numEnd);
+    if (numEnd == valueText.c_str() || *numEnd) return 0;
+
+    int metric = ParseIfMetric(metricName);
+    size_t consumed = close + 2;
+    if (metric == kRuleNone) {
+        if (g_settings.showTagHints) {
+            std::wstring hint = L"[?if:" + std::wstring(metricName) + L"]";
+            callback(hint.c_str());
+            return consumed;
+        }
+        return 0;
+    }
+
+    double value = 0;
+    bool have = GetRuleMetricValue(metric, &value);
+    bool result = false;
+    if (have) {
+        if (op == L">"sv) result = value > threshold;
+        else if (op == L">="sv) result = value >= threshold;
+        else if (op == L"<"sv) result = value < threshold;
+        else if (op == L"<="sv) result = value <= threshold;
+        else if (op == L"=="sv || op == L"="sv) result = value == threshold;
+        else if (op == L"!="sv) result = value != threshold;
+        else return 0;
+    }
+
+    std::wstring_view chosen = result ? StripIfQuotes(parts[1]) : (parts.size() > 2 ? StripIfQuotes(parts[2]) : L""sv);
+    if (chosen.empty()) {
+        callback(L"");
+        return consumed;
+    }
+    WCHAR buf[FORMATTED_BUFFER_SIZE];
+    FormatLineNoLock(buf, ARRAYSIZE(buf), chosen);
+    callback(buf);
+    return consumed;
+}
+
 int ResolveFormatTokenWithDigit(std::wstring_view format, std::wstring_view prefix, std::wstring_view suffix) {
     if (format.size() < prefix.size() + 1 + suffix.size() || !format.starts_with(prefix)) return 0;
     WCHAR d = format[prefix.size()];
@@ -5234,6 +5522,8 @@ size_t ResolveFormatToken(std::wstring_view format, std::function<void(PCWSTR)> 
         {L"%media_position%"sv, GetMediaPositionFormatted}, {L"%media_duration%"sv, GetMediaDurationFormatted},
         {L"%media_remaining%"sv, GetMediaRemainingFormatted}, {L"%media_progress%"sv, GetMediaProgressFormatted},
         {L"%media_bar%"sv, GetMediaBarFormatted},
+        {L"%cpu_freq%"sv, GetCpuFreqFormatted}, {L"%stopwatch%"sv, GetStopwatchFormatted},
+        {L"%timer%"sv, GetTimerFormatted}, {L"%pomodoro%"sv, GetPomodoroFormatted},
     };
 
     for (const auto& t : tokens) {
@@ -5294,8 +5584,8 @@ size_t ResolveFormatToken(std::wstring_view format, std::function<void(PCWSTR)> 
         return 9;
     }
 
-    if (format.starts_with(L"%ti:"sv)) {
-        if (size_t len = ResolveIconToken(format, callback)) return len;
+    if (format.starts_with(L"%if("sv)) {
+        if (size_t len = ResolveIfToken(format, callback)) return len;
     }
     if (format.starts_with(L"%drive_"sv)) {
         if (size_t len = ResolveDriveToken(format, callback)) return len;
@@ -5324,6 +5614,9 @@ void EnsureFormattingInitialized() {
                      IsStrInDateTimePatternSettings(L"%ping%") || IsStrInDateTimePatternSettings(L"%wifi_signal%") ||
                      IsStrInDateTimePatternSettings(L"%media_position%") || IsStrInDateTimePatternSettings(L"%media_remaining%") ||
                      IsStrInDateTimePatternSettings(L"%media_progress%") || IsStrInDateTimePatternSettings(L"%media_bar%") ||
+                     IsStrInDateTimePatternSettings(L"%if(") || IsStrInDateTimePatternSettings(L"%stopwatch%") ||
+                     IsStrInDateTimePatternSettings(L"%timer%") || IsStrInDateTimePatternSettings(L"%pomodoro%") ||
+                     IsStrInDateTimePatternSettings(L"%cpu_freq%") ||
                      (g_settings.mediaPlayer.marquee && IsStrInDateTimePatternSettings(L"%media_info%")) ||
                      !g_settings.colorRules.empty();
 }
@@ -5649,22 +5942,8 @@ void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings
     if (s && s->fontSize) textBlock.FontSize(s->fontSize);
     else textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::FontSizeProperty());
 
-    // Icon tags need the icon font first in the fallback list. It has no Latin
-    // glyphs, so ordinary text still uses the regular font. Icons are placed
-    // first because some of them sit on codepoints other fonts also cover.
-    std::wstring family;
-    if (s && *s->fontFamily) family = s->fontFamily.get();
-    if (s && g_iconsUsed && family.rfind(L"tabler-icons", 0) != 0) {
-        if (family.empty()) {
-            // Read the inherited font, so the clock keeps its normal look.
-            textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::FontFamilyProperty());
-            family = std::wstring(textBlock.FontFamily().Source());
-            if (family.empty() || family == L"XamlAutoFontFamily") family = L"Segoe UI Variable, Segoe UI";
-        }
-        family = L"tabler-icons, " + family;
-    }
-    if (!family.empty()) {
-        auto f = Markup::XamlBindingHelper::ConvertValue(winrt::xaml_typename<Media::FontFamily>(), winrt::box_value(winrt::hstring(family))).as<Media::FontFamily>();
+    if (s && *s->fontFamily) {
+        auto f = Markup::XamlBindingHelper::ConvertValue(winrt::xaml_typename<Media::FontFamily>(), winrt::box_value(s->fontFamily.get())).as<Media::FontFamily>();
         textBlock.FontFamily(f);
     } else {
         textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::FontFamilyProperty());
@@ -5743,6 +6022,8 @@ bool PerformClockMiddleAction() {
         case 4: SendKeyTap(VK_MEDIA_PREV_TRACK); return true;
         case 5: StartProcessDetached(L"taskmgr.exe"); return true;
         case 6: StartProcessDetached(g_settings.clockCommand); return true;
+        case 7: ClockTimerToggle(); return true;
+        case 8: ClockTimerReset(); return true;
     }
     return false;
 }
@@ -6402,6 +6683,8 @@ void LoadSettings() {
                                        : wcscmp(mid, L"previous") == 0 ? 4
                                        : wcscmp(mid, L"taskmgr") == 0  ? 5
                                        : wcscmp(mid, L"command") == 0  ? 6
+                                       : wcscmp(mid, L"timer_toggle") == 0 ? 7
+                                       : wcscmp(mid, L"timer_reset") == 0  ? 8
                                                                        : 0;
     }
     g_settings.clockCommand = StringSetting::make(L"ClockActions.Command").get();
@@ -6410,9 +6693,17 @@ void LoadSettings() {
         g_settings.dynamicTransparency = wcscmp(dyn, L"opaque") == 0 ? 1 : 0;
     }
     g_settings.logClockThreads = Wh_GetIntSetting(L"Diagnostics.LogClockThreads");
+    {
+        StringSetting shape = StringSetting::make(L"TaskbarShape.Style");
+        g_settings.shapeStyle = wcscmp(shape, L"rounded") == 0 ? 1
+                                : wcscmp(shape, L"pill") == 0  ? 2
+                                                               : 0;
+    }
 
-    LoadTablerCssFile(StringSetting::make(L"Icons.CssFile").get());
-    LoadIconFont(StringSetting::make(L"Icons.FontFile").get());
+    g_settings.timerMinutes = std::clamp<int>(Wh_GetIntSetting(L"ClockTimer.TimerMinutes"), 1, 1440);
+    g_settings.pomodoroWorkMinutes = std::clamp<int>(Wh_GetIntSetting(L"ClockTimer.WorkMinutes"), 1, 240);
+    g_settings.pomodoroBreakMinutes = std::clamp<int>(Wh_GetIntSetting(L"ClockTimer.BreakMinutes"), 1, 120);
+    g_settings.timerSound = Wh_GetIntSetting(L"ClockTimer.PlaySound");
 
     g_settings.profileRules.clear();
     g_profilePreset = nullptr;
@@ -6496,6 +6787,7 @@ void LoadSettings() {
     else if (wcscmp(wu, L"metric") == 0) g_settings.webContentWeatherUnits = WebContentWeatherUnits::metric;
     else if (wcscmp(wu, L"metricMsWind") == 0) g_settings.webContentWeatherUnits = WebContentWeatherUnits::metricMsWind;
 
+    g_settings.weatherFallback = Wh_GetIntSetting(L"WebContent.WeatherFallback");
     g_settings.weatherPreset = 0;
     {
         StringSetting wp = StringSetting::make(L"WebContent.WeatherPreset");
@@ -6590,10 +6882,9 @@ void LoadSettings() {
         g_clockRuleColor[1].clear();
     }
 
-    g_iconsUsed = IsStrInDateTimePatternSettings(L"%ti:");
     g_clockElementStyleEnabled =
         (g_settings.maxWidth || g_settings.textSpacing || !g_settings.colorRules.empty() ||
-         g_settings.clockScrollAction || g_settings.clockMiddleAction || g_iconsUsed ||
+         g_settings.clockScrollAction || g_settings.clockMiddleAction ||
          g_settings.timeStyle.hidden || *g_settings.timeStyle.textColor ||
          *g_settings.timeStyle.textAlignment || g_settings.timeStyle.fontSize ||
          *g_settings.timeStyle.fontFamily || *g_settings.timeStyle.fontWeight ||
@@ -6839,10 +7130,20 @@ uintptr_t MaximizedMonitorsSignature() {
     return sig ^ g_maximizedMonitors.size();
 }
 
+// True when a taskbar shape is selected together with a transparency mode. The
+// window-level backdrop would fill the whole (square) window, so the shape
+// styles draw the transparency inside the rounded background instead.
+bool ShapeOwnsBackdrop() {
+    if (g_settings.shapeStyle == 0 || g_settings.oldTaskbarOnWin11 || !g_settings.transparencyMode) return false;
+    PCWSTR mode = g_settings.transparencyMode.get();
+    return *mode && _wcsicmp(mode, L"default") != 0;
+}
+
 // The transparency mode to use for a taskbar window: the configured mode, or
 // the default (opaque) taskbar while dynamic transparency detects a maximized
 // window on that taskbar's monitor.
 std::wstring GetEffectiveTransparencyMode(HWND hTaskbar) {
+    if (ShapeOwnsBackdrop()) return L"default";
     std::wstring mode = g_settings.transparencyMode ? std::wstring(g_settings.transparencyMode.get()) : L"default";
     if (!mode.empty() && g_settings.dynamicTransparency && hTaskbar) {
         HMONITOR mon = MonitorFromWindow(hTaskbar, MONITOR_DEFAULTTOPRIMARY);
@@ -6894,6 +7195,9 @@ void ResetTaskbarWindowComposition(HWND hTaskbar) {
 
 void ApplyTaskbarXamlBackgroundTransparency(XamlRoot xamlRoot, HWND hTaskbar) {
     if (!xamlRoot || !xamlRoot.Content()) return;
+
+    // The shape styles own the background fill; clearing it here would undo them.
+    if (!g_unloading && ShapeOwnsBackdrop()) return;
 
     std::wstring mode = GetEffectiveTransparencyMode(hTaskbar);
 
@@ -14571,6 +14875,55 @@ bool ProcessSingleTargetStylesFromSettings(int index, const StyleConstants& styl
 // Windows 11 Taskbar Styler themes.
 void AddBuiltInStyles() {
     try {
+        // Taskbar shape (rounded bar, pill)
+        if (g_settings.shapeStyle != 0) {
+            int radius = Wh_GetIntSetting(L"TaskbarShape.CornerRadius");
+            if (radius <= 0) radius = g_settings.shapeStyle == 2 ? 24 : 12;
+
+            std::vector<std::wstring> fillStyles = {
+                L"RadiusX=" + std::to_wstring(radius),
+                L"RadiusY=" + std::to_wstring(radius),
+            };
+
+            StringSetting fillColor = StringSetting::make(L"TaskbarShape.FillColor");
+            if (*fillColor) {
+                fillStyles.push_back(std::wstring(L"Fill=") + fillColor.get());
+            } else if (ShapeOwnsBackdrop()) {
+                // Draw the configured transparency mode inside the rounded shape.
+                PCWSTR mode = g_settings.transparencyMode.get();
+                int level = std::clamp(g_settings.transparencyAlpha, 0, 100);
+                double opacity = (100 - level) / 100.0;
+                if (level >= 100) {
+                    fillStyles.push_back(L"Fill=Transparent");
+                } else if (level > 0 && _wcsicmp(mode, L"transparent") == 0) {
+                    WCHAR argb[16];
+                    swprintf_s(argb, L"#%02X000000", static_cast<unsigned>(opacity * 255.0 + 0.5));
+                    fillStyles.push_back(std::wstring(L"Fill=") + argb);
+                } else if (level > 0 && (_wcsicmp(mode, L"blur") == 0 || _wcsicmp(mode, L"acrylic") == 0)) {
+                    WCHAR brush[160];
+                    swprintf_s(brush,
+                               L"Fill=<WindhawkBlur BlurAmount=\"%d\" TintColor=\"#000000\" TintOpacity=\"%.2f\"/>",
+                               _wcsicmp(mode, L"acrylic") == 0 ? 30 : 12, opacity);
+                    fillStyles.push_back(brush);
+                }
+            }
+
+            StringSetting borderColor = StringSetting::make(L"TaskbarShape.BorderColor");
+            int borderThickness = Wh_GetIntSetting(L"TaskbarShape.BorderThickness");
+            if (*borderColor && borderThickness > 0) {
+                fillStyles.push_back(std::wstring(L"Stroke=") + borderColor.get());
+                fillStyles.push_back(L"StrokeThickness=" + std::to_wstring(borderThickness));
+            }
+
+            AddElementCustomizationRules(
+                L"Taskbar.TaskbarFrame > Grid#RootGrid > Taskbar.TaskbarBackground > Grid > Rectangle#BackgroundFill",
+                fillStyles);
+            // The flat top stroke would cut across the rounded corners.
+            AddElementCustomizationRules(
+                L"Taskbar.TaskbarFrame > Grid#RootGrid > Taskbar.TaskbarBackground > Grid > Rectangle#BackgroundStroke",
+                {L"Visibility=Collapsed"});
+        }
+
         // Taskbar buttons
         if (Wh_GetIntSetting(L"TaskbarButtons.HideStart")) {
             AddElementCustomizationRules(
@@ -15101,7 +15454,6 @@ void Wh_ModUninit() {
         WebContentUpdateThreadUninit();
         DataCollectionSessionUninit();
         PingThreadUninit();
-        UnloadIconFont();
         MediaSessionUninit();
     }
 
