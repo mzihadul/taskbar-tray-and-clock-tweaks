@@ -5,22 +5,22 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%20Windows%2011-0078D6.svg)](#compatibility)
 [![Architecture](https://img.shields.io/badge/Arch-x86--64-brightgreen.svg)](#)
 
-A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifies granular system tray icon controls, extensive taskbar clock formatting, live hardware performance monitors, network and calendar information, media playback display, Tabler icons, taskbar transparency, taskbar button visibility, taskbar height/icon sizing, and a complete XAML control/icon styling engine.
+A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifies granular system tray icon controls, extensive taskbar clock formatting, live hardware performance monitors, network and calendar information, media playback display, timers, taskbar transparency, taskbar shape presets, taskbar button visibility, taskbar height/icon sizing, and a complete XAML control/icon styling engine.
 
 ![Taskbar Tray & Clock Tweaks Preview](./screenshot.png)
 
-## 🆕 What's New in v1.5.0
+## 🆕 What's New in v1.6.0
 
-* **Settings are now grouped by category**, so you can see which part of the taskbar you are changing (see [Settings Categories](#-settings-categories)).
-* **New clock tags:** history graphs, drive space, uptime and process info, keyboard state, countdowns, network details (ping, Wi-Fi, VPN, local IP), alternate calendars (Hijri, Persian, Japanese, Bengali), the next event from a calendar feed, and media playback progress.
-* **Tabler Icons** in the clock lines with `%ti:name%`.
-* **Clock layout presets and automatic profiles** that switch the clock layout on battery, with several monitors, or at certain hours.
-* **Threshold color rules** and **click & scroll actions** for the clock.
-* **Dynamic transparency**, **quick switches** for the Start, Search, Task View and Widgets buttons, **running-app indicator styling**, and **hiding individual tray icons by name**.
-* **Marquee** for long media titles, a slower **update interval on battery**, and **hints for unknown tags** (`[?name]`).
-* **Fixes:** *Hide running / pinned apps* no longer hides the Start, Search, Task View and Widgets buttons, and a configured text color is now applied instead of always turning the text white.
+* **Taskbar shape:** rounded bar and pill presets with corner radius, background color and border (see [Taskbar Shape](#8-taskbar-shape-windows-11-new-taskbar-added-in-v160)).
+* **Conditional tag** `%if(condition,then,else)%` to show text only when a condition holds, for example `%if(battery<20,"low",)%`.
+* **Timers:** `%stopwatch%`, `%timer%` and `%pomodoro%` with a shared run state, plus middle-click actions to start / pause and reset them, and a Pomodoro clock layout preset.
+* **`%cpu_freq%`** shows the average CPU clock.
+* **Weather fallback:** when wttr.in does not answer, the weather is fetched from [Open-Meteo](https://open-meteo.com) instead.
+* **Tabler icons removed:** the `%ti:name%` tag and its settings were taken out because they did not fit the mod.
 
-> **Upgrading from an earlier version:** settings that moved into categories are stored under new names, so they **fall back to their defaults** and must be entered again. This covers the tray icon options, clock formats, clock lines, clock size and spacing, weather and web content, transparency, taskbar size and the advanced styling rules. Settings that were already grouped (live metrics, media player, top/bottom line style) and *Customize the old taskbar on Windows 11* keep their values. A previously exported [`settings.txt`](./settings.txt) no longer matches the new layout.
+Earlier release notes are in [`CHANGELOG.md`](./CHANGELOG.md).
+
+> **Upgrading from a version before 1.5.0:** settings that moved into categories are stored under new names, so they **fall back to their defaults** and must be entered again. This covers the tray icon options, clock formats, clock lines, clock size and spacing, weather and web content, transparency, taskbar size and the advanced styling rules. Settings that were already grouped (live metrics, media player, top/bottom line style) and *Customize the old taskbar on Windows 11* keep their values. A previously exported [`settings.txt`](./settings.txt) no longer matches the new layout.
 
 ---
 
@@ -33,19 +33,20 @@ A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifi
 | Clock: text lines & tooltip | What the top, middle (Windows 10) and bottom lines and the tooltip show, ready-made layout presets, unknown-tag hints |
 | Clock: size & spacing | Clock width / height (Windows 10), max width and line spacing (Windows 11) |
 | Clock: top / bottom line style | Color, font, alignment and spacing per line (Windows 11 22H2+) |
-| Clock: click & scroll actions | Mouse wheel and middle click on the clock: volume, media keys, Task Manager or a command (Windows 11) |
+| Clock: click & scroll actions | Mouse wheel and middle click on the clock: volume, media keys, Task Manager, a command or the timer (Windows 11) |
+| Clock: timer, stopwatch & Pomodoro | Lengths and sound for `%stopwatch%`, `%timer%`, `%pomodoro%`; start / pause / reset with a middle click |
 | Clock: automatic profiles | Switch the clock to a ready-made layout on battery, with several monitors, or at certain hours |
-| Icons (Tabler Icons) | Show Tabler icons in the clock lines with `%ti:name%` |
 | Clock: color rules | Change the clock text color when CPU, RAM, GPU, temperature or battery cross a threshold (Windows 11 22H2+) |
 | Network info | Ping, Wi-Fi name and signal, VPN status, local IP |
 | Alternate calendars | Hijri, Persian, Japanese and Bengali (Bangladesh) dates |
 | Calendar events (ICS) | Next event from a calendar feed |
 | Live metrics | Update interval (and a slower one on battery), number formats, network / GPU adapter, graph length |
 | Media player info | Format, length limit, scrolling marquee and ignored players for `%media_*%` |
-| Weather & web content | Weather (wttr.in) with presets, and web / RSS extraction for `%weather%`, `%web<n>%` |
+| Weather & web content | Weather (wttr.in, with an Open-Meteo fallback) with presets, and web / RSS extraction for `%weather%`, `%web<n>%` |
 | Taskbar transparency & app visibility | Transparency mode and level, dynamic transparency, hide running / pinned apps |
 | Taskbar size & icons | Taskbar height, icon size, button width |
 | Tray icons | Hide individual notification-area icons by name |
+| Taskbar shape | Rounded bar or pill: corner radius, background and border |
 | Taskbar buttons | Hide the Start, Search, Task View and Widgets buttons |
 | Running-app indicator | Hide it, or set its color, size and corner radius (with a separate look for the focused app) |
 | Advanced styling (XAML) | Style constants, control styles, theme resources |
@@ -90,6 +91,13 @@ Configure custom text lines for **Top Line**, **Bottom Line**, **Middle Line** (
 * `%newline%` or `%n%` — Insert a line break.
 * `%countdown<n>%` / `%countdown<n>_days%` — **[Added in v1.5.0]** Time left until target `<n>` (e.g. `12d 4h 3m`, or `Done`) and the whole days left. Targets are local dates such as `2027-01-01` or `2027-01-01 18:30`, set in the date and time settings.
 
+#### ⏱️ Timers & Conditions **[Added in v1.6.0]**
+* `%stopwatch%` / `%timer%` / `%pomodoro%` — count up, count down from the configured length, or alternate work (🍅) and break (☕) phases. They share one run state, shown with ⏸ while paused. Set a middle-click action to **start / pause** or **reset** them. A sound can play when the timer ends or the Pomodoro phase changes.
+* `%if(condition,then,else)%` — show text only when a condition holds, for example `%if(battery<20,"low",)%` or `%if(cpu>=90,%cpu%,)%`.
+  * Condition: `<metric><op><number>`, with metric `cpu`, `ram`, `gpu`, `cpu_temp`, `cpu_freq`, `battery`, `charging` (1 or 0), `hour`, `minute` or `weekday` (Mon = 1), and op `>`, `>=`, `<`, `<=`, `==` or `!=`.
+  * The text parts may contain other tags. Wrap them in double quotes to keep commas or spaces. Do not put a space right after `%if(`.
+  * A metric without a value (for example `battery` on a desktop PC) makes the condition false.
+
 #### 📆 Alternate Calendars **[Added in v1.5.0]**
 * `%date_hijri%` — Hijri date, Umm al-Qura or civil, adjustable by ±2 days to match local moon sighting.
 * `%date_persian%` — Persian (Solar Hijri) date.
@@ -99,7 +107,7 @@ Configure custom text lines for **Top Line**, **Bottom Line**, **Middle Line** (
 #### ⚡ Hardware Performance & System Status
 * **Network Speeds:** `%upload_speed%`, `%download_speed%`, `%total_speed%` (Auto-formatted in KB/s, MB/s, or MBit/s).
 * **Disk I/O:** `%disk_read%`, `%disk_write%`, `%disk_total%`.
-* **Processor (CPU):** `%cpu%` (usage percentage), `%cpu_temp%` (°C), `%cpu_temp_f%` (°F).
+* **Processor (CPU):** `%cpu%` (usage percentage), `%cpu_temp%` (°C), `%cpu_temp_f%` (°F), `%cpu_freq%` (average clock, e.g. `3.4 GHz`) **[Added in v1.6.0]**.
 * **System Memory (RAM):** `%ram%` (%), `%ram_used%` (GB), `%ram_total%` (GB), `%ram_committed%` (%), `%ram_committed_used%` (GB), `%ram_committed_total%` (GB).
 * **Graphics (GPU & VRAM):** `%gpu%` (3D engine usage %), `%vram%` (dedicated %), `%vram_used%` (GB), `%vram_total%` (GB), `%vram_shared%` (%), `%vram_shared_used%` (GB), `%vram_shared_total%` (GB).
 * **Graphs:** **[Added in v1.5.0]** `%cpu_graph%`, `%ram_graph%`, `%gpu_graph%`, `%download_graph%`, `%upload_graph%`, `%disk_graph%` — recent history drawn with block characters (▁▂▃▅▇). Percent graphs use a fixed 0–100% scale; speed graphs scale to the recent peak. The length is configurable.
@@ -131,7 +139,7 @@ Extracts track details from Spotify, Chrome, Edge, VLC, Apple Music, and other m
 * **Playback progress:** **[Added in v1.5.0]** `%media_position%`, `%media_duration%`, `%media_remaining%`, `%media_progress%` (percent) and `%media_bar%` (▰▰▰▱▱▱▱▱). They stay empty for players that do not report a timeline, which is common with browsers.
 
 #### ⛅ Weather & Web Feeds
-* `%weather%` — Live weather status powered by [wttr.in](https://wttr.in) with custom location, metrics, and symbols. **[v1.5.0]** Ready-made presets are available, including one for sunrise and sunset.
+* `%weather%` — Live weather status powered by [wttr.in](https://wttr.in) with custom location, metrics, and symbols. **[v1.5.0]** Ready-made presets are available, including one for sunrise and sunset. **[v1.6.0]** When wttr.in does not answer, [Open-Meteo](https://open-meteo.com) is used as a fallback (placeholders `%c %t %w %h %l %S %s` only; without a location it is estimated from your IP address).
 * `%web<n>%` / `%web<n>_full%` — Live text extracted from RSS feeds, XML, HTML, or plain web endpoints.
 
 #### 📅 Calendar Events (ICS) **[Added in v1.5.0]**
@@ -142,22 +150,13 @@ Shows the next event from an iCalendar feed URL (for example a secret Google Cal
 
 Daily, weekly (with weekdays), monthly and yearly repeats are supported, along with excluded dates and moved single occurrences. Events with a named time zone are read as local time, and "second Tuesday"-style monthly rules show only the first occurrence. All-day events are skipped unless enabled.
 
-#### 🎨 Icons (Tabler Icons) **[Added in v1.5.0]**
-Use `%ti:name%` to show an icon from [Tabler Icons](https://tabler.io/icons) in the top or bottom clock line, for example `%ti:battery-charging% %battery%` or `%ti:wifi% %wifi_ssid%`. `%ti:U+EA35%` uses a raw codepoint, and an unknown name is shown as `[?ti:name]`.
-
-1. Get the Tabler webfont package (npm: `@tabler/icons-webfont`) and install `dist/fonts/tabler-icons.ttf`. Install only **one** Tabler font style (outline, filled, 200 or 300 weight): they all share the family name `tabler-icons`, so Windows cannot hold two at once.
-2. Optionally set the path to the matching `tabler-icons.css` in the *Icons* settings so every icon name works. Without it, a built-in list of 146 common outline icons is used.
-3. The mod puts the icon font first in the clock text's font list. It has no letters or digits, so normal text keeps its font.
-
-Icons need Windows 11 and work in the top and bottom lines, not in the tooltip. The font and the icon artwork are **not** bundled with the mod.
-
 #### 🧩 Layout Presets & Automatic Profiles **[Added in v1.5.0]**
-* **Presets:** Minimal, System monitor, Battery, Media player and Weather layouts fill in the top line, bottom line and tooltip for you.
+* **Presets:** Minimal, System monitor, Battery, Media player, Weather and Pomodoro timer **[Pomodoro added in v1.6.0]** layouts fill in the top line, bottom line and tooltip for you.
 * **Profiles:** rules switch the clock to one of those presets automatically — when running on battery, plugged in, below a battery level, with one or several monitors connected, or within certain hours (ranges such as 22 to 6 wrap past midnight). The first matching rule wins; with no match your normal clock lines apply.
 
 #### 🖱️ Click & Scroll Actions (Windows 11) **[Added in v1.5.0]**
 * **Mouse wheel over the clock:** change the volume, or skip to the previous / next track.
-* **Middle click on the clock:** play / pause, mute / unmute, next or previous track, open Task Manager, or run your own command.
+* **Middle click on the clock:** play / pause, mute / unmute, next or previous track, open Task Manager, run your own command, or **[v1.6.0]** start / pause or reset the timer.
 
 Nothing is attached to the clock unless an action is configured.
 
@@ -205,6 +204,14 @@ Simple switches that generate the matching control styles for you, so common twe
 
 ---
 
+### 8. Taskbar Shape (Windows 11 New Taskbar) **[Added in v1.6.0]**
+* **Presets:** Rounded bar and Pill. Corner radius, background color, border color and border thickness can be set; 0 uses the preset's value.
+* It is a **visual effect only**: the taskbar window keeps its full size and position.
+* With a shape selected, the Fully Transparent, Blurry Glass and Liquid Glass modes are drawn inside the shape instead of on the whole taskbar window, and Mica is not applied.
+* Built on the styling engine, so your own control styles can still override it. The target element names can differ between Windows builds.
+
+---
+
 ## ⚙️ Example Configurations
 
 A customized taskbar clock can combine multiple variables:
@@ -213,10 +220,16 @@ A customized taskbar clock can combine multiple variables:
 🔼 %upload_speed% 🔽 %download_speed% ⚙ %cpu% 🗃️ %ram% %weather% 📅 %date% 🌿 %time% %mic% %volume% ♻️ %battery%
 ```
 
-A second example using the newer tags (with the Tabler icon font installed):
+A second example using the newer tags:
 
 ```text
-%ti:cpu% %cpu_graph% %cpu% %ti:wifi% %wifi_ssid% %ping% %ti:calendar-event% %next_event% %next_event_in% %ti:battery-charging% %battery%
+%cpu_graph% %cpu% %wifi_ssid% %ping% %next_event% %next_event_in% %battery% %if(battery<20,"LOW",)%
+```
+
+A Pomodoro layout (set a middle-click action to start / pause the timer):
+
+```text
+%time% | %pomodoro%
 ```
 
 The exact appearance depends on the configured clock lines, fonts, spacing, and Windows version. You can also copy and paste the [Settings](./settings.txt) for exact view.
@@ -232,7 +245,7 @@ The exact appearance depends on the configured clock lines, fonts, spacing, and 
 
 > **Note:** Taskbar Height/Icon Size and Control Styling features only apply to the Windows 11 XAML-based taskbar. When *"Customize the old taskbar on Windows 11"* is enabled or when running on Windows 10, those subsystems remain inactive.
 
-> **Note:** The clock tags are produced by the shared formatting engine. The features that style or attach to the Windows 11 clock — Tabler icons, threshold color rules, click & scroll actions and the top/bottom line styles — require the Windows 11 XAML taskbar, as do the taskbar button, running-indicator, dynamic transparency and tray-icon features.
+> **Note:** The clock tags are produced by the shared formatting engine. The features that style or attach to the Windows 11 clock — threshold color rules, click & scroll actions and the top/bottom line styles — require the Windows 11 XAML taskbar, as do the taskbar button, running-indicator, dynamic transparency, taskbar shape and tray-icon features.
 
 ---
 
@@ -240,7 +253,7 @@ The exact appearance depends on the configured clock lines, fonts, spacing, and 
 
 1. Install [Windhawk](https://windhawk.net/).
 2. In Windhawk, go to **Mods** → **Add Custom Mod**.
-3. Paste the contents of [`taskbar-tray-and-clock-tweaks.wh.cpp`](https://github.com/mzihadul/taskbar-tray-and-clock-tweaks/blob/main/taskbar-tray-and-clock-tweaks.wh.cpp).
+3. Paste the contents of [`taskbar-tray-and-clock-tweaks.cpp`](https://github.com/mzihadul/taskbar-tray-and-clock-tweaks/blob/main/taskbar-tray-and-clock-tweaks.cpp).
 4. Click **Compile and Save**.
 
 ---
@@ -327,7 +340,9 @@ Additional modifications and integration includes:
 - Hijri, Persian, Japanese and Bangladesh-revised Bengali calendar variables
 - ICS calendar feed parsing for upcoming events
 - Media playback progress variables and marquee scrolling
-- Tabler Icons integration through `%ti:name%`
+- Conditional `%if(...)%` tag, timer / stopwatch / Pomodoro variables and `%cpu_freq%`
+- Open-Meteo weather fallback
+- Taskbar shape presets (rounded bar, pill)
 - Clock layout presets and automatic profiles
 - Threshold color rules and clock click & scroll actions
 - Slower metric updates on battery
@@ -346,8 +361,6 @@ Special thanks to **[m417z](https://github.com/m417z)** for the original Windhaw
 * [Taskbar Tray System Icon Tweaks](https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-tray-system-icon-tweaks.wh.cpp)
 * [Taskbar height and icon size](https://github.com/ramensoftware/windhawk-mods/blob/main/mods/taskbar-icon-size.wh.cpp)
 * [Windows 11 Taskbar Styler](https://github.com/ramensoftware/windhawk-mods/blob/main/mods/windows-11-taskbar-styler.wh.cpp)
-
-The optional icon feature uses the [Tabler Icons](https://github.com/tabler/tabler-icons) font by **Paweł Kuna**, released under the MIT license. It is installed separately and is not part of this project.
 
 ---
 
