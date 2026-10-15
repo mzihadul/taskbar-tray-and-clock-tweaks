@@ -2,6 +2,22 @@
 
 All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this file.
 
+## [1.6.0] - 2026-10-15
+
+### Added
+- **Taskbar shape** (Windows 11 new taskbar): rounded bar and pill presets with corner radius, background color and border. The transparency modes Fully Transparent, Blurry Glass and Liquid Glass are drawn inside the shape (Mica is not applied with a shape).
+- **`%if(condition,then,else)%`** conditional tag. Metrics: `cpu`, `ram`, `gpu`, `cpu_temp`, `cpu_freq`, `battery`, `charging`, `hour`, `minute`, `weekday`.
+- **`%stopwatch%`, `%timer%`, `%pomodoro%`** with a shared run state, configurable lengths and sound, and new middle-click actions "Start / pause the timer" and "Reset the timer". New "Pomodoro timer" clock layout preset.
+- **`%cpu_freq%`** average CPU clock.
+- **Weather fallback**: Open-Meteo is used when wttr.in does not answer (placeholders `%c %t %w %h %l %S %s`).
+
+### Removed
+- *Tabler icons*: the `%ti:name%` tag and its settings were taken out because they did not fit the mod.
+
+### Notes
+- The shape feature is a visual effect; the taskbar window keeps its full size.
+- Per-monitor clock layouts, settings export / import and extra GPU / fan sensors are not part of this release.
+
 ## [1.5.0] - 2026-10-10
 
 ### ⚠️ Upgrade note: some settings reset to defaults
