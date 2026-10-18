@@ -5,18 +5,17 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%20Windows%2011-0078D6.svg)](#compatibility)
 [![Architecture](https://img.shields.io/badge/Arch-x86--64-brightgreen.svg)](#)
 
-A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifies granular system tray icon controls, extensive taskbar clock formatting, live hardware performance monitors, network and calendar information, media playback display, timers, taskbar transparency, taskbar shape presets, taskbar button visibility, taskbar height/icon sizing, and a complete XAML control/icon styling engine.
+A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifies granular system tray icon controls, extensive taskbar clock formatting, live hardware performance monitors, network and calendar information, prayer times, media playback display, timers, taskbar transparency, taskbar shape presets, taskbar button visibility, taskbar height/icon sizing, and a complete XAML control/icon styling engine.
 
 ![Taskbar Tray & Clock Tweaks Preview](./screenshot.png)
 
-## 🆕 What's New in v1.6.0
+## 🆕 What's New in v1.7.0
 
-* **Taskbar shape:** rounded bar and pill presets with corner radius, background color and border (see [Taskbar Shape](#8-taskbar-shape-windows-11-new-taskbar-added-in-v160)).
-* **Conditional tag** `%if(condition,then,else)%` to show text only when a condition holds, for example `%if(battery<20,"low",)%`.
-* **Timers:** `%stopwatch%`, `%timer%` and `%pomodoro%` with a shared run state, plus middle-click actions to start / pause and reset them, and a Pomodoro clock layout preset.
-* **`%cpu_freq%`** shows the average CPU clock.
-* **Weather fallback:** when wttr.in does not answer, the weather is fetched from [Open-Meteo](https://open-meteo.com) instead.
-* **Tabler icons removed:** the `%ti:name%` tag and its settings were taken out because they did not fit the mod.
+* **Prayer times:** new `%prayer_*%` clock tags for the next prayer, the time left in the current one and all daily times. They are calculated on your computer from your coordinates, so no internet access is needed (see [Prayer Times](#-prayer-times-added-in-v170)).
+* **Fix for slow startup on Windows 11 24H2** (build 26100.9711, KB5127648): the taskbar size apply no longer blocks Explorer at startup, and the transparency watchdog is lighter.
+* **Clearer style errors:** when the style rules for a target fail to load, the Windhawk log now says which target and why.
+
+Release notes for earlier versions, including v1.6.0, are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 Earlier release notes are in [`CHANGELOG.md`](./CHANGELOG.md).
 
@@ -37,6 +36,7 @@ Earlier release notes are in [`CHANGELOG.md`](./CHANGELOG.md).
 | Clock: timer, stopwatch & Pomodoro | Lengths and sound for `%stopwatch%`, `%timer%`, `%pomodoro%`; start / pause / reset with a middle click |
 | Clock: automatic profiles | Switch the clock to a ready-made layout on battery, with several monitors, or at certain hours |
 | Clock: color rules | Change the clock text color when CPU, RAM, GPU, temperature or battery cross a threshold (Windows 11 22H2+) |
+| Clock: prayer times | Location, calculation method, Asr rule, time format, names and minute adjustments for the `%prayer_*%` tags |
 | Network info | Ping, Wi-Fi name and signal, VPN status, local IP |
 | Alternate calendars | Hijri, Persian, Japanese and Bengali (Bangladesh) dates |
 | Calendar events (ICS) | Next event from a calendar feed |
@@ -103,6 +103,25 @@ Configure custom text lines for **Top Line**, **Bottom Line**, **Middle Line** (
 * `%date_persian%` — Persian (Solar Hijri) date.
 * `%date_japanese%` — Japanese-era date.
 * `%date_bengali%` / `%date_bengali_en%` — Bengali date of the **Bangladesh revised calendar** (new year on 14 April), in Bangla script and digits or in Latin letters (e.g. `25 Ashwin 1433`).
+
+#### 🕌 Prayer Times **[Added in v1.7.0]**
+Prayer times are calculated on your computer from your latitude and longitude and the system clock, so no internet access is needed. They follow your Windows time zone, including daylight saving time. The defaults are Dhaka, the Karachi method and the Hanafi Asr rule.
+* `%prayer_next%` / `%prayer_next_time%` / `%prayer_next_in%` — Name, start time and time left (e.g. `1h 12m`) of the next prayer. After Isha it points to tomorrow's Fajr.
+* `%prayer_next_info%` — All three together, e.g. `Asr 3:53 PM (1h 12m)`.
+* `%prayer_current%` — The most recent prayer or Sunrise.
+* `%prayer_current_left%` / `%prayer_current_end%` / `%prayer_current_info%` — Time left in the current prayer's period, when it ends, or both (e.g. `Asr (1h 12m left)`). A period ends at the next event: Fajr at Sunrise, Dhuhr at Asr, Asr at Maghrib, Maghrib at Isha and Isha at the next Fajr. The gap between Sunrise and Dhuhr counts down to Dhuhr.
+* `%prayer_fajr%`, `%prayer_sunrise%`, `%prayer_dhuhr%`, `%prayer_asr%`, `%prayer_maghrib%`, `%prayer_isha%` — Today's times.
+* `%prayer_all%` — The five prayers on one line.
+
+Settings (under *Clock: prayer times*):
+* **Location:** latitude and longitude in decimal degrees.
+* **Calculation method:** University of Islamic Sciences Karachi (default), Muslim World League, ISNA, Egyptian General Authority, Umm al-Qura (Makkah) or custom Fajr / Isha angles.
+* **Asr calculation:** Hanafi (default) or standard (Shafi, Maliki, Hanbali).
+* **Time format:** 12-hour with or without AM / PM, or 24-hour.
+* **Prayer names:** six comma-separated names, so the tags can show another language.
+* **Adjustments:** minutes added to each calculated time, to match your local mosque's timetable.
+
+Times show `--` where the sun never reaches the Fajr or Isha angle, which happens only at far-northern latitudes in some seasons.
 
 #### ⚡ Hardware Performance & System Status
 * **Network Speeds:** `%upload_speed%`, `%download_speed%`, `%total_speed%` (Auto-formatted in KB/s, MB/s, or MBit/s).
@@ -232,6 +251,12 @@ A Pomodoro layout (set a middle-click action to start / pause the timer):
 %time% | %pomodoro%
 ```
 
+A prayer-times layout:
+
+```text
+%prayer_current_info% | %prayer_next_info%
+```
+
 The exact appearance depends on the configured clock lines, fonts, spacing, and Windows version. You can also copy and paste the [Settings](./settings.txt) for exact view.
 
 ## 💻 Compatibility
@@ -343,6 +368,9 @@ Additional modifications and integration includes:
 - Conditional `%if(...)%` tag, timer / stopwatch / Pomodoro variables and `%cpu_freq%`
 - Open-Meteo weather fallback
 - Taskbar shape presets (rounded bar, pill)
+- Offline prayer-time calculation and `%prayer_*%` variables
+- Startup fix: non-blocking taskbar size apply and a lighter transparency watchdog
+- Logging of style rules that fail to load
 - Clock layout presets and automatic profiles
 - Threshold color rules and clock click & scroll actions
 - Slower metric updates on battery
