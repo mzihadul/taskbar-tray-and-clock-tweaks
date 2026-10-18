@@ -12,10 +12,11 @@ All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this fi
 - When style rules for a target fail to load, the mod log now says which target and why, instead of ignoring them silently.
 
 ### Fixed
-Explorer lag and a missing taskbar at startup on Windows 11 24H2 (build 26100.9711, KB5127648). Untested on that build.
-- Explorer startup no longer blocks on the taskbar size and icon size apply. The first apply now runs on a background thread and waits for the taskbar window to exist.
-- Taskbar size changes wait at most about 1 second for the layout pass, down from up to 10 seconds. If the layout hook never fires, the apply continues instead of hanging.
-- The settings-change messages sent to the taskbar now time out after 2 seconds and skip a hung taskbar.
+- Bangla text on the clock looked larger than the English text. A new "Bangla text size (%)" setting under Alternate calendars (default 90, 100 turns it off) scales only the Bangla characters on the top and bottom lines (Windows 11 22H2+).
+- Explorer lag and a missing taskbar at startup on Windows 11 24H2 (build 26100.9711, KB5127648), untested on that build:
+  - Explorer startup no longer blocks on the taskbar size and icon size apply. The first apply now runs on a background thread and waits for the taskbar window to exist.
+  - Taskbar size changes wait at most about 1 second for the layout pass, down from up to 10 seconds. If the layout hook never fires, the apply continues instead of hanging.
+  - The settings-change messages sent to the taskbar now time out after 2 seconds and skip a hung taskbar.
 
 ### Changed
 - The transparency watchdog waits about 10 seconds after startup before its first pass, then re-applies every 3 seconds (was 1.5). Dynamic transparency still reacts within 250 ms of a window being maximized or restored. Stopping it on unload waits at most 5 seconds.
