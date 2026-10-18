@@ -1,8 +1,8 @@
 // ==WindhawkMod==
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
-// @description     Taskbar clock with live metrics, media info and weather; system tray icon control; taskbar size and transparency; and XAML control styling.
-// @version         1.6.0
+// @description     Taskbar clock with live metrics, media info, weather and prayer times; system tray icon control; taskbar size and transparency; and XAML control styling.
+// @version         1.7.0
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -46,6 +46,7 @@ Supports **Windows 10 (64-bit)** and **Windows 11**. Everything except the clock
 | Clock: timer, stopwatch & Pomodoro | Lengths and sound for `%stopwatch%`, `%timer%`, `%pomodoro%`; start / pause / reset with a middle click |
 | Clock: automatic profiles | Switch the clock to a ready-made layout on battery, with several monitors, or at certain hours |
 | Clock: color rules | Change the clock text color when CPU, RAM, GPU, temperature or battery cross a threshold (Windows 11 22H2+) |
+| Clock: prayer times | Location, calculation method, Asr rule, names and minute adjustments for the `%prayer_*%` tags |
 | Network info | Ping, Wi-Fi name and signal, VPN status, local IP |
 | Alternate calendars | Hijri, Persian, Japanese and Bengali (Bangladesh) dates |
 | Calendar events (ICS) | Next event from a calendar feed |
@@ -74,7 +75,7 @@ Use these in the top, middle, bottom and tooltip lines.
 * `%timezone%` - UTC offset, e.g. `+06:00`.
 * `%newline%` or `%n%` - line break.
 * `%date_hijri%`, `%date_persian%`, `%date_japanese%` - the date in the Hijri (Umm al-Qura or civil, adjustable by days), Persian or Japanese-era calendar.
-* `%date_bengali%` / `%date_bengali_en%` - the Bengali date of the Bangladesh revised calendar, in Bangla script and digits or in Latin letters (e.g. `25 Ashwin 1433`).
+* `%date_bengali%` / `%date_bengali_en%` - the Bengali date of the Bangladesh revised calendar, in Bangla script and digits or in Latin letters (e.g. `25 Ashwin 1433`). Bangla letters are drawn in a fallback font that looks larger than the Latin font, so the "Bangla text size" setting (default 90%) scales just those characters on the clock lines.
 * `%stopwatch%` / `%timer%` / `%pomodoro%` - count up, count down from the configured length, or alternate work and break phases. They share one run state: set a middle-click action to start / pause or reset them.
 * `%if(condition,then,else)%` - show text only when a condition holds, e.g. `%if(battery<20,"low",)%` or `%if(cpu>=90,%cpu%,)%`. Conditions are `<metric><op><number>` with metric `cpu`, `ram`, `gpu`, `cpu_temp`, `cpu_freq`, `battery`, `charging` (1/0), `hour`, `minute` or `weekday` (Mon=1) and op `>`, `>=`, `<`, `<=`, `==`, `!=`. The text parts may contain other tags; wrap them in double quotes to keep commas or spaces. Do not put a space right after `%if(`.
 * `%countdown<n>%` - time left until target `<n>` (e.g. `12d 4h 3m`, or `Done`); `%countdown<n>_days%` - whole days left. Targets are set in the date and time settings.
@@ -114,6 +115,16 @@ A tag that does not exist is shown as `[?name]` so typos are easy to spot (can b
 `%media_title%`, `%media_artist%`, `%media_album%`, `%media_status%` (`⏯` / `⏸` / `⏹`), `%media_info%` (formatted and truncated, or scrolling).
 
 Playback progress: `%media_position%`, `%media_duration%`, `%media_remaining%`, `%media_progress%` (percent) and `%media_bar%` (▰▰▰▱▱▱▱▱). They stay empty when the player does not report a timeline.
+
+### Prayer times
+Calculated on your computer from the latitude, longitude and method in the "Clock: prayer times" settings (defaults to Dhaka, Karachi method, Hanafi Asr), so no internet is needed. Times follow the system clock and time zone, including daylight saving time.
+* `%prayer_next%`, `%prayer_next_time%`, `%prayer_next_in%` - name, start time and time left (`1h 12m`) of the next prayer. After Isha it points to tomorrow's Fajr.
+* `%prayer_next_info%` - all three together, e.g. `Asr 3:45 PM (1h 12m)`.
+* `%prayer_current%` - the most recent prayer or Sunrise.
+* `%prayer_current_left%`, `%prayer_current_end%`, `%prayer_current_info%` - time left in the current prayer's period, when it ends, or both (e.g. `Asr (1h 12m left)`). A period ends at the next event: Fajr at Sunrise, Dhuhr at Asr, Asr at Maghrib, Maghrib at Isha, Isha at the next Fajr. The gap between Sunrise and Dhuhr counts down to Dhuhr.
+* `%prayer_fajr%`, `%prayer_sunrise%`, `%prayer_dhuhr%`, `%prayer_asr%`, `%prayer_maghrib%`, `%prayer_isha%` - today's times.
+* `%prayer_all%` - the five prayers on one line.
+Use the adjustments setting to match your local mosque's timetable. Times are shown as `--` where the sun never reaches the Fajr / Isha angle (far-north winters and summers).
 
 ### Weather & web
 * `%weather%` - from [wttr.in](https://wttr.in), using your location, units and format. When wttr.in does not answer, [Open-Meteo](https://open-meteo.com) is used instead (`%c %t %w %h %l %S %s` only).
@@ -461,6 +472,54 @@ Simple switches that generate the matching control styles for you, so common twe
     %stopwatch%, %timer% and %pomodoro% share one run state. Start / pause and
     reset them with a middle-click action under "Clock: click & scroll
     actions". Windows 11 only for the click actions.
+- Prayer:
+  - Latitude: "23.8103"
+    $name: Latitude
+    $description: >-
+      Decimal degrees, north is positive. The default is Dhaka.
+  - Longitude: "90.4125"
+    $name: Longitude
+    $description: >-
+      Decimal degrees, east is positive. The default is Dhaka.
+  - Method: karachi
+    $name: Calculation method
+    $options:
+    - karachi: University of Islamic Sciences, Karachi (Fajr 18, Isha 18)
+    - mwl: Muslim World League (Fajr 18, Isha 17)
+    - isna: ISNA (Fajr 15, Isha 15)
+    - egypt: Egyptian General Authority (Fajr 19.5, Isha 17.5)
+    - makkah: Umm al-Qura, Makkah (Fajr 18.5, Isha 90 min after Maghrib)
+    - custom: Custom angles, set below
+  - CustomFajrAngle: "18"
+    $name: Custom Fajr angle (degrees)
+  - CustomIshaAngle: "18"
+    $name: Custom Isha angle (degrees)
+  - Asr: hanafi
+    $name: Asr calculation
+    $options:
+    - hanafi: Hanafi (shadow length 2x)
+    - standard: Shafi, Maliki, Hanbali (shadow length 1x)
+  - TimeFormat: 12hAmPm
+    $name: Time format
+    $options:
+    - 12hAmPm: 12-hour with AM / PM
+    - 12h: 12-hour without AM / PM
+    - 24h: 24-hour
+  - Names: "Fajr,Sunrise,Dhuhr,Asr,Maghrib,Isha"
+    $name: Prayer names
+    $description: >-
+      Six names separated by commas, in the order Fajr, Sunrise, Dhuhr, Asr,
+      Maghrib, Isha. Change them to show the names in another language.
+  - Adjustments: "0,0,0,0,0,0"
+    $name: Adjustments (minutes)
+    $description: >-
+      Six whole numbers separated by commas, in the same order, added to the
+      calculated times. Use them to match your local mosque or timetable, for
+      example 0,0,0,0,2,0 for a later Maghrib.
+  $name: 'Clock: prayer times'
+  $description: >-
+    Used by the %prayer_*% tags. Times are calculated on this computer from
+    your coordinates and the system clock, so no internet access is needed.
 - Profiles:
   - Rules:
     - - Condition: ""
@@ -642,6 +701,12 @@ Simple switches that generate the matching control styles for you, so common twe
     $description: >-
       Shifts %date_hijri% by -2 to +2 days, for example to match local moon
       sighting.
+  - BengaliTextScale: 90
+    $name: Bangla text size (%)
+    $description: >-
+      Windows draws Bangla letters in a fallback font that looks larger than
+      the Latin font at the same size. This scales only the Bangla characters
+      on the clock lines (Windows 11 22H2 and newer). Use 100 to turn it off.
   $name: Alternate calendars
   $description: >-
     Tags: %date_hijri%, %date_persian%, %date_japanese%, %date_bengali%
@@ -862,6 +927,7 @@ using WindhawkUtils::StringSetting;
 #include <charconv>
 #include <chrono>
 #include <cmath>
+#include <cwctype>
 #include <condition_variable>
 #include <filesystem>
 #include <functional>
@@ -926,6 +992,7 @@ using namespace std::string_view_literals;
 #include <winrt/Windows.UI.ViewManagement.h>
 #include <winrt/Windows.UI.Xaml.Automation.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
+#include <winrt/Windows.UI.Xaml.Documents.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include <winrt/Windows.UI.Xaml.Input.h>
 #include <winrt/Windows.UI.Xaml.Interop.h>
@@ -1061,7 +1128,20 @@ struct ProfileRule {
     const LinePreset* preset;
 };
 
+struct PrayerSettings {
+    double latitude = 23.8103;
+    double longitude = 90.4125;
+    double fajrAngle = 18.0;
+    double ishaAngle = 18.0;
+    int ishaMinutesAfterMaghrib = 0;  // > 0: Isha is fixed minutes after Maghrib
+    int asrFactor = 2;                // 1 Shafi/Maliki/Hanbali, 2 Hanafi
+    int offsets[6] = {0, 0, 0, 0, 0, 0};  // Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha (minutes)
+    int timeFormat = 0;               // 0 12h with AM/PM, 1 12h, 2 24h
+    std::wstring names[6] = {L"Fajr", L"Sunrise", L"Dhuhr", L"Asr", L"Maghrib", L"Isha"};
+};
+
 struct Settings {
+    PrayerSettings prayer;
     // Tray Settings
     bool hideVolumeIcon;
     bool hideNetworkIcon;
@@ -1115,6 +1195,7 @@ struct Settings {
     int pingInterval;
     bool hijriCivil;
     int hijriOffset;
+    int bengaliTextScale;  // percent, 100 = off
     std::wstring icsUrl;
     int icsMaxLength;
     bool icsIncludeAllDay;
@@ -2102,6 +2183,8 @@ struct ClockElementStyleData {
     DWORD styleIndex;
     std::optional<int64_t> dateVisibilityPropertyChangedToken;
     std::optional<int64_t> timeVisibilityPropertyChangedToken;
+    std::optional<int64_t> dateTextChangedToken;
+    std::optional<int64_t> timeTextChangedToken;
     winrt::weak_ref<UIElement> actionTarget;
     std::optional<winrt::Windows::UI::Xaml::Input::PointerEventHandler> wheelHandler;
     std::optional<winrt::Windows::UI::Xaml::Input::PointerEventHandler> pressedHandler;
@@ -4928,6 +5011,313 @@ PCWSTR GetCountdownFormatted(int n, bool daysOnly) {
     return buf;
 }
 
+// ----- PRAYER TIMES -----
+// Offline calculation (the usual astronomical method used by PrayTimes.org):
+// sun declination and equation of time for the date, then the hour angles for
+// the Fajr / Isha twilight angles, sunrise / sunset and the Asr shadow length.
+
+namespace prayer {
+
+constexpr double kPi = 3.14159265358979323846;
+inline double Rad(double d) { return d * kPi / 180.0; }
+inline double Deg(double r) { return r * 180.0 / kPi; }
+inline double FixAngle(double a) { a = std::fmod(a, 360.0); return a < 0 ? a + 360.0 : a; }
+inline double FixHour(double h) { h = std::fmod(h, 24.0); return h < 0 ? h + 24.0 : h; }
+
+double JulianDate(int y, int m, int d) {
+    if (m <= 2) { y -= 1; m += 12; }
+    int a = y / 100;
+    int b = 2 - a + a / 4;
+    return std::floor(365.25 * (y + 4716)) + std::floor(30.6001 * (m + 1)) + d + b - 1524.5;
+}
+
+void SunPosition(double jd, double* declination, double* equation) {
+    double D = jd - 2451545.0;
+    double g = FixAngle(357.529 + 0.98560028 * D);
+    double q = FixAngle(280.459 + 0.98564736 * D);
+    double L = FixAngle(q + 1.915 * std::sin(Rad(g)) + 0.020 * std::sin(Rad(2 * g)));
+    double e = 23.439 - 0.00000036 * D;
+    double RA = Deg(std::atan2(std::cos(Rad(e)) * std::sin(Rad(L)), std::cos(Rad(L)))) / 15.0;
+    *equation = q / 15.0 - FixHour(RA);
+    *declination = Deg(std::asin(std::sin(Rad(e)) * std::sin(Rad(L))));
+}
+
+double MidDay(double jd, double t) {
+    double decl, eqt;
+    SunPosition(jd + t, &decl, &eqt);
+    return FixHour(12 - eqt);
+}
+
+// Time (hours) when the sun is `angle` degrees below the horizon; NaN if it never gets there.
+double SunAngleTime(double jd, double lat, double angle, double t, bool ccw) {
+    double decl, eqt;
+    SunPosition(jd + t, &decl, &eqt);
+    double noon = MidDay(jd, t);
+    double x = (-std::sin(Rad(angle)) - std::sin(Rad(decl)) * std::sin(Rad(lat))) /
+               (std::cos(Rad(decl)) * std::cos(Rad(lat)));
+    if (x < -1.0 || x > 1.0) return NAN;
+    double dt = Deg(std::acos(x)) / 15.0;
+    return noon + (ccw ? -dt : dt);
+}
+
+double AsrTime(double jd, double lat, int factor, double t) {
+    double decl, eqt;
+    SunPosition(jd + t, &decl, &eqt);
+    double angle = -Deg(std::atan(1.0 / (factor + std::tan(Rad(std::fabs(lat - decl))))));
+    return SunAngleTime(jd, lat, angle, t, false);
+}
+
+// Local times in minutes after midnight (NaN when not defined) for one date:
+// Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha.
+void Compute(const PrayerSettings& s, int y, int m, int d, double utcOffsetHours, double out[6]) {
+    double jd = JulianDate(y, m, d) - s.longitude / (15.0 * 24.0);
+    double t[6] = {5.0 / 24, 6.0 / 24, 12.0 / 24, 13.0 / 24, 18.0 / 24, 18.0 / 24};
+    double h[6] = {};
+    for (int pass = 0; pass < 2; pass++) {
+        h[0] = SunAngleTime(jd, s.latitude, s.fajrAngle, t[0], true);
+        h[1] = SunAngleTime(jd, s.latitude, 0.833, t[1], true);
+        h[2] = MidDay(jd, t[2]);
+        h[3] = AsrTime(jd, s.latitude, s.asrFactor, t[3]);
+        h[4] = SunAngleTime(jd, s.latitude, 0.833, t[4], false);
+        h[5] = s.ishaMinutesAfterMaghrib > 0 ? h[4] + s.ishaMinutesAfterMaghrib / 60.0
+                                             : SunAngleTime(jd, s.latitude, s.ishaAngle, t[5], false);
+        for (int i = 0; i < 6; i++) {
+            if (!std::isnan(h[i])) t[i] = h[i] / 24.0;
+        }
+    }
+    double shift = utcOffsetHours - s.longitude / 15.0;
+    for (int i = 0; i < 6; i++) {
+        out[i] = std::isnan(h[i]) ? NAN : (h[i] + shift) * 60.0 + s.offsets[i];
+    }
+}
+
+struct Day {
+    int key = -1;
+    double minutes[6] = {};
+};
+
+}  // namespace prayer
+
+struct PrayerState {
+    int dayKey = -1;
+    double utcOffset = 0;
+    prayer::Day today, tomorrow, yesterday;
+    unsigned settingsVersion = 0;
+} g_prayerState;
+unsigned g_prayerSettingsVersion = 1;
+
+static void PrayerAddDay(int y, int m, int d, int days, int* oy, int* om, int* od) {
+    // Civil date arithmetic through the Julian day number.
+    double jd = prayer::JulianDate(y, m, d) + days + 0.5;
+    int Z = static_cast<int>(jd);
+    int A = Z;
+    if (Z >= 2299161) {
+        int alpha = static_cast<int>((Z - 1867216.25) / 36524.25);
+        A = Z + 1 + alpha - alpha / 4;
+    }
+    int B = A + 1524;
+    int C = static_cast<int>((B - 122.1) / 365.25);
+    int D = static_cast<int>(365.25 * C);
+    int E = static_cast<int>((B - D) / 30.6001);
+    *od = B - D - static_cast<int>(30.6001 * E);
+    *om = E < 14 ? E - 1 : E - 13;
+    *oy = *om > 2 ? C - 4716 : C - 4715;
+}
+
+static void PrayerEnsureDays() {
+    const SYSTEMTIME& now = g_formatTime;
+    int key = now.wYear * 10000 + now.wMonth * 100 + now.wDay;
+    if (g_prayerState.dayKey == key && g_prayerState.settingsVersion == g_prayerSettingsVersion) return;
+
+    // UTC offset in hours for the current moment (includes daylight saving time).
+    SYSTEMTIME utc{};
+    double offset = 0;
+    if (TzSpecificLocalTimeToSystemTime(nullptr, &now, &utc)) {
+        offset = (LocalSecondsFromSystemTime(now) - LocalSecondsFromSystemTime(utc)) / 3600.0;
+    }
+    g_prayerState.utcOffset = offset;
+
+    auto fill = [&](prayer::Day& day, int delta) {
+        int y, m, d;
+        PrayerAddDay(now.wYear, now.wMonth, now.wDay, delta, &y, &m, &d);
+        day.key = y * 10000 + m * 100 + d;
+        prayer::Compute(g_settings.prayer, y, m, d, offset, day.minutes);
+    };
+    fill(g_prayerState.yesterday, -1);
+    fill(g_prayerState.today, 0);
+    fill(g_prayerState.tomorrow, 1);
+    g_prayerState.dayKey = key;
+    g_prayerState.settingsVersion = g_prayerSettingsVersion;
+}
+
+// Formats minutes after midnight (may be outside 0..1440 for neighbouring days).
+static PCWSTR PrayerFormatClock(double minutes) {
+    static WCHAR bufs[8][32];
+    static int next = 0;
+    PWSTR buf = bufs[next++ & 7];
+    if (std::isnan(minutes)) { wcscpy_s(buf, 32, L"--"); return buf; }
+    int total = static_cast<int>(std::floor(minutes + 0.5));
+    total = ((total % 1440) + 1440) % 1440;
+    int h = total / 60, m = total % 60;
+    const auto fmt = g_settings.prayer.timeFormat;
+    if (fmt == 2) {
+        swprintf_s(buf, 32, L"%02d:%02d", h, m);
+    } else {
+        int h12 = h % 12 == 0 ? 12 : h % 12;
+        if (fmt == 0) swprintf_s(buf, 32, L"%d:%02d %s", h12, m, h < 12 ? L"AM" : L"PM");
+        else swprintf_s(buf, 32, L"%d:%02d", h12, m);
+    }
+    return buf;
+}
+
+static PCWSTR PrayerFormatSpan(double minutes) {
+    static WCHAR bufs[4][32];
+    static int next = 0;
+    PWSTR buf = bufs[next++ & 3];
+    int total = std::max(0, static_cast<int>(std::floor(minutes)));
+    int h = total / 60, m = total % 60;
+    if (h) swprintf_s(buf, 32, L"%dh %dm", h, m);
+    else swprintf_s(buf, 32, L"%dm", m);
+    return buf;
+}
+
+// Index 0..5 into Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha.
+static PCWSTR GetPrayerTimeFormatted(int index) {
+    PrayerEnsureDays();
+    return PrayerFormatClock(g_prayerState.today.minutes[index]);
+}
+
+struct PrayerNext {
+    int index = -1;       // 0 Fajr, 2 Dhuhr, 3 Asr, 4 Maghrib, 5 Isha (Sunrise is not a prayer)
+    double minutes = 0;   // start time on the 'today' time line (can exceed 1440)
+};
+
+static PrayerNext PrayerFindNext() {
+    PrayerEnsureDays();
+    const SYSTEMTIME& now = g_formatTime;
+    double nowMin = now.wHour * 60.0 + now.wMinute + now.wSecond / 60.0;
+    static const int order[5] = {0, 2, 3, 4, 5};
+    for (int i : order) {
+        double t = g_prayerState.today.minutes[i];
+        if (!std::isnan(t) && t > nowMin) return {i, t};
+    }
+    double t = g_prayerState.tomorrow.minutes[0];
+    if (!std::isnan(t)) return {0, t + 1440.0};
+    return {};
+}
+
+// The most recent of the six events (Sunrise included); before Fajr that is
+// yesterday's Isha.
+static int PrayerFindCurrent() {
+    PrayerEnsureDays();
+    const SYSTEMTIME& now = g_formatTime;
+    double nowMin = now.wHour * 60.0 + now.wMinute + now.wSecond / 60.0;
+    int best = -1;
+    double bestT = -1e9;
+    for (int i = 0; i < 6; i++) {
+        double t = g_prayerState.today.minutes[i];
+        if (!std::isnan(t) && t <= nowMin && t > bestT) { best = i; bestT = t; }
+    }
+    if (best < 0 && !std::isnan(g_prayerState.yesterday.minutes[5])) best = 5;
+    return best;
+}
+
+// End of the current period: the next of the six events, on the 'today' time
+// line (tomorrow's Fajr after Isha, so it can exceed 1440). NaN if unknown.
+static double PrayerCurrentEndMinutes(int current) {
+    if (current < 0) return NAN;
+    if (current == 5) {
+        const SYSTEMTIME& now = g_formatTime;
+        double nowMin = now.wHour * 60.0 + now.wMinute + now.wSecond / 60.0;
+        double isha = g_prayerState.today.minutes[5];
+        // After today's Isha the period ends at tomorrow's Fajr; before Fajr
+        // (still yesterday's Isha) it ends at today's Fajr.
+        if (!std::isnan(isha) && isha <= nowMin) {
+            double f = g_prayerState.tomorrow.minutes[0];
+            return std::isnan(f) ? NAN : f + 1440.0;
+        }
+        return g_prayerState.today.minutes[0];
+    }
+    return g_prayerState.today.minutes[current + 1];
+}
+
+static PCWSTR GetPrayerCurrentEndFormatted() {
+    int c = PrayerFindCurrent();
+    double end = PrayerCurrentEndMinutes(c);
+    return std::isnan(end) ? L"--" : PrayerFormatClock(end);
+}
+
+static PCWSTR GetPrayerCurrentLeftFormatted() {
+    int c = PrayerFindCurrent();
+    double end = PrayerCurrentEndMinutes(c);
+    if (std::isnan(end)) return L"--";
+    const SYSTEMTIME& now = g_formatTime;
+    double nowMin = now.wHour * 60.0 + now.wMinute + now.wSecond / 60.0;
+    return PrayerFormatSpan(end - nowMin);
+}
+
+static PCWSTR GetPrayerCurrentInfoFormatted() {
+    static WCHAR bufs[2][96];
+    static int next = 0;
+    PWSTR buf = bufs[next++ & 1];
+    int c = PrayerFindCurrent();
+    if (c < 0) { wcscpy_s(buf, 96, L"--"); return buf; }
+    std::wstring name = g_settings.prayer.names[c];
+    std::wstring left = GetPrayerCurrentLeftFormatted();
+    swprintf_s(buf, 96, L"%s (%s left)", name.c_str(), left.c_str());
+    return buf;
+}
+
+static PCWSTR GetPrayerNextNameFormatted() {
+    PrayerNext n = PrayerFindNext();
+    return n.index < 0 ? L"--" : g_settings.prayer.names[n.index].c_str();
+}
+
+static PCWSTR GetPrayerNextTimeFormatted() {
+    PrayerNext n = PrayerFindNext();
+    return n.index < 0 ? L"--" : PrayerFormatClock(n.minutes);
+}
+
+static PCWSTR GetPrayerNextInFormatted() {
+    PrayerNext n = PrayerFindNext();
+    if (n.index < 0) return L"--";
+    const SYSTEMTIME& now = g_formatTime;
+    double nowMin = now.wHour * 60.0 + now.wMinute + now.wSecond / 60.0;
+    return PrayerFormatSpan(n.minutes - nowMin);
+}
+
+static PCWSTR GetPrayerNextInfoFormatted() {
+    static WCHAR bufs[2][96];
+    static int next = 0;
+    PWSTR buf = bufs[next++ & 1];
+    PrayerNext n = PrayerFindNext();
+    if (n.index < 0) { wcscpy_s(buf, 96, L"--"); return buf; }
+    std::wstring name = g_settings.prayer.names[n.index];
+    std::wstring at = PrayerFormatClock(n.minutes);
+    std::wstring in = GetPrayerNextInFormatted();
+    swprintf_s(buf, 96, L"%s %s (%s)", name.c_str(), at.c_str(), in.c_str());
+    return buf;
+}
+
+static PCWSTR GetPrayerCurrentFormatted() {
+    int i = PrayerFindCurrent();
+    return i < 0 ? L"--" : g_settings.prayer.names[i].c_str();
+}
+
+static PCWSTR GetPrayerAllFormatted() {
+    static std::wstring buf;
+    PrayerEnsureDays();
+    static const int order[5] = {0, 2, 3, 4, 5};
+    buf.clear();
+    for (int i : order) {
+        if (!buf.empty()) buf += L"  ";
+        buf += g_settings.prayer.names[i];
+        buf += L' ';
+        buf += PrayerFormatClock(g_prayerState.today.minutes[i]);
+    }
+    return buf.c_str();
+}
+
 // Output of CallNtPowerInformation(ProcessorInformation). Declared here because
 // the MinGW headers used by Windhawk do not provide it.
 struct ClockProcessorPowerInfo {
@@ -5524,6 +5914,17 @@ size_t ResolveFormatToken(std::wstring_view format, std::function<void(PCWSTR)> 
         {L"%media_bar%"sv, GetMediaBarFormatted},
         {L"%cpu_freq%"sv, GetCpuFreqFormatted}, {L"%stopwatch%"sv, GetStopwatchFormatted},
         {L"%timer%"sv, GetTimerFormatted}, {L"%pomodoro%"sv, GetPomodoroFormatted},
+        {L"%prayer_next%"sv, GetPrayerNextNameFormatted}, {L"%prayer_next_time%"sv, GetPrayerNextTimeFormatted},
+        {L"%prayer_next_in%"sv, GetPrayerNextInFormatted}, {L"%prayer_next_info%"sv, GetPrayerNextInfoFormatted},
+        {L"%prayer_current%"sv, GetPrayerCurrentFormatted},
+        {L"%prayer_current_end%"sv, GetPrayerCurrentEndFormatted}, {L"%prayer_current_left%"sv, GetPrayerCurrentLeftFormatted},
+        {L"%prayer_current_info%"sv, GetPrayerCurrentInfoFormatted}, {L"%prayer_all%"sv, GetPrayerAllFormatted},
+        {L"%prayer_fajr%"sv, []() { return GetPrayerTimeFormatted(0); }},
+        {L"%prayer_sunrise%"sv, []() { return GetPrayerTimeFormatted(1); }},
+        {L"%prayer_dhuhr%"sv, []() { return GetPrayerTimeFormatted(2); }},
+        {L"%prayer_asr%"sv, []() { return GetPrayerTimeFormatted(3); }},
+        {L"%prayer_maghrib%"sv, []() { return GetPrayerTimeFormatted(4); }},
+        {L"%prayer_isha%"sv, []() { return GetPrayerTimeFormatted(5); }},
     };
 
     for (const auto& t : tokens) {
@@ -5891,8 +6292,72 @@ Media::Brush ParseBrush(PCWSTR value) {
     }
 }
 
+// Bangla letters come from a fallback font that looks larger than the Latin
+// font at the same size. Put the Bangla characters in their own runs with a
+// scaled font size. The clock replaces the text on every refresh, so this is
+// called again from a Text property callback.
+thread_local bool g_inBengaliScale = false;
+
+static bool IsBengaliScriptChar(wchar_t c) { return c >= 0x0980 && c <= 0x09FF; }
+
+void ApplyBengaliScaleToTextBlock(Controls::TextBlock tb) {
+    if (g_inBengaliScale) return;
+    const int scale = g_settings.bengaliTextScale;
+    if (scale == 100 || g_unloading) return;
+
+    winrt::hstring text = tb.Text();
+    std::wstring_view sv = text;
+    bool hasBengali = false;
+    for (wchar_t c : sv) {
+        if (IsBengaliScriptChar(c)) { hasBengali = true; break; }
+    }
+    if (!hasBengali) return;
+
+    g_inBengaliScale = true;
+    try {
+        const double bengaliSize = tb.FontSize() * scale / 100.0;
+        auto inlines = tb.Inlines();
+        inlines.Clear();
+
+        std::wstring seg;
+        int segKind = -2;  // -2 unset, 0 other, 1 Bangla
+        auto flush = [&]() {
+            if (seg.empty()) return;
+            Documents::Run run;
+            run.Text(seg);
+            if (segKind == 1) run.FontSize(bengaliSize);
+            inlines.Append(run);
+            seg.clear();
+            segKind = -2;
+        };
+        for (wchar_t c : sv) {
+            if (c == L'\r') continue;
+            if (c == L'\n') {
+                flush();
+                inlines.Append(Documents::LineBreak());
+                continue;
+            }
+            // Spaces, punctuation and joiners stay with the surrounding run.
+            const bool neutral = (c < 0x80 && !iswalnum(c)) || c == 0x200C || c == 0x200D;
+            if (!neutral) {
+                int kind = IsBengaliScriptChar(c) ? 1 : 0;
+                if (segKind != -2 && segKind != kind) flush();
+                segKind = kind;
+            }
+            seg += c;
+        }
+        flush();
+    } catch (...) {}
+    g_inBengaliScale = false;
+}
+
 // line: 0 = top line, 1 = bottom line, -1 = no color rules.
-void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings* s, bool noWrap, std::optional<int64_t>* token, int line) {
+void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings* s, bool noWrap, std::optional<int64_t>* token, int line,
+                          std::optional<int64_t>* textToken) {
+    if (textToken->has_value()) {
+        try { textBlock.UnregisterPropertyChangedCallback(Controls::TextBlock::TextProperty(), textToken->value()); } catch (...) {}
+        textToken->reset();
+    }
     if (token->has_value()) {
         textBlock.UnregisterPropertyChangedCallback(UIElement::VisibilityProperty(), token->value());
     }
@@ -5979,6 +6444,17 @@ void ApplyTextBlockStyles(Controls::TextBlock textBlock, const TextStyleSettings
     } else {
         textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::LineHeightProperty());
         textBlock.as<DependencyObject>().ClearValue(Controls::TextBlock::LineStackingStrategyProperty());
+    }
+
+    if (s && g_settings.bengaliTextScale != 100 && !g_unloading) {
+        try {
+            *textToken = textBlock.RegisterPropertyChangedCallback(
+                Controls::TextBlock::TextProperty(),
+                [](DependencyObject sender, DependencyProperty) {
+                    if (auto tb = sender.try_as<Controls::TextBlock>()) ApplyBengaliScaleToTextBlock(tb);
+                });
+            ApplyBengaliScaleToTextBlock(textBlock);
+        } catch (...) {}
     }
 }
 
@@ -6124,8 +6600,8 @@ void ApplyDateTimeIconContentStyles(FrameworkElement dateTimeIconContentElement)
     if (maxW) sp.MaxWidth(maxW); else sp.as<DependencyObject>().ClearValue(FrameworkElement::MaxWidthProperty());
     if (spacing) sp.Spacing(spacing); else sp.as<DependencyObject>().ClearValue(Controls::StackPanel::SpacingProperty());
 
-    ApplyTextBlockStyles(dTb, enabled ? &g_settings.dateStyle : nullptr, maxW, &dataPtr->dateVisibilityPropertyChangedToken, 1);
-    ApplyTextBlockStyles(tTb, enabled ? &g_settings.timeStyle : nullptr, maxW, &dataPtr->timeVisibilityPropertyChangedToken, 0);
+    ApplyTextBlockStyles(dTb, enabled ? &g_settings.dateStyle : nullptr, maxW, &dataPtr->dateVisibilityPropertyChangedToken, 1, &dataPtr->dateTextChangedToken);
+    ApplyTextBlockStyles(tTb, enabled ? &g_settings.timeStyle : nullptr, maxW, &dataPtr->timeVisibilityPropertyChangedToken, 0, &dataPtr->timeTextChangedToken);
     try { ApplyClockActionHandlers(dateTimeIconContentElement, dataPtr, enabled); } catch (...) {}
     dataPtr->styleIndex = curIdx;
 }
@@ -6591,6 +7067,63 @@ bool ParseCountdownTarget(PCWSTR s, ULONGLONG* out) {
     return true;
 }
 
+static double ParsePrayerDouble(PCWSTR text, double fallback, double lo, double hi) {
+    PWSTR end = nullptr;
+    double v = wcstod(text, &end);
+    if (end == text || !std::isfinite(v)) return fallback;
+    return std::clamp(v, lo, hi);
+}
+
+static std::vector<std::wstring> SplitPrayerList(PCWSTR text) {
+    std::vector<std::wstring> parts;
+    std::wstring cur;
+    for (PCWSTR c = text; ; c++) {
+        if (*c == L',' || *c == L'\0') {
+            size_t a = cur.find_first_not_of(L" \t");
+            size_t b = cur.find_last_not_of(L" \t");
+            parts.push_back(a == std::wstring::npos ? L"" : cur.substr(a, b - a + 1));
+            cur.clear();
+            if (*c == L'\0') break;
+        } else {
+            cur += *c;
+        }
+    }
+    return parts;
+}
+
+void LoadPrayerSettings() {
+    PrayerSettings p;
+    p.latitude = ParsePrayerDouble(StringSetting::make(L"Prayer.Latitude"), p.latitude, -90.0, 90.0);
+    p.longitude = ParsePrayerDouble(StringSetting::make(L"Prayer.Longitude"), p.longitude, -180.0, 180.0);
+
+    StringSetting method = StringSetting::make(L"Prayer.Method");
+    if (wcscmp(method, L"mwl") == 0) { p.fajrAngle = 18; p.ishaAngle = 17; }
+    else if (wcscmp(method, L"isna") == 0) { p.fajrAngle = 15; p.ishaAngle = 15; }
+    else if (wcscmp(method, L"egypt") == 0) { p.fajrAngle = 19.5; p.ishaAngle = 17.5; }
+    else if (wcscmp(method, L"makkah") == 0) { p.fajrAngle = 18.5; p.ishaMinutesAfterMaghrib = 90; }
+    else if (wcscmp(method, L"custom") == 0) {
+        p.fajrAngle = ParsePrayerDouble(StringSetting::make(L"Prayer.CustomFajrAngle"), 18, 0, 30);
+        p.ishaAngle = ParsePrayerDouble(StringSetting::make(L"Prayer.CustomIshaAngle"), 18, 0, 30);
+    }  // else karachi: 18 / 18
+
+    p.asrFactor = wcscmp(StringSetting::make(L"Prayer.Asr"), L"standard") == 0 ? 1 : 2;
+
+    StringSetting fmt = StringSetting::make(L"Prayer.TimeFormat");
+    p.timeFormat = wcscmp(fmt, L"24h") == 0 ? 2 : (wcscmp(fmt, L"12h") == 0 ? 1 : 0);
+
+    auto names = SplitPrayerList(StringSetting::make(L"Prayer.Names"));
+    for (size_t i = 0; i < 6 && i < names.size(); i++) {
+        if (!names[i].empty()) p.names[i] = names[i];
+    }
+    auto adj = SplitPrayerList(StringSetting::make(L"Prayer.Adjustments"));
+    for (size_t i = 0; i < 6 && i < adj.size(); i++) {
+        p.offsets[i] = std::clamp(static_cast<int>(wcstol(adj[i].c_str(), nullptr, 10)), -180, 180);
+    }
+
+    g_settings.prayer = std::move(p);
+    g_prayerSettingsVersion++;
+}
+
 int ParseRuleMetric(PCWSTR s) {
     if (wcscmp(s, L"cpu") == 0) return kRuleCpu;
     if (wcscmp(s, L"ram") == 0) return kRuleRam;
@@ -6668,6 +7201,7 @@ void LoadSettings() {
         g_settings.hijriCivil = wcscmp(hijri, L"civil") == 0;
     }
     g_settings.hijriOffset = std::clamp<int>(Wh_GetIntSetting(L"AlternateCalendars.HijriOffset"), -2, 2);
+    g_settings.bengaliTextScale = std::clamp<int>(Wh_GetIntSetting(L"AlternateCalendars.BengaliTextScale"), 50, 150);
     g_settings.icsUrl = StringSetting::make(L"CalendarEvents.IcsUrl").get();
     g_settings.icsMaxLength = Wh_GetIntSetting(L"CalendarEvents.MaxLength");
     g_settings.icsIncludeAllDay = Wh_GetIntSetting(L"CalendarEvents.IncludeAllDay");
@@ -6735,6 +7269,8 @@ void LoadSettings() {
         if (!ParseCountdownTarget(c.get(), &target)) target = 0;
         g_settings.countdownTargets.push_back(target);
     }
+
+    LoadPrayerSettings();
 
     g_settings.width = Wh_GetIntSetting(L"ClockLayout.Width");
     g_settings.height = Wh_GetIntSetting(L"ClockLayout.Height");
@@ -6894,7 +7430,8 @@ void LoadSettings() {
          *g_settings.dateStyle.textAlignment || g_settings.dateStyle.fontSize ||
          *g_settings.dateStyle.fontFamily || *g_settings.dateStyle.fontWeight ||
          *g_settings.dateStyle.fontStyle || *g_settings.dateStyle.fontStretch ||
-         g_settings.dateStyle.characterSpacing || g_settings.dateStyle.lineHeight);
+         g_settings.dateStyle.characterSpacing || g_settings.dateStyle.lineHeight ||
+         g_settings.bengaliTextScale != 100);
     g_clockElementStyleIndex++;
     g_settings.oldTaskbarOnWin11 = Wh_GetIntSetting(L"oldTaskbarOnWin11");
 
@@ -7392,6 +7929,10 @@ DWORD WINAPI TransparencyWatchdogThreadProc(LPVOID) {
     // every 1.5 seconds as before.
     int sinceApplyMs = 0;
     uintptr_t lastSignature = 0;
+    // Let Explorer finish starting before doing any periodic work.
+    for (int i = 0; i < 100 && g_transparencyWatchdogRunning; i++) {
+        Sleep(100);
+    }
     while (g_transparencyWatchdogRunning) {
         for (int i = 0; i < 5 && g_transparencyWatchdogRunning; i++) {
             Sleep(50);
@@ -7400,7 +7941,7 @@ DWORD WINAPI TransparencyWatchdogThreadProc(LPVOID) {
         sinceApplyMs += 250;
 
         uintptr_t signature = g_settings.dynamicTransparency ? MaximizedMonitorsSignature() : 0;
-        if (signature == lastSignature && sinceApplyMs < 1500) continue;
+        if (signature == lastSignature && sinceApplyMs < 3000) continue;
         lastSignature = signature;
         sinceApplyMs = 0;
 
@@ -7429,7 +7970,7 @@ void StartTransparencyWatchdog() {
 void StopTransparencyWatchdog() {
     if (!g_transparencyWatchdogRunning.exchange(false)) return;
     if (g_transparencyWatchdogThread) {
-        WaitForSingleObject(g_transparencyWatchdogThread, INFINITE);
+        WaitForSingleObject(g_transparencyWatchdogThread, 5000);
         CloseHandle(g_transparencyWatchdogThread);
         g_transparencyWatchdogThread = nullptr;
     }
@@ -9363,12 +9904,16 @@ void ApplySettingsIconSize(int taskbarHeight) {
                              &tempTaskbarHeight, sizeof(double));
         }
 
-        SendMessage(hTaskbarWnd, WM_SETTINGCHANGE, SPI_SETLOGICALDPIOVERRIDE, 0);
+        DWORD_PTR sendResult1;
+        SendMessageTimeout(hTaskbarWnd, WM_SETTINGCHANGE,
+                           SPI_SETLOGICALDPIOVERRIDE, 0,
+                           SMTO_ABORTIFHUNG | SMTO_NORMAL, 2000, &sendResult1);
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20 && !g_unloading; i++) {
             if (!g_pendingMeasureOverride) break;
-            Sleep(100);
+            Sleep(50);
         }
+        g_pendingMeasureOverride = false;
     }
 
     g_pendingMeasureOverride = true;
@@ -9381,13 +9926,17 @@ void ApplySettingsIconSize(int taskbarHeight) {
                          &tempTaskbarHeight, sizeof(double));
     }
 
-    SendMessage(hTaskbarWnd, WM_SETTINGCHANGE, SPI_SETLOGICALDPIOVERRIDE, 0);
+    DWORD_PTR sendResult2;
+    SendMessageTimeout(hTaskbarWnd, WM_SETTINGCHANGE,
+                       SPI_SETLOGICALDPIOVERRIDE, 0,
+                       SMTO_ABORTIFHUNG | SMTO_NORMAL, 2000, &sendResult2);
 
     if (!IsVerticalTaskbar()) {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20 && !g_unloading; i++) {
             if (!g_pendingMeasureOverride) break;
-            Sleep(100);
+            Sleep(50);
         }
+        g_pendingMeasureOverride = false;
     } else {
         g_pendingMeasureOverride = false;
     }
@@ -9959,6 +10508,8 @@ BOOL IconSize_ModInit() {
     return TRUE;
 }
 
+HANDLE g_iconSizeInitialApplyThread;
+
 void IconSize_ModAfterInit() {
     if (!g_iconSizeSystemTrayModuleHooked) {
         if (HMODULE systemTrayModule = GetSystemTrayModuleHandle()) {
@@ -9997,10 +10548,28 @@ void IconSize_ModAfterInit() {
         }
     }
 
-    ApplySettingsIconSize(g_iconSizeSettings.taskbarHeight);
+    // Apply on a background thread so Explorer startup is never blocked.
+    g_iconSizeInitialApplyThread = CreateThread(
+        nullptr, 0,
+        [](LPVOID) -> DWORD {
+            for (int i = 0; i < 40 && !g_unloading; i++) {
+                if (FindCurrentProcessTaskbarWnd()) break;
+                Sleep(250);
+            }
+            if (!g_unloading) {
+                ApplySettingsIconSize(g_iconSizeSettings.taskbarHeight);
+            }
+            return 0;
+        },
+        nullptr, 0, nullptr);
 }
 
 void IconSize_ModBeforeUninit() {
+    if (g_iconSizeInitialApplyThread) {
+        WaitForSingleObject(g_iconSizeInitialApplyThread, 10000);
+        CloseHandle(g_iconSizeInitialApplyThread);
+        g_iconSizeInitialApplyThread = nullptr;
+    }
     ApplySettingsIconSize(g_originalTaskbarHeight ? g_originalTaskbarHeight
                                                    : 48);
 }
@@ -12647,7 +13216,15 @@ const ResolvedRules& GetResolvedPropertyOverrides(const std::wstring_view type, 
                 resolved.captures.push_back({setter.Property(), rule.varName});
             }
         }
-    } catch (...) {}
+    } catch (winrt::hresult_error const& ex) {
+        // A single bad setter invalidates every style rule for this target.
+        Wh_Log(L"Style rules for %s ignored: 0x%08X %s",
+               std::wstring(type).c_str(), (unsigned)ex.code().value,
+               ex.message().c_str());
+    } catch (...) {
+        Wh_Log(L"Style rules for %s ignored: unknown error",
+               std::wstring(type).c_str());
+    }
 
     *propertyOverridesMaybeUnresolved = std::move(resolved);
     return std::get<ResolvedRules>(*propertyOverridesMaybeUnresolved);
