@@ -25,7 +25,7 @@ ClockFormat:
     - ''
 ClockLines:
   Preset: custom
-  TopLine: '%vpn% 🔼 %upload_speed% 🔽 %download_speed% (%wifi_signal%)%media_info% %media_bar%⚙%cpu% 📦 %top_process% 🗃️ %ram% / %uptime% 💾 %drive_free_C% %weather% 📅 %date% / %date_bengali% 🌿 %time% %mic% %volume% ♻️ %battery% (%battery_time%)'
+  TopLine: 🔼 %upload_speed% 🔽 %download_speed% (%wifi_signal%)%media_info% ⚙%cpu% 📦 %top_process% 🗃️ %ram% 💾 %drive_free_C% %weather% 📅 %date% / %date_bengali% 🌿 %time% / %prayer_current_info% %mic% %volume% ♻️ %battery%
   BottomLine: '%web1%'
   MiddleLine: '%weekday%'
   TooltipLine: '%web1_full%'
@@ -40,7 +40,7 @@ TimeStyle:
   Hidden: 0
   TextColor: ''
   TextAlignment: ''
-  FontSize: 11
+  FontSize: 12
   FontFamily: ''
   FontWeight: ''
   FontStyle: ''
@@ -74,6 +74,16 @@ ClockTimer:
   WorkMinutes: 25
   BreakMinutes: 5
   PlaySound: 1
+Prayer:
+  Latitude: '23.8103'
+  Longitude: '90.4125'
+  Method: karachi
+  CustomFajrAngle: '18'
+  CustomIshaAngle: '18'
+  Asr: hanafi
+  TimeFormat: 12hAmPm
+  Names: Fajr,Sunrise,Dhuhr,Asr,Maghrib,Isha
+  Adjustments: 0,0,0,0,0,0
 Profiles:
   Rules:
     - Condition: ''
@@ -96,7 +106,7 @@ MediaPlayer:
   IgnoredPlayers:
     - ''
   MaxLength: 28
-  MediaInfoFormat: 🎵 %media_artist% - %media_title%
+  MediaInfoFormat: ' 🎵 %media_artist% - %media_title% %media_bar%'
   NoMediaText: ''
   RemoveBrackets: 0
   Marquee: 0
@@ -124,6 +134,7 @@ NetworkInfo:
 AlternateCalendars:
   HijriType: umalqura
   HijriOffset: 0
+  BengaliTextScale: 90
 CalendarEvents:
   IcsUrl: ''
   MaxLength: 30
@@ -154,7 +165,7 @@ TaskbarButtons:
   HideTaskView: 1
   HideWidgets: 1
 RunningIndicator:
-  Mode: hidden
+  Mode: default
   Color: ''
   ActiveColor: ''
   Width: 0
@@ -177,7 +188,7 @@ Styling:
     - target: SystemTray.OmniButton
       styles:
         - Padding=1
-        - Margin=-5,0,-7,0
+        - Margin=-5,0,-12,0
     - target: SystemTray.Stack#NotifyIconStack
       styles:
         - Grid.Column=8
@@ -188,18 +199,18 @@ Styling:
         - FontSize= 12
     - target: SystemTray.OmniButton#ShowDesktopButton, SystemTray.ChevronIconView
       styles:
-        - Width=19
-        - Padding=0
-        - Margin=-5,-3,0,0
+        - Width=35
+        - Padding=1
+        - Margin=0,-3,-7,0
     - target: SystemTray.ImageIconContent > Grid#ContainerGrid > Image
       styles:
-        - Height=15
+        - Height=16
         - Width=12
     - target: SystemTray.NotifyIconView
       styles:
-        - Width=23
-        - MinWidth=0
-        - Padding=0
+        - Width=21
+        - MinWidth=10
+        - Padding=1
         - Margin=1
   themeResourceVariables:
     - ''
