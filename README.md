@@ -13,6 +13,7 @@ A comprehensive, all-in-one **[Windhawk](https://windhawk.net/)** mod that unifi
 
 * **Prayer times:** new `%prayer_*%` clock tags for the next prayer, the time left in the current one and all daily times. They are calculated on your computer from your coordinates, so no internet access is needed (see [Prayer Times](#-prayer-times-added-in-v170)).
 * **Fix for slow startup on Windows 11 24H2** (build 26100.9711, KB5127648): the taskbar size apply no longer blocks Explorer at startup, and the transparency watchdog is lighter.
+* **Bangla text size:** a new *Bangla text size (%)* setting scales the Bangla characters of `%date_bengali%` so they no longer look larger than the English text (default 90%, 100 turns it off; Windows 11 22H2+).
 * **Clearer style errors:** when the style rules for a target fail to load, the Windhawk log now says which target and why.
 
 Release notes for earlier versions, including v1.6.0, are in [`CHANGELOG.md`](./CHANGELOG.md).
@@ -38,7 +39,7 @@ Earlier release notes are in [`CHANGELOG.md`](./CHANGELOG.md).
 | Clock: color rules | Change the clock text color when CPU, RAM, GPU, temperature or battery cross a threshold (Windows 11 22H2+) |
 | Clock: prayer times | Location, calculation method, Asr rule, time format, names and minute adjustments for the `%prayer_*%` tags |
 | Network info | Ping, Wi-Fi name and signal, VPN status, local IP |
-| Alternate calendars | Hijri, Persian, Japanese and Bengali (Bangladesh) dates |
+| Alternate calendars | Hijri, Persian, Japanese and Bengali (Bangladesh) dates, Bangla text size |
 | Calendar events (ICS) | Next event from a calendar feed |
 | Live metrics | Update interval (and a slower one on battery), number formats, network / GPU adapter, graph length |
 | Media player info | Format, length limit, scrolling marquee and ignored players for `%media_*%` |
@@ -102,7 +103,7 @@ Configure custom text lines for **Top Line**, **Bottom Line**, **Middle Line** (
 * `%date_hijri%` — Hijri date, Umm al-Qura or civil, adjustable by ±2 days to match local moon sighting.
 * `%date_persian%` — Persian (Solar Hijri) date.
 * `%date_japanese%` — Japanese-era date.
-* `%date_bengali%` / `%date_bengali_en%` — Bengali date of the **Bangladesh revised calendar** (new year on 14 April), in Bangla script and digits or in Latin letters (e.g. `25 Ashwin 1433`).
+* `%date_bengali%` / `%date_bengali_en%` — Bengali date of the **Bangladesh revised calendar** (new year on 14 April), in Bangla script and digits or in Latin letters (e.g. `25 Ashwin 1433`). **[v1.7.0]** Windows draws Bangla letters in a fallback font that looks larger than the Latin font, so the *Bangla text size (%)* setting scales just those characters on the clock lines.
 
 #### 🕌 Prayer Times **[Added in v1.7.0]**
 Prayer times are calculated on your computer from your latitude and longitude and the system clock, so no internet access is needed. They follow your Windows time zone, including daylight saving time. The defaults are Dhaka, the Karachi method and the Hanafi Asr rule.
