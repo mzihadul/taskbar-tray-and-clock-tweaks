@@ -2,6 +2,25 @@
 
 All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this file.
 
+# Changelog
+
+## [1.7.0] - 2026-10-18
+
+### Added
+- Prayer times for the clock, calculated on your computer from latitude, longitude and the system clock (no network access). New "Clock: prayer times" settings section with calculation method (Karachi default, Muslim World League, ISNA, Egyptian, Umm al-Qura, custom angles), Asr rule (Hanafi default or standard), time format, prayer names and per-prayer minute adjustments. Defaults to Dhaka.
+- New clock tags: `%prayer_next%`, `%prayer_next_time%`, `%prayer_next_in%`, `%prayer_next_info%`, `%prayer_current%`, `%prayer_current_left%`, `%prayer_current_end%`, `%prayer_current_info%`, `%prayer_all%`, `%prayer_fajr%`, `%prayer_sunrise%`, `%prayer_dhuhr%`, `%prayer_asr%`, `%prayer_maghrib%`, `%prayer_isha%`.
+- When style rules for a target fail to load, the mod log now says which target and why, instead of ignoring them silently.
+
+### Fixed
+Explorer lag and a missing taskbar at startup on Windows 11 24H2 (build 26100.9711, KB5127648). Untested on that build.
+- Explorer startup no longer blocks on the taskbar size and icon size apply. The first apply now runs on a background thread and waits for the taskbar window to exist.
+- Taskbar size changes wait at most about 1 second for the layout pass, down from up to 10 seconds. If the layout hook never fires, the apply continues instead of hanging.
+- The settings-change messages sent to the taskbar now time out after 2 seconds and skip a hung taskbar.
+
+### Changed
+- The transparency watchdog waits about 10 seconds after startup before its first pass, then re-applies every 3 seconds (was 1.5). Dynamic transparency still reacts within 250 ms of a window being maximized or restored. Stopping it on unload waits at most 5 seconds.
+- On unload, the taskbar height restore no longer waits for the layout pass, so it may take a moment longer to settle visually.
+
 ## [1.6.0] - 2026-10-15
 
 ### Added
