@@ -2,7 +2,7 @@
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
 // @description     Taskbar clock with live metrics, media info, weather and prayer times; system tray icon control; taskbar size and transparency; and XAML control styling.
-// @version         1.7.0
+// @version         1.7.1
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -120,10 +120,11 @@ Playback progress: `%media_position%`, `%media_duration%`, `%media_remaining%`, 
 Calculated on your computer from the latitude, longitude and method in the "Clock: prayer times" settings (defaults to Dhaka, Karachi method, Hanafi Asr), so no internet is needed. Times follow the system clock and time zone, including daylight saving time.
 * `%prayer_next%`, `%prayer_next_time%`, `%prayer_next_in%` - name, start time and time left (`1h 12m`) of the next prayer. After Isha it points to tomorrow's Fajr.
 * `%prayer_next_info%` - all three together, e.g. `Asr 3:45 PM (1h 12m)`.
-* `%prayer_current%` - the most recent prayer or Sunrise.
-* `%prayer_current_left%`, `%prayer_current_end%`, `%prayer_current_info%` - time left in the current prayer's period, when it ends, or both (e.g. `Asr (1h 12m left)`). A period ends at the next event: Fajr at Sunrise, Dhuhr at Asr, Asr at Maghrib, Maghrib at Isha, Isha at the next Fajr. The gap between Sunrise and Dhuhr counts down to Dhuhr.
+* `%prayer_current%` - the prayer whose time it is now, or `--` when no prayer is current (between Sunrise and Dhuhr, and after Isha ends).
+* `%prayer_current_left%`, `%prayer_current_end%`, `%prayer_current_info%` - time left in the current prayer's period, when it ends, or both (e.g. `Asr (1h 12m left)`). A period ends at the next event: Fajr at Sunrise, Dhuhr at Asr, Asr at Maghrib, Maghrib at Isha, and Isha at Islamic midnight (halfway between Maghrib and the next Fajr; the setting can make it the next Fajr instead). Between Sunrise and Dhuhr, and from the end of Isha until Fajr, no prayer is current, so these show `--`.
 * `%prayer_fajr%`, `%prayer_sunrise%`, `%prayer_dhuhr%`, `%prayer_asr%`, `%prayer_maghrib%`, `%prayer_isha%` - today's times.
 * `%prayer_all%` - the five prayers on one line.
+* `%prayer_midnight%` - Islamic midnight of tonight, halfway between Maghrib and the next Fajr.
 Use the adjustments setting to match your local mosque's timetable. Times are shown as `--` where the sun never reaches the Fajr / Isha angle (far-north winters and summers).
 
 ### Weather & web
@@ -499,6 +500,15 @@ Simple switches that generate the matching control styles for you, so common twe
     $options:
     - hanafi: Hanafi (shadow length 2x)
     - standard: Shafi, Maliki, Hanbali (shadow length 1x)
+  - IshaEnd: midnight
+    $name: Isha time ends at
+    $description: >-
+      Islamic midnight is halfway between Maghrib and the next Fajr. After the
+      Isha time ends, no prayer is current (%prayer_current_*% show --) until
+      Fajr.
+    $options:
+    - midnight: Islamic midnight
+    - fajr: Next Fajr
   - TimeFormat: 12hAmPm
     $name: Time format
     $options:
@@ -1137,6 +1147,7 @@ struct PrayerSettings {
     int asrFactor = 2;                // 1 Shafi/Maliki/Hanbali, 2 Hanafi
     int offsets[6] = {0, 0, 0, 0, 0, 0};  // Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha (minutes)
     int timeFormat = 0;               // 0 12h with AM/PM, 1 12h, 2 24h
+    bool ishaEndsAtFajr = false;      // false: Isha ends at Islamic midnight
     std::wstring names[6] = {L"Fajr", L"Sunrise", L"Dhuhr", L"Asr", L"Maghrib", L"Isha"};
 };
 
@@ -5206,8 +5217,30 @@ static PrayerNext PrayerFindNext() {
     return {};
 }
 
-// The most recent of the six events (Sunrise included); before Fajr that is
-// yesterday's Isha.
+// End of the Isha period on the 'today' time line. For the night that starts
+// this evening it is tomorrow's Fajr or Islamic midnight (halfway between
+// Maghrib and the next Fajr); for the night that started yesterday evening
+// (before today's Fajr) the same with yesterday's Maghrib and today's Fajr.
+// NaN if it cannot be calculated.
+static double PrayerIshaEnd(bool previousNight) {
+    double maghrib, fajr;
+    if (previousNight) {
+        maghrib = g_prayerState.yesterday.minutes[4] - 1440.0;
+        fajr = g_prayerState.today.minutes[0];
+    } else {
+        maghrib = g_prayerState.today.minutes[4];
+        fajr = g_prayerState.tomorrow.minutes[0] + 1440.0;
+    }
+    if (std::isnan(fajr)) return NAN;
+    if (g_settings.prayer.ishaEndsAtFajr) return fajr;
+    if (std::isnan(maghrib)) return NAN;
+    return (maghrib + fajr) / 2.0;
+}
+
+// The prayer whose period is running now: the most recent of the six events,
+// except that from Sunrise until Dhuhr, and from Islamic midnight until Fajr
+// (unless the setting makes Isha last until Fajr), no prayer is current (-1).
+// Before Fajr the candidate is yesterday's Isha.
 static int PrayerFindCurrent() {
     PrayerEnsureDays();
     const SYSTEMTIME& now = g_formatTime;
@@ -5218,7 +5251,16 @@ static int PrayerFindCurrent() {
         double t = g_prayerState.today.minutes[i];
         if (!std::isnan(t) && t <= nowMin && t > bestT) { best = i; bestT = t; }
     }
-    if (best < 0 && !std::isnan(g_prayerState.yesterday.minutes[5])) best = 5;
+    bool previousNight = false;
+    if (best < 0 && !std::isnan(g_prayerState.yesterday.minutes[5])) {
+        best = 5;
+        previousNight = true;
+    }
+    if (best == 1) return -1;  // between Sunrise and Dhuhr
+    if (best == 5) {
+        double end = PrayerIshaEnd(previousNight);
+        if (!std::isnan(end) && nowMin >= end) return -1;  // after Isha ended
+    }
     return best;
 }
 
@@ -5230,15 +5272,20 @@ static double PrayerCurrentEndMinutes(int current) {
         const SYSTEMTIME& now = g_formatTime;
         double nowMin = now.wHour * 60.0 + now.wMinute + now.wSecond / 60.0;
         double isha = g_prayerState.today.minutes[5];
-        // After today's Isha the period ends at tomorrow's Fajr; before Fajr
-        // (still yesterday's Isha) it ends at today's Fajr.
-        if (!std::isnan(isha) && isha <= nowMin) {
-            double f = g_prayerState.tomorrow.minutes[0];
-            return std::isnan(f) ? NAN : f + 1440.0;
-        }
-        return g_prayerState.today.minutes[0];
+        // After today's Isha the period belongs to tonight; before Fajr it is
+        // still yesterday's Isha.
+        return PrayerIshaEnd(std::isnan(isha) || isha > nowMin);
     }
     return g_prayerState.today.minutes[current + 1];
+}
+
+// Islamic midnight of tonight: halfway between today's Maghrib and tomorrow's Fajr.
+static PCWSTR GetPrayerMidnightFormatted() {
+    PrayerEnsureDays();
+    double maghrib = g_prayerState.today.minutes[4];
+    double fajr = g_prayerState.tomorrow.minutes[0] + 1440.0;
+    if (std::isnan(maghrib) || std::isnan(fajr)) return L"--";
+    return PrayerFormatClock((maghrib + fajr) / 2.0);
 }
 
 static PCWSTR GetPrayerCurrentEndFormatted() {
@@ -5918,7 +5965,8 @@ size_t ResolveFormatToken(std::wstring_view format, std::function<void(PCWSTR)> 
         {L"%prayer_next_in%"sv, GetPrayerNextInFormatted}, {L"%prayer_next_info%"sv, GetPrayerNextInfoFormatted},
         {L"%prayer_current%"sv, GetPrayerCurrentFormatted},
         {L"%prayer_current_end%"sv, GetPrayerCurrentEndFormatted}, {L"%prayer_current_left%"sv, GetPrayerCurrentLeftFormatted},
-        {L"%prayer_current_info%"sv, GetPrayerCurrentInfoFormatted}, {L"%prayer_all%"sv, GetPrayerAllFormatted},
+        {L"%prayer_current_info%"sv, GetPrayerCurrentInfoFormatted},
+        {L"%prayer_midnight%"sv, GetPrayerMidnightFormatted}, {L"%prayer_all%"sv, GetPrayerAllFormatted},
         {L"%prayer_fajr%"sv, []() { return GetPrayerTimeFormatted(0); }},
         {L"%prayer_sunrise%"sv, []() { return GetPrayerTimeFormatted(1); }},
         {L"%prayer_dhuhr%"sv, []() { return GetPrayerTimeFormatted(2); }},
@@ -7107,6 +7155,7 @@ void LoadPrayerSettings() {
     }  // else karachi: 18 / 18
 
     p.asrFactor = wcscmp(StringSetting::make(L"Prayer.Asr"), L"standard") == 0 ? 1 : 2;
+    p.ishaEndsAtFajr = wcscmp(StringSetting::make(L"Prayer.IshaEnd"), L"fajr") == 0;
 
     StringSetting fmt = StringSetting::make(L"Prayer.TimeFormat");
     p.timeFormat = wcscmp(fmt, L"24h") == 0 ? 2 : (wcscmp(fmt, L"12h") == 0 ? 1 : 0);
