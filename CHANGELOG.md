@@ -4,6 +4,16 @@ All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this fi
 
 # Changelog
 
+## [1.7.1] - 2026-10-22
+ 
+### Added
+- "Isha time ends at" setting under Clock: prayer times: Islamic midnight (default) or the next Fajr.
+- `%prayer_midnight%` tag: Islamic midnight of tonight.
+
+### Fixed
+- `%prayer_current_*%` kept showing Isha with hours left until the next Fajr (e.g. "Isha (5h 4m left)" at 11:38 PM), long after the Isha time ended. Isha now ends at Islamic midnight, halfway between Maghrib and the next Fajr, and from then until Fajr no prayer is current (`--`).
+- `%prayer_current%` showed "Sunrise" from sunrise until Dhuhr, for hours after the sun had risen. Between Sunrise and Dhuhr no prayer is current now, so `%prayer_current%`, `%prayer_current_left%`, `%prayer_current_end%` and `%prayer_current_info%` show `--` during that time. `%prayer_next_info%` still counts down to Dhuhr.
+
 ## [1.7.0] - 2026-10-18
 
 ### Added
