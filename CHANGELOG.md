@@ -4,6 +4,25 @@ All notable changes to **Taskbar Tray & Clock Tweaks** are documented in this fi
 
 # Changelog
 
+## [1.7.2] - 2026-11-02
+
+### Added
+- Network speeds now carry an arrow emoji: `%upload_speed%` shows `🔼 <speed>` and `%download_speed%` shows `🔽 <speed>`.
+- `%cpu%` is prefixed with 📦 (no space), e.g. `📦45%`.
+- `%ram%` is prefixed with 🗃️ and a space, e.g. `🗃️ 62%`.
+- `%drive_free_<X>%` and `%drive_free_pct_<X>%` are prefixed with 💾 and a space, e.g. `💾 120 GB`.
+- `%date%` is prefixed with 📅 and a space.
+- `%battery%` is prefixed with ᨒ and a space, e.g. `ᨒ 85%⚡`. Note: this is a Buginese-script character, not a standard emoji; some fonts may render it as a box.
+
+### Changed
+- `%battery_time%` (remaining / charging time) now uses days, hours and minutes (`1d 2h 32m`, `2h 32m` or `32m`) instead of `h:mm`.
+- `%battery_time%` shows `--` when Windows cannot provide an estimate.
+- "monitor" line preset: removed the `CPU` / `RAM` text labels and the `↓` / `↑` arrows, since the tags now include their own emoji.
+
+### Fixed
+- `%download_speed%` and `%upload_speed%` are hidden (empty) while the PC has no internet access, instead of showing stale or zero values. The connection check is cached for 3 seconds.
+- Charging-time estimate no longer misbehaves when the battery reports a zero or negative charge rate.
+
 ## [1.7.1] - 2026-10-22
  
 ### Added
