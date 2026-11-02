@@ -2,7 +2,7 @@
 // @id              taskbar-tray-and-clock-tweaks
 // @name            Taskbar Tray & Clock Tweaks
 // @description     Taskbar clock with live metrics, media info, weather and prayer times; system tray icon control; taskbar size and transparency; and XAML control styling.
-// @version         1.7.1
+// @version         1.7.2
 // @author          mzihadul
 // @github          https://github.com/mzihadul/taskbar-tray-and-clock-tweaks
 // @include         explorer.exe
@@ -89,7 +89,7 @@ Use these in the top, middle, bottom and tooltip lines.
 * **GPU / VRAM:** `%gpu%` (3D engine %), `%vram%` (%), `%vram_used%`, `%vram_total%` (GB), `%vram_shared%` (%), `%vram_shared_used%`, `%vram_shared_total%` (GB)
 * **Battery:**
   * `%battery%` - percentage; appends `⚡` while charging and `❗` at 20% or below.
-  * `%battery_time%` - remaining / charging time as `h:mm`.
+  * `%battery_time%` - remaining / charging time as `1d 2h 32m`.
   * `%power%` - charge / discharge rate in watts (`+W` / `-W`).
 * **Volume:** `%volume%` - `🔊` / `🔇` icon that expands to the level % while adjusting, then collapses after 3 seconds.
 * **Microphone:** `%mic%` - `🎙️` while any app is recording.
@@ -1247,7 +1247,7 @@ struct LinePreset {
 
 const LinePreset kLinePresets[] = {
     {L"minimal", L"%time%", L"%date%", L""},
-    {L"monitor", L"CPU %cpu% | RAM %ram%", L"\u2193 %download_speed%  \u2191 %upload_speed%",
+    {L"monitor", L"%cpu% | %ram%", L"%download_speed%  %upload_speed%",
      L"%date% %time%%n%GPU %gpu% | Disk %disk_total%"},
     {L"battery", L"%time%", L"%battery% %power%", L"%battery_time%"},
     {L"media", L"%time%", L"%media_info%", L"%media_title%%n%%media_artist%%n%%media_album%"},
@@ -3373,7 +3373,15 @@ PCWSTR GetDateFormattedWithExtra(std::vector<std::wstring>** extra) {
     return g_dateFormatted.buffer;
 }
 
-PCWSTR GetDateFormatted() { return GetDateFormattedWithExtra(nullptr); }
+PCWSTR GetDateFormatted() {
+    static FormattedString<FORMATTED_BUFFER_SIZE> s_withEmoji;
+    PCWSTR d = GetDateFormattedWithExtra(nullptr);
+    if (s_withEmoji.formatIndex != g_formatIndex) {
+        swprintf_s(s_withEmoji.buffer, L"\U0001F4C5 %s", d);
+        s_withEmoji.formatIndex = g_formatIndex;
+    }
+    return s_withEmoji.buffer;
+}
 std::vector<std::wstring>* GetDateFormattedExtra() { std::vector<std::wstring>* e; GetDateFormattedWithExtra(&e); return e; }
 
 PCWSTR GetDateFormattedTz(size_t index) {
@@ -4217,13 +4225,32 @@ PCWSTR GetMetricFormatted(FormattedString<N>& s, Formatter f) {
     return s.buffer;
 }
 
+// True while Windows reports real internet access (cached for 3 seconds).
+bool IsInternetConnectedCached() {
+    static ULONGLONG s_tick = 0;
+    static bool s_connected = true;
+    ULONGLONG now = GetTickCount64() | 1;
+    if (!s_tick || now - s_tick >= 3000) {
+        s_tick = now;
+        try {
+            namespace Conn = winrt::Windows::Networking::Connectivity;
+            auto profile = Conn::NetworkInformation::GetInternetConnectionProfile();
+            s_connected = profile && profile.GetNetworkConnectivityLevel() == Conn::NetworkConnectivityLevel::InternetAccess;
+        } catch (...) { s_connected = true; }
+    }
+    return s_connected;
+}
+
 PCWSTR GetUploadSpeedFormatted() {
     DataCollectionSampleIfNeeded();
     return GetMetricFormatted(g_uploadSpeedFormatted, [](PWSTR b, size_t s) {
         if (!g_dataCollectionSession) return false;
+        if (!IsInternetConnectedCached()) { b[0] = L'\0'; return true; }
         auto v = g_dataCollectionSession->QueryData(MetricType::kUploadSpeed);
         if (!v) return false;
-        FormatTransferSpeed(*v, g_settings.dataCollection.networkMetricsFormat, g_settings.dataCollection.networkMetricsFixedDecimals, b, s);
+        WCHAR speed[FORMATTED_BUFFER_SIZE];
+        FormatTransferSpeed(*v, g_settings.dataCollection.networkMetricsFormat, g_settings.dataCollection.networkMetricsFixedDecimals, speed, ARRAYSIZE(speed));
+        swprintf_s(b, s, L"\U0001F53C %s", speed);
         return true;
     });
 }
@@ -4232,9 +4259,12 @@ PCWSTR GetDownloadSpeedFormatted() {
     DataCollectionSampleIfNeeded();
     return GetMetricFormatted(g_downloadSpeedFormatted, [](PWSTR b, size_t s) {
         if (!g_dataCollectionSession) return false;
+        if (!IsInternetConnectedCached()) { b[0] = L'\0'; return true; }
         auto v = g_dataCollectionSession->QueryData(MetricType::kDownloadSpeed);
         if (!v) return false;
-        FormatTransferSpeed(*v, g_settings.dataCollection.networkMetricsFormat, g_settings.dataCollection.networkMetricsFixedDecimals, b, s);
+        WCHAR speed[FORMATTED_BUFFER_SIZE];
+        FormatTransferSpeed(*v, g_settings.dataCollection.networkMetricsFormat, g_settings.dataCollection.networkMetricsFixedDecimals, speed, ARRAYSIZE(speed));
+        swprintf_s(b, s, L"\U0001F53D %s", speed);
         return true;
     });
 }
@@ -4291,7 +4321,9 @@ PCWSTR GetCpuFormatted() {
         if (!g_dataCollectionSession) return false;
         auto v = g_dataCollectionSession->QueryData(MetricType::kCpu);
         if (!v) return false;
-        FormatPercentValue(static_cast<int>(*v), b, s, 99);
+        WCHAR pct[64];
+        FormatPercentValue(static_cast<int>(*v), pct, ARRAYSIZE(pct), 99);
+        swprintf_s(b, s, L"\U0001F4E6%s", pct);
         return true;
     });
 }
@@ -4300,7 +4332,9 @@ PCWSTR GetRamFormatted() {
     return GetMetricFormatted(g_ramFormatted, [](PWSTR b, size_t s) {
         auto r = GetRamStatus();
         if (!r) return false;
-        FormatPercentValue(r->dwMemoryLoad, b, s, 99);
+        WCHAR pct[64];
+        FormatPercentValue(r->dwMemoryLoad, pct, ARRAYSIZE(pct), 99);
+        swprintf_s(b, s, L"\U0001F5C3\uFE0F %s", pct);
         return true;
     });
 }
@@ -4984,7 +5018,7 @@ size_t ResolveDriveToken(std::wstring_view format, const std::function<void(PCWS
             return len;
         }
         ULONGLONG used = total - std::min(freeBytes, total);
-        WCHAR buf[64];
+        WCHAR buf[80];
         switch (k.kind) {
             case 0: FormatByteSize(static_cast<double>(freeBytes), buf, ARRAYSIZE(buf)); break;
             case 1: FormatByteSize(static_cast<double>(used), buf, ARRAYSIZE(buf)); break;
@@ -4992,7 +5026,13 @@ size_t ResolveDriveToken(std::wstring_view format, const std::function<void(PCWS
             case 3: FormatPercentValue(static_cast<int>(freeBytes * 100.0 / total + 0.5), buf, ARRAYSIZE(buf), 100); break;
             default: FormatPercentValue(static_cast<int>(used * 100.0 / total + 0.5), buf, ARRAYSIZE(buf), 100); break;
         }
-        callback(buf);
+        if (k.kind == 0 || k.kind == 3) {
+            WCHAR withEmoji[96];
+            swprintf_s(withEmoji, L"\U0001F4BE %s", buf);
+            callback(withEmoji);
+        } else {
+            callback(buf);
+        }
         return len;
     }
     return 0;
@@ -5457,17 +5497,18 @@ PCWSTR GetBatteryFormatted() {
     return GetMetricFormatted(g_batteryFormatted, [](PWSTR b, size_t s) {
         SYSTEM_POWER_STATUS ps;
         if (!GetSystemPowerStatus(&ps)) return false;
+        WCHAR v[64];
         if (ps.ACLineStatus == 1) {
-            if (ps.BatteryLifePercent != 255) swprintf_s(b, s, L"%d%%⚡", ps.BatteryLifePercent);
-            else swprintf_s(b, s, L"⚡");
-            return true;
+            if (ps.BatteryLifePercent != 255) swprintf_s(v, L"%d%%⚡", ps.BatteryLifePercent);
+            else swprintf_s(v, L"⚡");
+        } else if (ps.BatteryLifePercent != 255) {
+            if (ps.BatteryLifePercent <= 20) swprintf_s(v, L"%d%%❗", ps.BatteryLifePercent);
+            else swprintf_s(v, L"%d%%", ps.BatteryLifePercent);
+        } else {
+            return false;
         }
-        if (ps.BatteryLifePercent != 255) {
-            if (ps.BatteryLifePercent <= 20) swprintf_s(b, s, L"%d%%❗", ps.BatteryLifePercent);
-            else swprintf_s(b, s, L"%d%%", ps.BatteryLifePercent);
-            return true;
-        }
-        return false;
+        swprintf_s(b, s, L"\u1A12 %s", v);
+        return true;
     });
 }
 
@@ -5480,12 +5521,16 @@ PCWSTR GetBatteryTimeFormatted() {
                 sec = ps.BatteryLifeTime;
             } else if (ps.ACLineStatus == 1 && ps.BatteryLifePercent < 100) {
                 SYSTEM_BATTERY_STATE bs{};
-                if (CallNtPowerInformation(SystemBatteryState, nullptr, 0, &bs, sizeof(bs)) == 0 && bs.Rate > 0) {
-                    sec = ((bs.MaxCapacity - bs.RemainingCapacity) * 3600) / bs.Rate;
+                if (CallNtPowerInformation(SystemBatteryState, nullptr, 0, &bs, sizeof(bs)) == 0 && (LONG)bs.Rate > 0 && bs.MaxCapacity > bs.RemainingCapacity) {
+                    sec = (DWORD)(((ULONGLONG)(bs.MaxCapacity - bs.RemainingCapacity) * 3600) / bs.Rate);
                 }
             }
         }
-        swprintf_s(b, s, L"%u:%02u", sec / 3600, (sec % 3600) / 60);
+        if (sec == 0) { wcscpy_s(b, s, L"--"); return true; }
+        DWORD d = sec / 86400, h = (sec % 86400) / 3600, m = (sec % 3600) / 60;
+        if (d > 0) swprintf_s(b, s, L"%ud %uh %um", d, h, m);
+        else if (h > 0) swprintf_s(b, s, L"%uh %um", h, m);
+        else swprintf_s(b, s, L"%um", m);
         return true;
     });
 }
